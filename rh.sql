@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 03, 2024 at 06:10 PM
+-- Generation Time: May 03, 2024 at 06:40 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -61,20 +61,6 @@ CREATE TABLE `auxtransporte` (
 
 INSERT INTO `auxtransporte` (`id_auxtransporte`, `valor`) VALUES
 (1, 162.000);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `deducciones`
---
-
-CREATE TABLE `deducciones` (
-  `id_deducciones` int(10) NOT NULL,
-  `salud` decimal(10,2) DEFAULT NULL,
-  `pension` decimal(10,2) DEFAULT NULL,
-  `id_arl` int(10) NOT NULL,
-  `total_gastos` decimal(10,2) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -150,8 +136,13 @@ CREATE TABLE `nomina` (
   `id_usuario` int(10) NOT NULL,
   `mes` varchar(200) DEFAULT NULL,
   `anio` varchar(200) DEFAULT NULL,
-  `id_ingreso` int(10) NOT NULL,
-  `id_estado` int(10) NOT NULL
+  `id_estado` int(10) NOT NULL,
+  `id_arl` int(11) NOT NULL,
+  `id_salud` int(11) NOT NULL,
+  `id_pension` int(11) NOT NULL,
+  `parafiscales` int(10) NOT NULL,
+  `id_auxtransporte` int(11) NOT NULL,
+  `horas_extras` int(10) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -353,12 +344,6 @@ ALTER TABLE `auxtransporte`
   ADD PRIMARY KEY (`id_auxtransporte`);
 
 --
--- Indexes for table `deducciones`
---
-ALTER TABLE `deducciones`
-  ADD PRIMARY KEY (`id_deducciones`);
-
---
 -- Indexes for table `empresas`
 --
 ALTER TABLE `empresas`
@@ -457,12 +442,6 @@ ALTER TABLE `arl`
 --
 ALTER TABLE `auxtransporte`
   MODIFY `id_auxtransporte` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
--- AUTO_INCREMENT for table `deducciones`
---
-ALTER TABLE `deducciones`
-  MODIFY `id_deducciones` int(10) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `ingresos`
