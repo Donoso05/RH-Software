@@ -21,6 +21,8 @@
 	  $id_estado= $_POST['id_estado'];
       $valor_cuotas= $_POST['valor_cuotas'];
 	  $cant_cuotas= $_POST['cant_cuotas'];
+	  $mes= $_POST['mes'];
+	  $anio= $_POST['anio'];
 
       $sql = $con -> prepare ("SELECT * FROM solic_prestamo where id_prestamo='$id_prestamo'");
       $sql -> execute();
@@ -28,7 +30,7 @@
       
     
     
-      if($id_usuario=="" || $monto_solicitado=="" || $id_estado=="" || $valor_cuotas=="" || $cant_cuotas=="")
+      if($id_usuario=="" || $monto_solicitado=="" || $id_estado=="" || $valor_cuotas=="" || $cant_cuotas=="" || $mes=="" || $anio=="")
       {
         echo '<script>alert ("EXISTEN DATOS VACIOS"); </script>';
         echo '<script>window.location="solic_prestamo.php"</script>';
@@ -41,8 +43,8 @@
             
       else
       {
-        $insertSQL = $con->prepare ("INSERT INTO solic_prestamo(id_prestamo,id_usuario, monto_solicitado,id_estado,valor_cuotas,cant_cuotas) 
-        VALUES ('$id_prestamo','$id_usuario', '$monto_solicitado', '$id_estado', '$valor_cuotas','$cant_cuotas')");
+        $insertSQL = $con->prepare ("INSERT INTO solic_prestamo(id_prestamo,id_usuario, monto_solicitado,id_estado,valor_cuotas,cant_cuotas,mes,anio) 
+        VALUES ('$id_prestamo','$id_usuario', '$monto_solicitado', '$id_estado', '$valor_cuotas','$cant_cuotas','$mes','$anio')");
         $insertSQL->execute();
         echo '<script>alert ("Solicitud Prestamo Registrada con Exito"); </script>';
         echo '<script>window.location="solic_prestamo.php"</script>';
@@ -145,6 +147,16 @@
         					<i class="fa fa-envelope" aria-hidden="true"></i>
     					</span>
 					</div>
+
+					<div class="wrap-input100 validate-input" data-validate="Mes">
+    					<input class="input100" type="month" name="mes" id="mes" placeholder="Mes">
+    					<span class="focus-input100"></span>
+    					<span class="symbol-input100">
+        					<i class="fa fa-envelope" aria-hidden="true"></i>
+    					</span>
+					</div>
+
+					
 					
 					<div class="container-login100-form-btn">
 					<input class="login100-form-btn" type="submit" name="validar" value="Registrar">
