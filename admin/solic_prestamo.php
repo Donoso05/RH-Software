@@ -87,7 +87,7 @@
 
 				<form class="login100-form validate-form" method="post">
 					<span class="login100-form-title">
-						Solicitud prestamo
+						Solicitud prestamooo
 					</span>
 
 					<div class="wrap-input100" style="display: none;">
