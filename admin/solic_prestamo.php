@@ -145,6 +145,14 @@
         					<i class="fa fa-envelope" aria-hidden="true"></i>
     					</span>
 					</div>
+
+					<div class="wrap-input100" ="Mes y Año">
+    					<input class="input100" type="month" name="mes" id="mes" placeholder="Mes">
+    					<span class="focus-input100"></span>
+    					<span class="symbol-input100">
+        					<i class="fa fa-envelope" aria-hidden="true"></i>
+    					</span>
+					</div>
 					
 					<div class="container-login100-form-btn">
 					<input class="login100-form-btn" type="submit" name="validar" value="Registrar">
