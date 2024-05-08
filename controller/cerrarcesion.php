@@ -16,6 +16,6 @@ session_destroy();
 // Redirigir a la página de inicio
 header("location:../index.html");
 exit();
-?>
+
 
 

@@ -117,6 +117,11 @@
             </div>
 
             <div class="mb-3">
+                <label for="correo" class="form-label">foto</label>
+                <input type="file" class="form-control" name="foto" id="foto">
+            </div>
+
+            <div class="mb-3">
                 <label for="contrasena" class="form-label">Contraseña</label>
                 <input type="password" name="contrasena" class="form-control" id="exampleInputPassword1">
             </div>
@@ -142,6 +147,9 @@
                         <th scope="col">Correo</th>
                         <th scope="col">Tipo Usuario</th>
                         <th scope="col">NIT empresa</th>
+                        <th scope="col">Foto</th>
+
+
 						<th scope="col">Acciones</th>
 
                     </tr>
