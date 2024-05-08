@@ -84,7 +84,7 @@
         <a class="nav-link" href="tip_armas.php">Tramite Permisos</a>
         <a class="nav-link" href="estado.php">Estados</a>
         <a class="nav-link" href="roles.php">Roles</a>
-        <a class="nav-link" href="../../controller/logout.php">Cerrar sesión</a>
+        <a class="nav-link" href="../../controller/cerrarcesion.php">Cerrar sesión</a>
       </div>
     </div>
   </div>
