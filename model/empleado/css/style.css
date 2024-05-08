@@ -1,0 +1,13 @@
+.card {
+    margin-top: 50px;
+  }
+  
+  .card-body {
+    padding: 30px;
+  }
+  
+  .barcode {
+    margin-top: 20px;
+    /* Estilos adicionales para el código de barras si es necesario */
+  }
+  

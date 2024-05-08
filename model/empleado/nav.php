@@ -9,18 +9,10 @@
       <div class="navbar-nav">
         <a class="nav-link active" aria-current="page" href="index.php">Inicio</a>
         <a class="nav-link" href="usuario.php">Usuarios</a>
-        <a class="nav-link" href="tipos_usuario.php">Roles</a>
-        <a class="nav-link" href="tipo_permiso.php">Permisos</a>
-        <a class="nav-link" href="rango.php">Prestamos</a>
-        <a class="nav-link" href="tipo_cargo.php">Cargo</a>
-        <a class="nav-link" href="tram_permiso.php">Tramite Permisos</a>
-        <a class="nav-link" href="estado.php">Estados</a>
-        <a class="nav-link" href="roles.php">Roles</a>
-        <a class="nav-link" href="../../controller/cerrarcesion.php">Cerrar sesiòn</a>
+        <a class="nav-link" href="avatar.php">Roles</a>
+        <a class="nav-link" href="mundos.php">Permisos</a>
+        <a class="nav-link" href="../../controller/logout.php">Cerrar sesiòn</a>
       </div>
     </div>
   </div>
 </nav>
-
-
-
