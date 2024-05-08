@@ -5,7 +5,7 @@ class Database
   
     private $hostname = "localhost";
   
-    private $database = "rh";
+    private $database = "rh2";
   
     private $username = "root";
   

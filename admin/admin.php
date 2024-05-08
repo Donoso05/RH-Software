@@ -19,56 +19,17 @@ $con = $db->conectar();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="css/sidebar.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <title>Interfaz Administrador</title>
+    <title>Inicio</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <script src="https://kit.fontawesome.com/1057b0ffdd.js" crossorigin="anonymous"></script>
 </head>
 <body>
+<?php include("nav.php") ?>
 
-<?php include("sidebar.php") ?>
 
-<div id="groupedBarChartContainer">
-    <canvas id="groupedBarChart"></canvas>
-</div>
 
-<style>
-    #groupedBarChartContainer {
-        width: 80%;
-        margin: 230px;
-        margin-top: 20px;
-    }
-</style>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var ctxGroupedBar = document.getElementById('groupedBarChart').getContext('2d');
-        var groupedBarChart = new Chart(ctxGroupedBar, {
-            type: 'bar',
-            data: {
-                labels: ['Noviembre', 'Diciembre', 'Enero', 'Febrero', 'Marzo'],
-                datasets: [{
-                    label: 'Préstamos Aprobados',
-                    data: [8, 15, 2, 4, 1],
-                    backgroundColor: 'rgba(75, 192, 192, 0.8)',
-                    borderWidth: 1
-                }, {
-                    label: 'Préstamos Rechazados',
-                    data: [2, 4, 1, 1, 1],
-                    backgroundColor: 'rgba(255, 99, 132, 0.8)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-    });
-</script>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
 </body>
 </html>
-

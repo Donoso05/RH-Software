@@ -33,95 +33,82 @@
       else{
         $insertSQL = $con->prepare ("INSERT INTO tipos_usuarios(tipo_usuario) VALUES ('$tipo_usuario')");
         $insertSQL->execute();
-        echo '<script>alert ("Registro Exitoso"); </script>';
+        echo '<script>alert ("Tipo de Usuario Registrado con Exito"); </script>';
         echo '<script>window.location="tipos_usuario.php"</script>';
       }
     }
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-	<title>Tipo Usuarios</title>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-<!--===============================================================================================-->	
-	<link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="vendor/animate/animate.css">
-<!--===============================================================================================-->	
-	<link rel="stylesheet" type="text/css" href="vendor/css-hamburgers/hamburgers.min.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="vendor/select2/select2.min.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="css/tipo_usu.css">
-	<link rel="stylesheet" type="text/css" href="css/sidebar.css">
-	
-<!--===============================================================================================-->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tipos de Usuario</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <script src="https://kit.fontawesome.com/1057b0ffdd.js" crossorigin="anonymous"></script>
 </head>
+
 <body>
-<?php include("sidebar.php") ?>
-	<div class="limiter">
-		<div class="container-login100">
-			<div class="wrap-login100">
-				<div class="login100-pic js-tilt" data-tilt>
-					<img src="images/img-01.png" alt="IMG">
-				</div>
+    <?php include("nav.php") ?>
+    <div class="container-fluid row">
+        <form class="col-4 p-3" method="post">
+            <h3 class="text-center text-secondary">Registrar Tipos Usuarios</h3>
+            <div class="mb-3">
+                <label for="usuario" class="form-label">Tipo Usuario:</label>
+                <input type="text" class="form-control" name="tipo_usuario" ">
 
-				<form class="login100-form validate-form" method="post">
-					<span class="login100-form-title">
-						Tipo Usuario
-					</span>
+            </div>
+            <input type="submit" class="btn btn-primary" name="validar" value="Registrar">
+                <input type="hidden" name="MM_insert" value="formreg">
+        </form>
 
-					<div class="wrap-input100">
-						<input class="input100" type="text" name="id_tipo_usuario" id="id_tipo_usuario" placeholder="id_tipo_usuario" readonly>
-						<span class="focus-input100"></span>
-						<span class="symbol-input100">
-							<i class="fa fa-envelope" aria-hidden="true"></i>
-						</span>
-					</div>
+        <div class="col-8 p-4">
+            <table class="table">
+                <thead class="bg-info">
+                    <tr>
+                        <th scope="col">ID </th>
+                        <th scope="col">Tipo Uusuario</th>
+                        <th scope="col">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <?php
+                    // Consulta de armas
+                    $consulta = "SELECT * FROM tipos_usuarios ";
+                    $resultado = $con->query($consulta);
 
-					<div class="wrap-input100 validate-input" data-validate = "Ingrese Tipo Usuario">
-						<input class="input100" type="text" name="tipo_usuario" id="tipo_usuario" placeholder="Tipo Usuario" require pattern="[A-Za-z]+" title="Por favor, solo ingrese letras">
-						<span class="focus-input100"></span>
-						<span class="symbol-input100">
-							<i class="fa fa-envelope" aria-hidden="true"></i>
-						</span>
-					</div>
-					
-					<div class="container-login100-form-btn">
-					<input class="login100-form-btn" type="submit" name="validar" value="Registrar">
-					<input type="hidden" name="MM_insert" value="formreg">
-					</div>
+                    while ($fila = $resultado->fetch()) {
+                    ?>
+                        <tr>
+                            <td><?php echo $fila["id_tipo_usuario"]; ?></td>
+                            <td><?php echo $fila["tipo_usuario"]; ?></td>
+                            <td>
+                                <div class="text-center">
+                                    <div class="d-flex justify-content-start">
+                                        <a href="edit_rol.php?id_rol=<?php echo $fila["id_tipo_usuario"]; ?>" class="btn btn-primary btn-sm me-2"><i class="fa-solid fa-pen-to-square"></i></a>
+                                        <a href="elim_rol.php?id_rol=<?php echo $fila["id_tipo_usuario"]; ?>" class="btn btn-danger btn-sm"><i class="fa-solid fa-user-xmark"></i></a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                <?php
+                        }
+                    ?>
 
-				</form>
-			</div>
-		</div>
-	</div>
-	
-	
+                </tbody>
+            </table>
+        </div>
 
-	
-<!--===============================================================================================-->	
-	<script src="vendor/jquery/jquery-3.2.1.min.js"></script>
-<!--===============================================================================================-->
-	<script src="vendor/bootstrap/js/popper.js"></script>
-	<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
-<!--===============================================================================================-->
-	<script src="vendor/select2/select2.min.js"></script>
-<!--===============================================================================================-->
-	<script src="vendor/tilt/tilt.jquery.min.js"></script>
-	<script >
-		$('.js-tilt').tilt({
-			scale: 1.1
-		})
-	</script>
-<!--===============================================================================================-->
-	<script src="js/main.js"></script>
-	<script src="js/sidebar.js"></script>
 
+
+
+    </div>
+
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
 </body>
+
 </html>
