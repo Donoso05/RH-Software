@@ -1,0 +1,7 @@
+El administrador creará a todos los usuarios del sistema junto con el resto de las tablas del CRUD
+el rol RH creará los empleados el cual tendra datos personales, área de trabajo, salario, etc.
+este rol tendra que liquidar mensualmente la nómina  (consulte que es una nómina y que datos se capturan)
+los pagos tendran dos estados, liquidado cuando el de recursos humanos lo calcule y el otro sera el pagado cuanto llegue la fecha de dicho pago el cual se actualizará automaticamente
+Al empleado debe llegarle al correo cuando se haya creado en el sistema; indicandole usuario (documento) y contraseña de acceso (alfanumerica 10), pero esto tendra que cambiarla en el primer ingreso 
+El empleado podra tramitar solicitudes de prestamos y tramites de permisos.
+Tambien podra ver las liquidaciones de las nóminas pagadas y liquidadas de los ultimos seis meses.
