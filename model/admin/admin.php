@@ -9,7 +9,7 @@ if (!isset($_SESSION["id_usuario"])) {
     exit();
 }
 
-require_once("../conexion/conexion.php");
+require_once("../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
 ?>

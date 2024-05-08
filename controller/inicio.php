@@ -41,7 +41,7 @@ try {
                     // Redireccionar según el tipo de usuario
                     switch ($ID_Roll) {
                         case 1:
-                            header("Location: ../admin/admin.php");
+                            header("Location: ../model/admin/admin.php");
                             exit();
                         case 2:
                             header("Location: index2.php");
