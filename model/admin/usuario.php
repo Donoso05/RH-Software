@@ -10,151 +10,102 @@
 	}
     require_once("../conexion/conexion.php");
     $db = new Database();
-    $con =$db->conectar();
-?>
-<?php
-    if ((isset($_POST["MM_insert"]))&&($_POST["MM_insert"]=="formreg"))
-    {
-      $id_usuario= $_POST['id_usuario'];
-      $nombre= $_POST['nombre'];
-	  $id_tipo_cargo= $_POST['id_tipo_cargo'];
-	  $id_estado= $_POST['id_estado'];
-      $correo= $_POST['correo'];
-	  $id_tipo_usuario= $_POST['id_tipo_usuario'];
-      $contrasena= $_POST['contrasena'];
-      $nit_empresa= $_POST['nit_empresa'];
+    $con = $db->conectar();
 
-      $sql = $con -> prepare ("SELECT * FROM usuario where id_usuario='$id_usuario'");
-      $sql -> execute();
-      $fila = $sql -> fetchAll(PDO::FETCH_ASSOC);
-      
-    
-    
-      if($id_usuario=="" || $nombre=="" || $id_tipo_cargo=="" || $id_estado=="" || $correo=="" || $contrasena=="" || $nit_empresa=="")
-      {
-        echo '<script>alert ("EXISTEN CAMPOS VACIOS"); </script>';
-        echo '<script>window.location="usuario.php"</script>';
-      }
-      else if($fila){
-        echo '<script>alert ("USUARIO YA REGISTRADO"); </script>';
-        echo '<script>window.location="usuario.php"</script>';
-      }
+    if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
+        $id_usuario = $_POST['id_usuario'];
+        $nombre = $_POST['nombre'];
+        $id_tipo_cargo = $_POST['id_tipo_cargo'];
+        $id_estado = $_POST['id_estado'];
+        $correo = $_POST['correo'];
+        $id_tipo_usuario = $_POST['id_tipo_usuario'];
+        $contrasena = $_POST['contrasena'];
+        $nit_empresa = $_POST['nit_empresa'];
 
-            
-      else
-      {
-        $password=password_hash($contrasena,PASSWORD_DEFAULT,array("pass"=>12));
-        $insertSQL = $con->prepare ("INSERT INTO usuario(id_usuario,nombre,id_tipo_cargo,id_estado,correo,id_tipo_usuario,contrasena,nit_empresa) 
-        VALUES ('$id_usuario','$nombre', '$id_tipo_cargo', '$id_estado', '$correo', '$id_tipo_usuario', '$pass_cifrado','$nit_empresa')");
-        $insertSQL->execute();
-        echo '<script>alert ("Usuario Creado con Exito"); </script>';
-        echo '<script>window.location="usuario.php"</script>';
-      }
+        $sql = $con->prepare("SELECT * FROM usuario WHERE id_usuario='$id_usuario'");
+        $sql->execute();
+        $fila = $sql->fetch(PDO::FETCH_ASSOC);
+
+        if ($id_usuario == "" || $nombre == "" || $id_tipo_cargo == "" || $id_estado == "" || $correo == "" || $contrasena == "" || $nit_empresa == "") {
+            echo '<script>alert ("EXISTEN CAMPOS VACIOS"); </script>';
+            echo '<script>window.location="usuario.php"</script>';
+        } elseif ($fila) {
+            echo '<script>alert ("USUARIO YA REGISTRADO"); </script>';
+            echo '<script>window.location="usuario.php"</script>';
+        } else {
+            $password = password_hash($contrasena, PASSWORD_DEFAULT, array("cost" => 12)); // Hash de la contraseña
+            $insertSQL = $con->prepare("INSERT INTO usuario(id_usuario, nombre, id_tipo_cargo, id_estado, correo, id_tipo_usuario, contrasena, nit_empresa) 
+            VALUES ('$id_usuario', '$nombre', '$id_tipo_cargo', '$id_estado', '$correo', '$id_tipo_usuario', '$password', '$nit_empresa')");
+            $insertSQL->execute();
+            echo '<script>alert ("Usuario Creado con Exito"); </script>';
+            echo '<script>window.location="usuario.php"</script>';
+        }
     }
-
 ?>
-<!DOCTYPE html>
+
+<!doctype html>
 <html lang="en">
+
 <head>
-	<title>Usuarios</title>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-<!--===============================================================================================-->	
-	<link rel="icon" type="image/png" href="images/icons/favicon.ico"/>
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="vendor/animate/animate.css">
-<!--===============================================================================================-->	
-	<link rel="stylesheet" type="text/css" href="vendor/css-hamburgers/hamburgers.min.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="vendor/select2/select2.min.css">
-<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="css/util.css">
-	<link rel="stylesheet" type="text/css" href="css/tipo_usu.css">
-	<link rel="stylesheet" type="text/css" href="css/sidebar.css">
-<!--===============================================================================================-->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Usuarios</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <script src="https://kit.fontawesome.com/1057b0ffdd.js" crossorigin="anonymous"></script>
 </head>
+
 <body>
-<?php include("sidebar.php") ?>
-	<div class="limiter">
-		<div class="container-login100">
-			<div class="wrap-login100">
-				<div class="login100-pic js-tilt" data-tilt>
-					<img src="images/img-01.png" alt="IMG">
-				</div>
+    <?php include("nav.php") ?>
+    <div class="container-fluid row">
+        <form class="col-4 p-3" method="post" enctype="multipart/form-data">
+            <h3 class="text-center text-secondary">Registrar Usuarios</h3>
+            <div class="mb-3">
+                <label for="usuario" class="form-label">Numero de Documento</label>
+                <input type="number" class="form-control" name="id_usuario" id="id_usuario">
 
-				<form class="login100-form validate-form" method="post">
-					<span class="login100-form-title">
-						Usuarios
-					</span>
+            </div>
+            <div class="mb-3">
+                <label for="correo" class="form-label">Nombre</label>
+                <input type="text" class="form-control" name="nombre" id="nombre">
 
-					<div class="wrap-input100 validate-input" data-validate = "Ingrese su documento	">
-						<input class="input100" type="number" name="id_usuario" id="id_usuario" placeholder="Documento">
-						<span class="focus-input100"></span>
-						<span class="symbol-input100">
-							<i class="fa fa-envelope" aria-hidden="true"></i>
-						</span>
-					</div>
-
-					<div class="wrap-input100 validate-input" data-validate="Ingrese su Nombre">
-    					<input class="input100" type="text" name="nombre" id="nombre" placeholder="Nombre" pattern="[A-Za-zÑñÁáÉéÍíÓóÚú\s]+" title="Solo se permiten letras y espacios">
-    					<span class="focus-input100"></span>
-    					<span class="symbol-input100">
-        					<i class="fa fa-envelope" aria-hidden="true"></i>
-    					</span>
-					</div>
-
-
-					<div class="wrap-input100 validate-input">
-					<span class="focus-input100"></span>
-						<span class="symbol-input100">
-							<i class="fa fa-envelope" aria-hidden="true"></i>
-						</span>
-					<select class="input100" name="id_tipo_cargo">
+            </div>
+			<div class="mb-3">
+                <label for="cargo" class="form-label">Tipo Cargo</label>
+                <select class="form-control" name="id_tipo_cargo">
+                <option value="">Selecciona el Tipo de Cargo</option>
+                            <?php
+                            $control = $con->prepare("SELECT * FROM tipo_cargo");
+                            $control->execute();
+                            while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
+                                echo "<option value='" . $fila['id_tipo_cargo'] . "'>" . $fila['cargo'] . "</option>";
+                            }
+                            ?>
+                        </select>
+            </div>
+			
+			<div class="mb-3">
+			<label for="estado" class="form-label">Estado</label>
+			<select class="form-control" name="id_estado">
+            <option value="">Selecciona el estado</option>
 							<?php
-							$control = $con->prepare("SELECT * FROM tipo_cargo");
-							$control->execute();
-							while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
-								echo "<option value='" . $fila['id_tipo_cargo'] . "'>" . $fila['cargo'] . "</option>";
-							}
-							?>
-						</select>
-					</div>
-
-					<div class="wrap-input100 validate-input">
-					<span class="focus-input100"></span>
-						<span class="symbol-input100">
-							<i class="fa fa-envelope" aria-hidden="true"></i>
-						</span>
-					<select class="input100" name="id_estado">
-							<?php
-							$control = $con->prepare("SELECT * FROM estado where id_estado <= 5");
+							$control = $con->prepare("SELECT * FROM estado where id_estado <= 2");
 							$control->execute();
 							while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
 								echo "<option value='" . $fila['id_estado'] . "'>" . $fila['estado'] . "</option>";
 							}
 							?>
 						</select>
-					</div>
+			</div>
 
+            <div class="mb-3">
+                <label for="correo" class="form-label">Correo</label>
+                <input type="email" class="form-control" name="correo" id="exampleInputEmail1">
+            </div>
 
-					<div class="wrap-input100 validate-input" data-validate="Ingrese su Correo">
-						<input class="input100" type="text" name="correo" id="correo" placeholder="Correo Electronico">
-						<span class="focus-input100"></span>
-						<span class="symbol-input100">
-							<i class="fa fa-envelope" aria-hidden="true"></i>
-						</span>
-					</div>
-
-					<div class="wrap-input100 validate-input">
-					<span class="focus-input100"></span>
-						<span class="symbol-input100">
-							<i class="fa fa-envelope" aria-hidden="true"></i>
-						</span>
-					<select class="input100" name="id_tipo_usuario">
+			<div class="mb-3">
+			<label for="tipo_suario" class="form-label">Tipo Usuario</label>
+			<select class="form-control" name="id_tipo_usuario">
+            <option value="">Selecciona el Tipo Usuario</option>
 							<?php
 							$control = $con->prepare("SELECT * FROM tipos_usuarios");
 							$control->execute();
@@ -163,66 +114,75 @@
 							}
 							?>
 						</select>
-					</div>
+            </div>
 
+            <div class="mb-3">
+                <label for="contrasena" class="form-label">Contraseña</label>
+                <input type="password" name="contrasena" class="form-control" id="exampleInputPassword1">
+            </div>
 
-					<div class="wrap-input100 validate-input" data-validate="Ingrese su Contraseña">
-    					<input class="input100" type="password" name="contrasena" id="contrasena" placeholder="Contraseña" pattern="^(?=.*\d)(?=.*[a-zA-Z]).{10,}$" title="La contraseña debe tener al menos 10 caracteres alfanuméricos">
-    					<span class="focus-input100"></span>
-    					<span class="symbol-input100">
-        					<i class="fa fa-lock" aria-hidden="true"></i>
-    					</span>
-					</div>
+			<div class="mb-3">
+                <label for="nit" class="form-label">NIT Empresa</label>
+                <input type="number" name="nit_empresa" class="form-control" id="nit_empresa">
+            </div>
+            
 
+            <input type="submit" class="btn btn-primary" name="validar" value="Registrar">
+            <input type="hidden" name="MM_insert" value="formreg">
+        </form>
 
-					<div class="wrap-input100 validate-input" data-validate = "Ingrese NIT Empresa">
-						<input class="input100" type="number" name="nit_empresa" id="nit_empresa" placeholder="NIT">
-						<span class="focus-input100"></span>
-						<span class="symbol-input100">
-							<i class="fa fa-envelope" aria-hidden="true"></i>
-						</span>
-					</div>
-					
-					<div class="container-login100-form-btn">
-					<input class="login100-form-btn" type="submit" name="validar" value="Registrar">
-					<input type="hidden" name="MM_insert" value="formreg">
-					</div>
-				</form>
-			</div>
-		</div>
-	</div>
-	<script>
-function validarContrasena() {
-    var contrasena = document.getElementById('contrasena').value;
+        <div class="col-8 p-4">
+            <table class="table">
+                <thead class="bg-info">
+                    <tr>
+                        <th scope="col">Documento</th>
+                        <th scope="col">Nombre</th>
+                        <th scope="col">Cargo</th>
+                        <th scope="col">Estado</th>
+                        <th scope="col">Correo</th>
+                        <th scope="col">Tipo Usuario</th>
+                        <th scope="col">NIT empresa</th>
+						<th scope="col">Acciones</th>
 
-    if (contrasena.length < 10) {
-        alert('La contraseña debe tener al menos 10 caracteres alfanuméricos');
-        return false;
-    }
+                    </tr>
+                </thead>
+                <tbody>
+                <?php
+    // Consulta de armas
+    $consulta = "SELECT usuario.id_usuario, usuario.nombre, tipo_cargo.cargo AS tipo_cargo, estado.estado AS estado, usuario.correo, tipos_usuarios.tipo_usuario, usuario.contrasena, usuario.nit_empresa 
+                 FROM usuario 
+                 INNER JOIN tipo_cargo ON usuario.id_tipo_cargo = tipo_cargo.id_tipo_cargo 
+                 INNER JOIN tipos_usuarios ON usuario.id_tipo_usuario = tipos_usuarios.id_tipo_usuario 
+                 INNER JOIN estado ON usuario.id_estado = estado.id_estado";
+    $resultado = $con->query($consulta);
 
-    return true;
-}
-</script>
-	<!--===============================================================================================-->	
-	<script src="vendor/jquery/jquery-3.2.1.min.js"></script>
-<!--===============================================================================================-->
-	<script src="vendor/bootstrap/js/popper.js"></script>
-	<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
-<!--===============================================================================================-->
-	<script src="vendor/select2/select2.min.js"></script>
-<!--===============================================================================================-->
-	<script src="vendor/tilt/tilt.jquery.min.js"></script>
-	<script >
-		$('.js-tilt').tilt({
-			scale: 1.1
-		})
-	</script>
-<!--===============================================================================================-->
-	<script src="js/main.js"></script>
-	<script src="js/sidebar.js"></script>
-	
-
-
-
+    while ($fila = $resultado->fetch()) {
+?>
+                        <tr>
+                            <td><?php echo $fila["id_usuario"]; ?></td>
+                            <td><?php echo $fila["nombre"]; ?></td>
+                            <td><?php echo $fila["tipo_cargo"]; ?></td>
+                            <td><?php echo $fila["estado"]; ?></td>
+                            <td><?php echo $fila["correo"]; ?></td>
+							<td><?php echo $fila["tipo_usuario"]; ?></td>
+							<td><?php echo $fila["nit_empresa"]; ?></td>
+							
+                            <td>
+                                <div class="text-center">
+                                    <div class="d-flex justify-content-start">
+                                        <a href="edit_usu.php?id=<?php echo $fila["id_usuario"]; ?>" class="btn btn-primary btn-sm me-2"><i class="fa-solid fa-pen-to-square"></i></a>
+                                        <a href="elim_usu.php?id=<?php echo $fila["id_usuario"]; ?>" class="btn btn-danger btn-sm"><i class="fa-solid fa-user-xmark"></i></a>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                <?php
+                        }
+                    ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
 </body>
 </html>
