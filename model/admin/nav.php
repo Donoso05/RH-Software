@@ -7,7 +7,7 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
-        <a class="nav-link active" aria-current="page" href="admin.php">Inicio</a>
+        <a class="nav-link active" aria-current="page" href="index.php">Inicio</a>
         <a class="nav-link" href="usuario.php">Usuarios</a>
         <a class="nav-link" href="tipos_usuario.php">Roles</a>
         <a class="nav-link" href="tipo_permiso.php">Permisos</a>
