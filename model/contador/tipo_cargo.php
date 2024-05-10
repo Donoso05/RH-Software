@@ -51,16 +51,16 @@ VALUES ('$cargo','$salario_base','$id_arl')");
             <h3 class="text-center text-secondary">Registrar Cargos</h3>
             <div class="mb-3">
                 <label for="usuario" class="form-label">Tipo Cargo:</label>
-                <input type="text" class="form-control" name="cargo" >
+                <input type="text" class="form-control" name="cargo" required>
 
             </div>
 			<div class="mb-3">
                 <label for="usuario" class="form-label">Salario Base:</label>
-                <input type="number" class="form-control" name="salario_base">
+                <input type="number" class="form-control" name="salario_base" required>
             </div>
 			<div class="mb-3">
                 <label for="usuario" class="form-label">ARL:</label>
-                <select class="form-control" name="id_arl">
+                <select class="form-control" name="id_arl" required>
 				<option value="">Selecciona el Tipo de ARL</option>
 							<?php
 							$control = $con->prepare("SELECT * FROM arl");
@@ -103,8 +103,7 @@ VALUES ('$cargo','$salario_base','$id_arl')");
                             <td>
                                 <div class="text-center">
                                     <div class="d-flex justify-content-start">
-                                        <a href="edit_rol.php?id_rol=<?php echo $fila["id_tipo_cargo"]; ?>" class="btn btn-primary btn-sm me-2"><i class="fa-solid fa-pen-to-square"></i></a>
-                                        <a href="elim_rol.php?id_rol=<?php echo $fila["id_tipo_cargo"]; ?>" class="btn btn-danger btn-sm"><i class="fa-solid fa-user-xmark"></i></a>
+                                        <a href="elim_rol.php?id_rol=<?php echo $fila['id_tipo_cargo']; ?>" onclick="window.open('./update/update_cargo.php?id=<?php echo $fila['id_tipo_cargo']; ?>','','width=500,height=500,toolbar=NO'); return false;"><i class="btn btn-primary">Editar</i></a>
                                     </div>
                                 </div>
                             </td>
