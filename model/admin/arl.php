@@ -15,20 +15,19 @@ $con = $db->conectar();
 
 <?php
 if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
-	$cargo = $_POST['cargo'];
-	$salario_base = $_POST['salario_base'];
-	$id_arl = $_POST['id_arl'];
+	$tipo = $_POST['tipo'];
+	$porcentaje = $_POST['porcentaje'];
 
 
-	if ($cargo == "" || $salario_base == "" || $id_arl == "") {
+	if ($tipo == "" || $porcentaje == "") {
 		echo '<script>alert ("EXISTEN DATOS VACIOS"); </script>';
-		echo '<script>window.location="tipo_cargo.php"</script>';
+		echo '<script>window.location="arl.php"</script>';
 	} else {
-		$insertSQL = $con->prepare("INSERT INTO tipo_cargo(cargo,salario_base,id_arl) 
-VALUES ('$cargo','$salario_base','$id_arl')");
+		$insertSQL = $con->prepare("INSERT INTO arl(tipo,porcentaje) 
+VALUES ('$tipo','$porcentaje')");
 		$insertSQL->execute();
 		echo '<script>alert ("Registro exitoso");</script>';
-		echo '<script>window.location="tipo_cargo.php"</script>';
+		echo '<script>window.location="arl.php"</script>';
 	}
 }
 ?>
@@ -39,7 +38,7 @@ VALUES ('$cargo','$salario_base','$id_arl')");
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tipos de Usuario</title>
+    <title>ARL</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/1057b0ffdd.js" crossorigin="anonymous"></script>
 </head>
@@ -48,29 +47,17 @@ VALUES ('$cargo','$salario_base','$id_arl')");
     <?php include("nav.php") ?>
     <div class="container-fluid row">
         <form class="col-4 p-3" method="post">
-            <h3 class="text-center text-secondary">Registrar Tipos Usuarios</h3>
+            <h3 class="text-center text-secondary">ARL</h3>
             <div class="mb-3">
-                <label for="usuario" class="form-label">Tipo Cargo:</label>
-                <input type="text" class="form-control" name="cargo" >
+                <label for="usuario" class="form-label">Tipo ARL:</label>
+                <input type="text" class="form-control" name="tipo" >
 
             </div>
 			<div class="mb-3">
-                <label for="usuario" class="form-label">Salario Base:</label>
-                <input type="number" class="form-control" name="salario_base">
+                <label for="usuario" class="form-label">Prcentaje:</label>
+                <input type="number" class="form-control" name="porcentaje">
             </div>
-			<div class="mb-3">
-                <label for="usuario" class="form-label">ARL:</label>
-                <select class="form-control" name="id_arl">
-				<option value="">Selecciona el Tipo de ARL</option>
-							<?php
-							$control = $con->prepare("SELECT * FROM arl");
-							$control->execute();
-							while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
-								echo "<option value='" . $fila['id_arl'] . "'>" . $fila['tipo'] . "</option>";
-							}
-							?>
-						</select>
-            </div>
+
             <input type="submit" class="btn btn-primary" name="validar" value="Registrar">
                 <input type="hidden" name="MM_insert" value="formreg">
         </form>
@@ -80,31 +67,29 @@ VALUES ('$cargo','$salario_base','$id_arl')");
                 <thead class="bg-info">
                     <tr>
                         <th scope="col">ID </th>
-                        <th scope="col">Tipo Cargo</th>
-						<th scope="col">Salario Base</th>
-						<th scope="col">ARL</th>
+                        <th scope="col">Tipo ARL</th>
+						<th scope="col">Porcentaje</th>
                         <th scope="col">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                 <?php
                     // Consulta de armas
-                    $consulta = "SELECT * FROM tipo_cargo, arl 
-                    where tipo_cargo.id_arl=arl.id_arl ";
+                    $consulta = "SELECT * FROM arl";
                     $resultado = $con->query($consulta);
 
                     while ($fila = $resultado->fetch()) {
                     ?>
                         <tr>
-                            <td><?php echo $fila["id_tipo_cargo"]; ?></td>
-                            <td><?php echo $fila["cargo"]; ?></td>
-							<td><?php echo $fila["salario_base"]; ?></td>
+                            <td><?php echo $fila["id_arl"]; ?></td>
+                            <td><?php echo $fila["tipo"]; ?></td>
+							<td><?php echo $fila["porcentaje"]; ?></td>
 							<td><?php echo $fila["tipo"]; ?></td>
                             <td>
                                 <div class="text-center">
                                     <div class="d-flex justify-content-start">
-                                        <a href="edit_rol.php?id_rol=<?php echo $fila["id_tipo_cargo"]; ?>" class="btn btn-primary btn-sm me-2"><i class="fa-solid fa-pen-to-square"></i></a>
-                                        <a href="elim_rol.php?id_rol=<?php echo $fila["id_tipo_cargo"]; ?>" class="btn btn-danger btn-sm"><i class="fa-solid fa-user-xmark"></i></a>
+                                        <a href="edit_rol.php?id_rol=<?php echo $fila["id_arl"]; ?>" class="btn btn-primary btn-sm me-2"><i class="fa-solid fa-pen-to-square"></i></a>
+                                        <a href="elim_rol.php?id_rol=<?php echo $fila["id_arl"]; ?>" class="btn btn-danger btn-sm"><i class="fa-solid fa-user-xmark"></i></a>
                                     </div>
                                 </div>
                             </td>
