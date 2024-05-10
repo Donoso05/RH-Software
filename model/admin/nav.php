@@ -83,7 +83,7 @@
         <a class="nav-link" href="tipo_cargo.php">Cargo</a>
         <a class="nav-link" href="solic_prestamo.php">Prestamos</a>
         <a class="nav-link" href="estado.php">Estados</a>
-        <a class="nav-link" href="roles.php">Roles</a>
+        <a class="nav-link" href="arl.php">Arl</a>
         <a class="nav-link" href="../../controller/cerrarcesion.php">Cerrar sesión</a>
       </div>
     </div>
