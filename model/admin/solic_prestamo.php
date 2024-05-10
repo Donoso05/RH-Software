@@ -8,7 +8,7 @@
 		echo '<script>window.location.href = "../login.html";</script>';
 		exit();
 	}
-    require_once("../conexion/conexion.php");
+    require_once("../../conexion/conexion.php");
     $db = new Database();
     $con =$db->conectar();
 ?>
