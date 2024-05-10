@@ -69,8 +69,8 @@ if (isset($_POST["MM_insert"]) && ($_POST["MM_insert"] == "formreg")) {
 
 			<div class="mb-3">
                 <label for="usuario" class="form-label">Empleado:</label>
-                <select class="form-control" name="id_arl">
-				<option value="">Seleccione el empleado</option>
+                <select class="form-control" name="id_usuario">
+				<option value="">Seleccione el Empleado</option>
 							<?php
 							$control = $con->prepare("SELECT id_usuario, nombre FROM usuario");
 							$control->execute();
@@ -80,27 +80,51 @@ if (isset($_POST["MM_insert"]) && ($_POST["MM_insert"] == "formreg")) {
 							?>
 						</select>
             </div>
-                <label for="usuario" class="form-label">Tipo Cargo:</label>
-                <input type="text" class="form-control" name="cargo" >
-
-            </div>
-			<div class="mb-3">
-                <label for="usuario" class="form-label">Salario Base:</label>
-                <input type="number" class="form-control" name="salario_base">
-            </div>
-			<div class="mb-3">
-                <label for="usuario" class="form-label">ARL:</label>
-                <select class="form-control" name="id_arl">
-				<option value="">Selecciona el Tipo de ARL</option>
+                <label for="usuario" class="form-label">Tipo Permiso:</label>
+                <select class="form-control" name="id_tipo_permiso">
+                <option value="">Seleccione el Permiso</option>
 							<?php
-							$control = $con->prepare("SELECT * FROM arl");
+							$control = $con->prepare("SELECT * FROM tipo_permiso");
 							$control->execute();
 							while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
-								echo "<option value='" . $fila['id_arl'] . "'>" . $fila['tipo'] . "</option>";
+								echo "<option value='" . $fila['id_tipo_permiso'] . "'>" . $fila['tipo_permiso'] . "</option>";
+							}
+							?>
+						</select>
+
+            </div>
+
+			<div class="mb-3">
+                <label for="usuario" class="form-label">Fecha Inicio:</label>
+                <input type="date" class="form-control" name="fecha_inicio">
+            </div>
+
+            <div class="mb-3">
+                <label for="usuario" class="form-label">Fecha Fin:</label>
+                <input type="date" class="form-control" name="fecha_fin">
+            </div>
+
+            <div class="mb-3">
+                <label for="usuario" class="form-label">Estado:</label>
+                <select class="form-control" name="id_arl">
+				<option value="">Selecciona el Tipo de Estado</option>
+							<?php
+							$control = $con->prepare("SELECT * FROM estado where id_estado");
+							$control->execute();
+							while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
+								echo "<option value='" . $fila['id_estado'] . "'>" . $fila['estado'] . "</option>";
 							}
 							?>
 						</select>
             </div>
+
+            <div class="mb-3">
+                <label for="usuario" class="form-label">Incapacidad:</label>
+                <input type="file" class="form-control" name="incapacidad">
+            </div>
+
+
+
             <input type="submit" class="btn btn-primary" name="validar" value="Registrar">
                 <input type="hidden" name="MM_insert" value="formreg">
         </form>
