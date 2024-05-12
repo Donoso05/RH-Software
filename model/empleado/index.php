@@ -20,7 +20,7 @@ $con = $db->conectar();
 $id_usuario = $_SESSION["id_usuario"];
 
 // Consultar información del usuario
-$sql = "SELECT u.nombre, u.id_usuario, u.correo, u.nit_empresa, u.id_estado, e.estado, u.id_tipo_cargo, c.cargo
+$sql = "SELECT u.nombre, u.id_usuario, u.correo, u.nit_empresa, u.id_estado, e.estado, u.id_tipo_cargo, c.cargo, u.foto
         FROM usuario u
         INNER JOIN estado e ON u.id_estado = e.id_estado
         INNER JOIN tipo_cargo c ON u.id_tipo_cargo = c.id_tipo_cargo
@@ -38,6 +38,7 @@ if ($result) {
     $nit_empresa = $result["nit_empresa"];
     $estado = $result["estado"];
     $cargo = $result["cargo"];
+    $foto = $result["foto"];
 } else {
     // Si no se encuentra el usuario, redirigir o manejar el error de alguna forma
     exit("Usuario no encontrado");
@@ -49,7 +50,6 @@ $con = null;
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -58,7 +58,6 @@ $con = null;
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/1057b0ffdd.js" crossorigin="anonymous"></script>
 </head>
-
 <body>
     <?php include("nav.php") ?>
 
@@ -68,7 +67,14 @@ $con = null;
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-4">
-                            <img src="employee_photo.jpg" class="img-fluid rounded" alt="Employee Photo">
+                            <img src="<?php echo !empty($foto) ? $foto : 'img/user.webp'; ?>" class="img-fluid rounded" alt="Foto de perfil">
+                            <form action="upload.php" method="post" enctype="multipart/form-data" style="margin-top: 20px;">
+                                <input type="file" name="fileToUpload" id="fileToUpload" accept="image/*">
+                                <br>
+                                <br>
+                                
+                                <input type="submit" class="btn btn-primary" value="Actualizar">
+                            </form>
                         </div>
                         <div class="col-md-8">
                             <h2><?php echo $nombre; ?></h2>
@@ -77,9 +83,6 @@ $con = null;
                             <p><strong>NIT de la Empresa:</strong> <?php echo $nit_empresa; ?></p>
                             <p><strong>Estado:</strong> <?php echo $estado; ?></p>
                             <p><strong>Cargo:</strong> <?php echo $cargo; ?></p>
-                            <div class="barcode">
-                                <!-- Aquí puedes incluir el código de barras -->
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -87,5 +90,5 @@ $con = null;
         </div>
     </div>
 </body>
-
 </html>
+
