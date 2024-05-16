@@ -11,17 +11,15 @@ try {
     // Establecer el conjunto de caracteres a UTF-8
     $conexion->exec("SET CHARACTER SET utf8");
 
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        // Verificar si se enviaron ambos campos: correo y contraseña
+    if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
+        // Verificar si se enviaron ambos campos: id_usuario y contrasena
         if (isset($_POST["id_usuario"]) && isset($_POST["contrasena"])) {
             try {
-                // Escapar los valores para evitar inyección SQL
+                // Obtener los valores ingresados por el usuario
                 $ID = $_POST["id_usuario"];
                 $password = $_POST["contrasena"];
-                $pass = password_hash($password, PASSWORD_DEFAULT);
 
-
-                // Consulta SQL para obtener el tipo de usuario
+                // Consulta SQL para obtener el hash de la contraseña y el tipo de usuario
                 $sql = "SELECT id_usuario, contrasena, id_tipo_usuario FROM usuario WHERE id_usuario = :id_usuario";
                 $stmt = $conexion->prepare($sql);
                 $stmt->bindParam(":id_usuario", $ID);
@@ -29,30 +27,38 @@ try {
                 $stmt->execute();
 
                 if ($stmt->rowCount() > 0) {
-                    // Obtener el tipo de usuario
+                    // Obtener el hash de la contraseña y el tipo de usuario
                     $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                    $hashed_password = $row["contrasena"];
                     $ID_Roll = $row["id_tipo_usuario"];
 
-                    // Iniciar sesión y guardar el ID de usuario y el tipo de usuario en variables de sesión
-                    session_start();
-                    $_SESSION["id_usuario"] = $ID;
-                    $_SESSION["id_tipo_usuario"] = $ID_Roll;
+                    // Verificar la contraseña ingresada con el hash almacenado
+                    if (password_verify($password, $hashed_password)) {
+                        // Iniciar sesión y guardar el ID de usuario y el tipo de usuario en variables de sesión
+                        session_start();
+                        $_SESSION["id_usuario"] = $ID;
+                        $_SESSION["id_tipo_usuario"] = $ID_Roll;
 
-                    // Redireccionar según el tipo de usuario
-                    switch ($ID_Roll) {
-                        case 1:
-                            header("Location: ../model/admin/index.php");
-                            exit();
-                        case 2:
-                            header("Location: ../model/contador/index.php");
-                            exit();
-                        case 3:
-                            header("Location: ../model/empleado/index.php");
-                            exit();
-                        default:
-                            // Manejar el caso en que el tipo de usuario no está definido
-                            echo '<script>alert("ID o contraseña incorrectos.");</script>';
-                            exit();
+                        // Redireccionar según el tipo de usuario
+                        switch ($ID_Roll) {
+                            case 1:
+                                header("Location: ../model/admin/index.php");
+                                exit();
+                            case 2:
+                                header("Location: ../model/contador/index.php");
+                                exit();
+                            case 3:
+                                header("Location: ../model/empleado/index.php");
+                                exit();
+                            default:
+                                // Manejar el caso en que el tipo de usuario no está definido
+                                echo '<script>alert("Tipo de usuario no definido.");</script>';
+                                exit();
+                        }
+                    } else {
+                        // Manejar el caso en que la contraseña es incorrecta
+                        echo '<script>alert("ID o contraseña incorrectos.");</script>';
+                        exit();
                     }
                 } else {
                     // Manejar el caso en que no se encontró ningún usuario
@@ -72,3 +78,4 @@ try {
 } catch (PDOException $e) {
     echo "Error de conexión a la base de datos: " . $e->getMessage();
 }
+?>
