@@ -72,76 +72,73 @@ if (isset($_POST["update"])) {
 
 <body>
     <main>
-        <div class="container">
-            <div class="card">
-                <div class="card-header">
-                    <h4>User Information</h4>
-                </div>
-                <?php //foreach ($resultados as $fila) { 
-                ?>
-                <div class="card-body">
-                    <form action="" class="form" method="post" role="form" autocomplete="off">
-                        <div class="form-group row">
-                            <label class="col-lg-3 col-form-label form-control-label">Id_Tipo_Cargo</label>
-                            <div class="col-lg-9">
-                                <input name="id_tipo_cargo" value="<?php echo $usua['id_tipo_cargo'] ?>" class="form-control" type="text" readonly>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-lg-3 col-form-label form-control-label">Cargo</label>
-                            <div class="col-lg-9">
-                                <input name="cargo" pattern="[A-Za-zñÑáéíóúÁÉÍÓÚ\s]+" title="No es posible ingresar números en el nombre" value="<?php echo $usua['cargo'] ?>" class="form-control" type="text">
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-lg-3 col-form-label form-control-label">Salario Base</label>
-                            <div class="col-lg-9">
-                                <input name="salario_base" type="text" pattern="[0-9]*" title="Ingrese solo números" value="<?php echo $usua['salario_base'] ?>" class="form-control">
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-lg-3 col-form-label form-control-label">ARL</label>
-                            <div class="col-lg-9">
-                                <select class="form-control" name="id_arl">
-                                    <option value="">Seleccione uno</option>
-                                    <?php
-                                    $control = $con->prepare("select * from arl where id_arl ");
-                                    $control->execute();
-                                    while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
-                                        $selected = ($fila['id_arl'] == $usua['id_arl']) ? 'selected' : '';
-                                        echo "<option value=" . $fila['id_arl'] . " $selected>" . $fila['tipo'] . "</option>";
-                                    }
-                                    ?>
-                                </select>
-                            </div>
-                        </div>
-                        <script>
-                function confirmarEliminacion() {
-                    if (confirm("¿Estás seguro de que deseas eliminar este agente?")) {
-                        document.forms["frm_consulta"].submit();
-                        // Limpiar el formulario
-                        document.getElementById("frm_consulta").reset();
-                    } else {
-                        // Cancelar la eliminación
-                        return false;
-                    }
-                }
-            </script>
-                        <div class="form-group row">
-                            <div class="col-lg-12 text-center">
-                                <input name="update" type="submit" class="btn btn-primary" value="Actualizar" onclick="validarContrasena()">
-                                <button class="btn btn-danger" name="delete" onclick="return confirmarEliminacion()">Eliminar</button>
-                            </div>
-                        </div>
-
-                        <?php //} 
-                        ?>
-                    </form>
+        <div class="card">
+            <div class="card-header">
+                <h4>Actualizar Tipo de Cargo</h4>
+            </div>
+            <div class="card-body">
+                <form action="" class="form" method="post" role="form" autocomplete="off">
                     <div class="form-group row">
-                        <div class="col-lg-12 text-center">
+                        <label class="col-lg-3 col-form-label form-control-label">Id_Tipo_Cargo</label>
+                        <div class="col-lg-9">
+                            <input name="id_tipo_cargo" value="<?php echo $usua['id_tipo_cargo'] ?>" class="form-control" type="text" readonly>
                         </div>
                     </div>
+                    <div class="form-group row">
+                        <label class="col-lg-3 col-form-label form-control-label">Cargo</label>
+                        <div class="col-lg-9">
+                            <input name="cargo" pattern="[A-Za-zñÑáéíóúÁÉÍÓÚ\s]+" title="No es posible ingresar números en el nombre" value="<?php echo $usua['cargo'] ?>" class="form-control" type="text">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-lg-3 col-form-label form-control-label">Salario Base</label>
+                        <div class="col-lg-9">
+                            <input name="salario_base" type="text" pattern="[0-9]*" title="Ingrese solo números" value="<?php echo $usua['salario_base'] ?>" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-lg-3 col-form-label form-control-label">ARL</label>
+                        <div class="col-lg-9">
+                            <select class="form-control" name="id_arl">
+                                <option value="">Seleccione uno</option>
+                                <?php
+                                $control = $con->prepare("select * from arl where id_arl ");
+                                $control->execute();
+                                while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
+                                    $selected = ($fila['id_arl'] == $usua['id_arl']) ? 'selected' : '';
+                                    echo "<option value=" . $fila['id_arl'] . " $selected>" . $fila['tipo'] . "</option>";
+                                }
+                                ?>
+                            </select>
+                        </div>
+                    </div>
+                    <script>
+                        function confirmarEliminacion() {
+                            if (confirm("¿Estás seguro de que deseas eliminar este agente?")) {
+                                document.forms["frm_consulta"].submit();
+                                // Limpiar el formulario
+                                document.getElementById("frm_consulta").reset();
+                            } else {
+                                // Cancelar la eliminación
+                                return false;
+                            }
+                        }
+                    </script>
+                    <div class="form-group row">
+                        <div class="col-lg-12 text-center">
+                            <input name="update" type="submit" class="btn btn-primary" value="Actualizar" onclick="validarContrasena()">
+                            <button class="btn btn-danger" name="delete" onclick="return confirmarEliminacion()">Eliminar</button>
+                        </div>
+                    </div>
+
+                    <?php //} 
+                    ?>
+                </form>
+                <div class="form-group row">
+                    <div class="col-lg-12 text-center">
+                    </div>
                 </div>
+            </div>
     </main>
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->

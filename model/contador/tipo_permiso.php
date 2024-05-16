@@ -87,8 +87,7 @@
                             <td>
                                 <div class="text-center">
                                     <div class="d-flex justify-content-start">
-                                        <a href="edit_rol.php?id_rol=<?php echo $fila["id_tipo_permiso"]; ?>" class="btn btn-primary btn-sm me-2"><i class="fa-solid fa-pen-to-square"></i></a>
-                                        <a href="elim_rol.php?id_rol=<?php echo $fila["id_tipo_permiso"]; ?>" class="btn btn-danger btn-sm"><i class="fa-solid fa-user-xmark"></i></a>
+                                    <a href="update_tipo_permiso.php?id=<?php echo $fila['id_tipo_permiso']; ?>" onclick="window.open('./update/update_tipo_permiso.php?id=<?php echo $fila['id_tipo_permiso']; ?>','','width=500,height=500,toolbar=NO'); return false;"><i class="btn btn-primary">Editar</i></a>
                                     </div>
                                 </div>
                             </td>
