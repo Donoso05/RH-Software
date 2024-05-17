@@ -57,7 +57,7 @@ if ($uploadOk == 1) {
         $stmt->bindParam(1, $target_file, PDO::PARAM_STR);
         $stmt->bindParam(2, $_SESSION['id_usuario'], PDO::PARAM_INT);
         if ($stmt->execute()) {
-            echo '<script>alert("El archivo '. htmlspecialchars(basename($_FILES["fileToUpload"]["name"])) . ' ha sido subido y actualizado."); window.location.href = "perfil.php";</script>';
+            echo '<script>alert("Tu foto ha sido actualizada."); window.location.href = "index.php";</script>';
         } else {
             echo '<script>alert("Hubo un error al guardar la información en la base de datos."); window.history.go(-1);</script>';
         }
