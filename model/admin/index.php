@@ -5,7 +5,7 @@ session_start();
 if (!isset($_SESSION["id_usuario"])) {
     // Mostrar un alert y redirigir utilizando JavaScript
     echo '<script>alert("Debes iniciar sesión antes de acceder a la interfaz de administrador.");</script>';
-    echo '<script>window.location.href = "../login.html";</script>';
+    echo '<script>window.location.href = "../../login.html";</script>';
     exit();
 }
 
