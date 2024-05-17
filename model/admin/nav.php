@@ -84,6 +84,9 @@
         <a class="nav-link" href="solic_prestamo.php">Prestamos</a>
         <a class="nav-link" href="estado.php">Estados</a>
         <a class="nav-link" href="arl.php">Arl</a>
+        <a class="nav-link" href="salud.php">Salud</a>
+        <a class="nav-link" href="pension.php">Pension</a>
+        <a class="nav-link" href="auxtransporte.php">Auxilio T</a>
         <a class="nav-link" href="../../controller/cerrarcesion.php">Cerrar sesión</a>
       </div>
     </div>

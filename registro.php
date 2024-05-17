@@ -87,25 +87,27 @@
 						<span class="focus-input100"></span>
 					</div>
 
-                    <div class="mb-3">
-                <label for="usuario" class="form-label">ARL:</label>
-                <select class="form-control" name="id_arl">
-				<option value="">Selecciona el Tipo de ARL</option>
+                    <div class="wrap-input100 validate-input m-b-26">
+					<span class="label-input100">Tipo Cargo</span>
+                <select class="input100" name="id_cargo">
+				<option value="">Selecciona el Tipo de Cargo</option>
 							<?php
-							$control = $con->prepare("SELECT * FROM tipo_cargo = 2");
+							$control = $con->prepare("SELECT * FROM tipo_cargo");
 							$control->execute();
 							while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
-								echo "<option value='" . $fila['id_tipo_cargo'] . "'>" . $fila['cargo'] . "</option>";
+								echo "<option value='" . $fila['id_cargo'] . "'>" . $fila['cargo'] . "</option>";
 							}
 							?>
 						</select>
             </div>
 
-                    <div class="wrap-input100 validate-input m-b-26" data-validate="Ingrese su Cedula">
-						<span class="label-input100">Cedula</span>
-						<input class="input100" type="text" name="id_usuario" placeholder="Ingrese su Cedula">
+                    <div class="wrap-input100 validate-input m-b-26" data-validate="Ingrese su Correo">
+						<span class="label-input100">Correo</span>
+						<input class="input100" type="email" name="correo" placeholder="Ingrese su Correo">
 						<span class="focus-input100"></span>
 					</div>
+
+					
 
 					<div class="wrap-input100 validate-input m-b-18" data-validate = "Ingrese su Contraseña">
 						<span class="label-input100">Contraseña</span>

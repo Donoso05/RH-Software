@@ -178,7 +178,7 @@
                             <td>
                                 <div class="text-center">
                                     <div class="d-flex justify-content-start">
-                                        <a href="edit_usu.php?id=<?php echo $fila["id_usuario"]; ?>" class="btn btn-primary btn-sm me-2"><i class="fa-solid fa-pen-to-square"></i></a>
+                                        <a href="update/update_usuario.php?id=<?php echo $fila["id_usuario"]; ?>" class="btn btn-primary btn-sm me-2"><i class="fa-solid fa-pen-to-square"></i></a>
                                         <a href="elim_usu.php?id=<?php echo $fila["id_usuario"]; ?>" class="btn btn-danger btn-sm"><i class="fa-solid fa-user-xmark"></i></a>
                                     </div>
                                 </div>
