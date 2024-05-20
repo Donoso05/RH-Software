@@ -12,26 +12,22 @@ require_once("../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
 ?>
+
 <?php
 if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
-    $tipo_permiso = $_POST['tipo_permiso'];
+	$estado = $_POST['estado'];
 
-    $sql = $con->prepare("SELECT * FROM tipo_permiso where tipo_permiso ='$tipo_permiso'");
-    $sql->execute();
-    $fila = $sql->fetchAll(PDO::FETCH_ASSOC);
 
-    if ($tipo_permiso == "") {
-        echo '<script>alert ("EXISTEN DATOS VACIOS"); </script>';
-        echo '<script>window.location="tipo_permiso.php"</script>';
-    } else if ($fila) {
-        echo '<script>alert ("TIPO DE PERMISO YA CREADO"); </script>';
-        echo '<script>window.location="tipo_permiso.php"</script>';
-    } else {
-        $insertSQL = $con->prepare("INSERT INTO tipo_permiso(tipo_permiso) VALUES ('$tipo_permiso')");
-        $insertSQL->execute();
-        echo '<script>alert ("Permiso Creado con Exitoso"); </script>';
-        echo '<script>window.location="tipo_permiso.php"</script>';
-    }
+	if ($estado == "") {
+		echo '<script>alert ("EXISTEN DATOS VACIOS"); </script>';
+		echo '<script>window.location="estado.php"</script>';
+	} else {
+		$insertSQL = $con->prepare("INSERT INTO estado(estado) 
+VALUES ('$estado')");
+		$insertSQL->execute();
+		echo '<script>alert ("Registro exitoso");</script>';
+		echo '<script>window.location="estado.php"</script>';
+	}
 }
 ?>
 
@@ -41,7 +37,7 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Permisos</title>
+    <title>Estados</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/1057b0ffdd.js" crossorigin="anonymous"></script>
 </head>
@@ -50,13 +46,13 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
     <?php include("nav.php") ?>
     <div class="container-fluid row">
         <form class="col-4 p-3" method="post">
-            <h3 class="text-center text-secondary">Registrar Permisos</h3>
+            <h3 class="text-center text-secondary">Agregar Estados</h3>
             <div class="mb-3">
-                <label for="usuario" class="form-label">Tipo Permiso:</label>
-                <input type="text" class="form-control" name="tipo_permiso" ">
+                <label for="usuario" class="form-label">Agregar Estado Nuevo:</label>
+                <input type="text" class="form-control" name="estado" >
 
             </div>
-            <input type=" submit" class="btn btn-primary" name="validar" value="Registrar">
+            <input type="submit" class="btn btn-primary" name="validar" value="Registrar">
                 <input type="hidden" name="MM_insert" value="formreg">
         </form>
 
@@ -65,31 +61,32 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
                 <thead class="bg-info">
                     <tr>
                         <th scope="col">ID </th>
-                        <th scope="col">Tipo Permiso</th>
+                        <th scope="col">Estado</th>
                         <th scope="col">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php
+                <?php
                     // Consulta de armas
-                    $consulta = "SELECT * FROM tipo_permiso ";
+                    $consulta = "SELECT * FROM estado ";
                     $resultado = $con->query($consulta);
 
                     while ($fila = $resultado->fetch()) {
                     ?>
                         <tr>
-                            <td><?php echo $fila["id_tipo_permiso"]; ?></td>
-                            <td><?php echo $fila["tipo_permiso"]; ?></td>
+                            <td><?php echo $fila["id_estado"]; ?></td>
+                            <td><?php echo $fila["estado"]; ?></td>
                             <td>
-                                <div class="text-center">
+                            <div class="text-center">
                                     <div class="d-flex justify-content-start">
-                                        <a href="update_tipo_permiso.php?id=<?php echo $fila['id_tipo_permiso']; ?>" onclick="window.open('./update/update_tipo_permiso.php?id=<?php echo $fila['id_tipo_permiso']; ?>','','width=500,height=500,toolbar=NO'); return false;"><i class="btn btn-primary">Editar</i></a>
+                                    <a href="update_estado.php?id=<?php echo $fila['id_estado']; ?>" onclick="window.open('./update/update_estado.php?id=<?php echo $fila['id_estado']; ?>','','width=500,height=500,toolbar=NO'); return false;"><i class="btn btn-primary">Editar</i></a>
                                     </div>
                                 </div>
                             </td>
+                            </td>
                         </tr>
-                    <?php
-                    }
+                <?php
+                        }
                     ?>
 
                 </tbody>

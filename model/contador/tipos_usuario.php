@@ -1,42 +1,38 @@
 <?php
-    session_start();
+session_start();
 
-	// Verificar si la sesión no está iniciada
-	if (!isset($_SESSION["id_usuario"])) {
-		// Mostrar un alert y redirigir utilizando JavaScript
-		echo '<script>alert("Debes iniciar sesión antes de acceder a la interfaz de administrador.");</script>';
-		echo '<script>window.location.href = "../login.html";</script>';
-		exit();
-	}
-	require_once("../../conexion/conexion.php");
-    $db = new Database();
-    $con =$db->conectar();
+// Verificar si la sesión no está iniciada
+if (!isset($_SESSION["id_usuario"])) {
+    // Mostrar un alert y redirigir utilizando JavaScript
+    echo '<script>alert("Debes iniciar sesión antes de acceder a la interfaz de administrador.");</script>';
+    echo '<script>window.location.href = "../login.html";</script>';
+    exit();
+}
+require_once("../../conexion/conexion.php");
+$db = new Database();
+$con = $db->conectar();
 ?>
 <?php
-    if ((isset($_POST["MM_insert"]))&&($_POST["MM_insert"]=="formreg"))
-    {
-      $tipo_usuario = $_POST['tipo_usuario'];
+if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
+    $tipo_usuario = $_POST['tipo_usuario'];
 
-      $sql = $con -> prepare ("SELECT * FROM tipos_usuarios where tipo_usuario ='$tipo_usuario'");
-      $sql -> execute();
-      $fila = $sql -> fetchAll(PDO::FETCH_ASSOC);
+    $sql = $con->prepare("SELECT * FROM tipos_usuarios where tipo_usuario ='$tipo_usuario'");
+    $sql->execute();
+    $fila = $sql->fetchAll(PDO::FETCH_ASSOC);
 
-      if ($tipo_usuario=="")
-      {
+    if ($tipo_usuario == "") {
         echo '<script>alert ("EXISTEN DATOS VACIOS"); </script>';
         echo '<script>window.location="tipos_usuario.php"</script>';
-      }
-      else if($fila){
+    } else if ($fila) {
         echo '<script>alert ("TIPO DE USUARIO YA REGISTRADO"); </script>';
         echo '<script>window.location="tipos_usuario.php"</script>';
-      } 
-      else{
-        $insertSQL = $con->prepare ("INSERT INTO tipos_usuarios(tipo_usuario) VALUES ('$tipo_usuario')");
+    } else {
+        $insertSQL = $con->prepare("INSERT INTO tipos_usuarios(tipo_usuario) VALUES ('$tipo_usuario')");
         $insertSQL->execute();
         echo '<script>alert ("Tipo de Usuario Registrado con Exito"); </script>';
         echo '<script>window.location="tipos_usuario.php"</script>';
-      }
     }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -59,7 +55,7 @@
                 <input type="text" class="form-control" name="tipo_usuario" ">
 
             </div>
-            <input type="submit" class="btn btn-primary" name="validar" value="Registrar">
+            <input type=" submit" class="btn btn-primary" name="validar" value="Registrar">
                 <input type="hidden" name="MM_insert" value="formreg">
         </form>
 
@@ -73,7 +69,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                <?php
+                    <?php
                     // Consulta de armas
                     $consulta = "SELECT * FROM tipos_usuarios ";
                     $resultado = $con->query($consulta);
@@ -86,13 +82,13 @@
                             <td>
                                 <div class="text-center">
                                     <div class="d-flex justify-content-start">
-                                    <a href="update_tipo_usu.php?id=<?php echo $fila['id_tipo_usuario']; ?>" onclick="window.open('./update/update_tipo_usu.php?id=<?php echo $fila['id_tipo_usuario']; ?>','','width=500,height=500,toolbar=NO'); return false;"><i class="btn btn-primary">Editar</i></a>
+                                        <a href="update_tipo_usu.php?id=<?php echo $fila['id_tipo_usuario']; ?>" onclick="window.open('./update/update_tipo_usu.php?id=<?php echo $fila['id_tipo_usuario']; ?>','','width=500,height=500,toolbar=NO'); return false;"><i class="btn btn-primary">Editar</i></a>
                                     </div>
                                 </div>
                             </td>
                         </tr>
-                <?php
-                        }
+                    <?php
+                    }
                     ?>
 
                 </tbody>
@@ -104,10 +100,6 @@
 
     </div>
 
-
-
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
 </body>
 
 </html>

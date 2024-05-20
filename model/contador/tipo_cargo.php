@@ -15,21 +15,21 @@ $con = $db->conectar();
 
 <?php
 if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
-	$cargo = $_POST['cargo'];
-	$salario_base = $_POST['salario_base'];
-	$id_arl = $_POST['id_arl'];
+    $cargo = $_POST['cargo'];
+    $salario_base = $_POST['salario_base'];
+    $id_arl = $_POST['id_arl'];
 
 
-	if ($cargo == "" || $salario_base == "" || $id_arl == "") {
-		echo '<script>alert ("EXISTEN DATOS VACIOS"); </script>';
-		echo '<script>window.location="tipo_cargo.php"</script>';
-	} else {
-		$insertSQL = $con->prepare("INSERT INTO tipo_cargo(cargo,salario_base,id_arl) 
+    if ($cargo == "" || $salario_base == "" || $id_arl == "") {
+        echo '<script>alert ("EXISTEN DATOS VACIOS"); </script>';
+        echo '<script>window.location="tipo_cargo.php"</script>';
+    } else {
+        $insertSQL = $con->prepare("INSERT INTO tipo_cargo(cargo,salario_base,id_arl) 
 VALUES ('$cargo','$salario_base','$id_arl')");
-		$insertSQL->execute();
-		echo '<script>alert ("Registro exitoso");</script>';
-		echo '<script>window.location="tipo_cargo.php"</script>';
-	}
+        $insertSQL->execute();
+        echo '<script>alert ("Registro exitoso");</script>';
+        echo '<script>window.location="tipo_cargo.php"</script>';
+    }
 }
 ?>
 
@@ -54,25 +54,25 @@ VALUES ('$cargo','$salario_base','$id_arl')");
                 <input type="text" class="form-control" name="cargo" required>
 
             </div>
-			<div class="mb-3">
+            <div class="mb-3">
                 <label for="usuario" class="form-label">Salario Base:</label>
                 <input type="number" class="form-control" name="salario_base" required>
             </div>
-			<div class="mb-3">
+            <div class="mb-3">
                 <label for="usuario" class="form-label">ARL:</label>
                 <select class="form-control" name="id_arl" required>
-				<option value="">Selecciona el Tipo de ARL</option>
-							<?php
-							$control = $con->prepare("SELECT * FROM arl");
-							$control->execute();
-							while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
-								echo "<option value='" . $fila['id_arl'] . "'>" . $fila['tipo'] . "</option>";
-							}
-							?>
-						</select>
+                    <option value="">Selecciona el Tipo de ARL</option>
+                    <?php
+                    $control = $con->prepare("SELECT * FROM arl");
+                    $control->execute();
+                    while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
+                        echo "<option value='" . $fila['id_arl'] . "'>" . $fila['tipo'] . "</option>";
+                    }
+                    ?>
+                </select>
             </div>
             <input type="submit" class="btn btn-primary" name="validar" value="Registrar">
-                <input type="hidden" name="MM_insert" value="formreg">
+            <input type="hidden" name="MM_insert" value="formreg">
         </form>
 
         <div class="col-8 p-4">
@@ -81,13 +81,13 @@ VALUES ('$cargo','$salario_base','$id_arl')");
                     <tr>
                         <th scope="col">ID </th>
                         <th scope="col">Tipo Cargo</th>
-						<th scope="col">Salario Base</th>
-						<th scope="col">ARL</th>
+                        <th scope="col">Salario Base</th>
+                        <th scope="col">ARL</th>
                         <th scope="col">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                <?php
+                    <?php
                     // Consulta de armas
                     $consulta = "SELECT * FROM tipo_cargo, arl 
                     where tipo_cargo.id_arl=arl.id_arl ";
@@ -98,8 +98,8 @@ VALUES ('$cargo','$salario_base','$id_arl')");
                         <tr>
                             <td><?php echo $fila["id_tipo_cargo"]; ?></td>
                             <td><?php echo $fila["cargo"]; ?></td>
-							<td><?php echo $fila["salario_base"]; ?></td>
-							<td><?php echo $fila["tipo"]; ?></td>
+                            <td><?php echo $fila["salario_base"]; ?></td>
+                            <td><?php echo $fila["tipo"]; ?></td>
                             <td>
                                 <div class="text-center">
                                     <div class="d-flex justify-content-start">
@@ -108,8 +108,8 @@ VALUES ('$cargo','$salario_base','$id_arl')");
                                 </div>
                             </td>
                         </tr>
-                <?php
-                        }
+                    <?php
+                    }
                     ?>
 
                 </tbody>
@@ -124,7 +124,6 @@ VALUES ('$cargo','$salario_base','$id_arl')");
 
 
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
 </body>
 
 </html>

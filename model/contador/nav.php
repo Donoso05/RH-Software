@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,62 +6,40 @@
     <title>Inicio</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/1057b0ffdd.js" crossorigin="anonymous"></script>
-</head>
-<body>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Navbar Decorado</title>
-  <!-- Agrega los enlaces a Bootstrap CSS y JS si no los tienes -->
-  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        .navbar-brand,
+        .navbar-nav .nav-link {
+            color: #fff;
+        }
 
-  <style>
-    .navbar-brand {
-      color: #fff; /* Cambia el color del texto del navbar-brand */
-    }
+        .navbar-nav .nav-link:hover {
+            color: #69B1C4;
+        }
 
-    .navbar-nav .nav-link {
-      color: #fff; /* Cambia el color del texto de los enlaces */
-    }
+        .navbar-nav .nav-link.active {
+            font-weight: bold;
+        }
 
-    .navbar-nav .nav-link:hover {
-      color: #69B1C4; /* Cambia el color del texto al pasar el mouse */
-    }
+        .navbar-toggler-icon {
+            background-color: #fff;
+        }
 
-    .navbar-nav .nav-link.active {
-      color: #fff;
-      font-weight: bold; /* Cambia el estilo del texto del enlace activo */
-    }
+        .navbar-toggler:focus {
+            outline: none;
+        }
 
-    .navbar-toggler-icon {
-      background-color: #fff; /* Cambia el color del icono del botón de navegación */
-    }
+        .navbar-nav .nav-link {
+            cursor: pointer;
+            background-color: #343a40;
+            border-radius: 5px;
+            padding: 8px 15px;
+            margin-right: 5px;
+        }
 
-    .navbar-toggler:focus {
-      outline: none; /* Quita el borde al enfocar el botón de navegación */
-    }
-
-    .navbar-nav .nav-link {
-      cursor: pointer; /* Cambia el cursor al pasar sobre los enlaces */
-    }
-
-    /* Agrega color a los botones */
-    .navbar-nav .nav-link {
-      background-color: #343a40; /* Cambia el color de fondo de los botones */
-      border-radius: 5px; /* Añade bordes redondeados a los botones */
-      padding: 8px 15px; /* Ajusta el espaciado interno de los botones */
-      margin-right: 5px; /* Ajusta el margen derecho de los botones */
-    }
-
-    .navbar-nav .nav-link:hover {
-      background-color: #323131; /* Cambia el color de fondo al pasar el mouse */
-    }
-  </style>
+        .navbar-nav .nav-link:hover {
+            background-color: #323131;
+        }
+    </style>
 </head>
 <body>
 
@@ -76,26 +52,44 @@
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
         <a class="nav-link active" aria-current="page" href="index.php">Inicio</a>
-        <a class="nav-link" href="usuario.php">Usuarios</a>
-        <a class="nav-link" href="tipos_usuario.php">Roles</a>
-        <a class="nav-link" href="tipo_permiso.php">Permisos</a>
-        <a class="nav-link" href="tram_permiso.php">Tramite Permisos</a>
-        <a class="nav-link" href="tipo_cargo.php">Cargo</a>
-        <a class="nav-link" href="solic_prestamo.php">Prestamos</a>
-        <a class="nav-link" href="estado.php">Estados</a>
-        <a class="nav-link" href="roles.php">Roles</a>
+        <div class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownUsuarios" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Usuarios
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownUsuarios">
+            <li><a class="dropdown-item" href="usuario.php">Usuarios</a></li>
+            <li><a class="dropdown-item" href="tipos_usuario.php">Roles</a></li>
+            <li><a class="dropdown-item" href="tipo_permiso.php">Tipo Permiso</a></li>
+            <li><a class="dropdown-item" href="tram_permiso.php">Tram. Permiso</a></li>
+            <li><a class="dropdown-item" href="tipo_cargo.php">Tipo Cargo</a></li>
+            <li><a class="dropdown-item" href="estado.php">Estados</a></li>
+          </ul>
+        </div>
+        <div class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownRoles" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Roles
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownRoles">
+            <li><a class="dropdown-item" href="tipos_usuario.php">Ver Roles</a></li>
+            <li><a class="dropdown-item" href="nuevo_rol.php">Nuevo Rol</a></li>
+          </ul>
+        </div>
+        <div class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownPermisos" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Permisos
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownPermisos">
+            <li><a class="dropdown-item" href="tipo_permiso.php">Ver Permisos</a></li>
+            <li><a class="dropdown-item" href="nuevo_permiso.php">Nuevo Permiso</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="navbar-nav ms-auto">
         <a class="nav-link" href="../../controller/cerrarcesion.php">Cerrar sesión</a>
       </div>
     </div>
   </div>
 </nav>
-
-</body>
-</html>
-
-
-
-
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
 </body>
