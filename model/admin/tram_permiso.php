@@ -147,11 +147,11 @@ while ($fila = $resultado->fetch()) {
         <td><?php echo $fila["fecha_fin"]; ?></td>
         <td><?php echo $fila["estado"]; ?></td>
         <td>
-            <div class="text-center">
-                <div class="d-flex justify-content-start">
-                    <a href="edit_rol.php?id_rol=<?php echo $fila["id_permiso"]; ?>" class="btn btn-primary btn-sm me-2"><i class="fa-solid fa-pen-to-square"></i></a>
-                    <a href="elim_rol.php?id_rol=<?php echo $fila["id_permiso"]; ?>" class="btn btn-danger btn-sm"><i class="fa-solid fa-user-xmark"></i></a>
-                </div>
+        <div class="text-center">
+                                    <div class="d-flex justify-content-start">
+                                    <a href="update_tram.php?id_rol=<?php echo $fila['id_permiso']; ?>" onclick="window.open('./update/update_tram.php?id=<?php echo $fila['id_permiso']; ?>','','width=500,height=500,toolbar=NO'); return false;"><i class="btn btn-primary">Editar</i></a>
+                                    </div>
+                                </div>
             </div>
         </td>
     </tr>

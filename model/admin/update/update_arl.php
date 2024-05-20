@@ -8,7 +8,7 @@ if (!isset($_SESSION["id_usuario"])) {
     echo '<script>window.location.href = "../login.html";</script>';
     exit();
 }
-require_once("../conexion/conexion.php");
+require_once("../../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
 
@@ -21,8 +21,8 @@ $usua = $sql->fetch();
 if (isset($_POST["update"])) {
     $id_arl = $_POST['id_arl'];
     $tipo = $_POST['tipo'];    
-    $cotizacion = $_POST['cotizacion'];
-    $insertSQL = $con->prepare("UPDATE arl SET id_arl = '$id_arl', tipo = '$tipo', cotizacion = '$cotizacion'
+    $porcentaje = $_POST['porcentaje'];
+    $insertSQL = $con->prepare("UPDATE arl SET id_arl = '$id_arl', tipo = '$tipo', porcentaje = '$porcentaje'
     WHERE id_arl = '" . $_GET['id'] . "'");
     $insertSQL->execute();
     echo '<script>alert ("Actualización Exitosa");</script>';
@@ -31,14 +31,14 @@ if (isset($_POST["update"])) {
 
 
 ?>
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../css/ingreso2.css">
-    <title>Editar</title>
+    <title>Actualizar ARL</title>
 
     <!--JQUERY-->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -54,62 +54,53 @@ if (isset($_POST["update"])) {
     <script src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script>
 
     <!-- Nuestro css-->
-    <link rel="stylesheet" type="text/css" href="../css/ingreso2.css" th:href="@{/css/ingreso2.css}">
+    <link rel="stylesheet" type="text/css" href="../../css/ingreso2.css">
     <!-- DATA TABLE -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.1/css/bootstrap.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">
-
 </head>
 
 <body>
     <main>
-        <div class="container">
-            <div class="card">
-                <div class="card-header">
-                    <h4>User Information</h4>
-                </div>
-                <?php //foreach ($resultados as $fila) { 
-                ?>
-                <div class="card-body">
-                    <form action="" class="form" method="post" role="form" autocomplete="off">
-                        <div class="form-group row">
-                            <label class="col-lg-3 col-form-label form-control-label">Id Arl</label>
-                            <div class="col-lg-9">
-                                <input name="id_arl" value="<?php echo $usua['id_arl'] ?>" class="form-control" type="text" readonly>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-lg-3 col-form-label form-control-label">Tipo Arl</label>
-                            <div class="col-lg-9">
-                            <input type="text" pattern="[A-Za-zÑñÁáÉéÍíÓóÚú\s]+" title="Ingrese solo letras" value="<?php echo $usua['tipo'] ?>" name="tipo" class="form-control">
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label class="col-lg-3 col-form-label form-control-label">Tipo Arl</label>
-                                <div class="col-lg-9">
-                                    <input type="text" pattern="^\d*\.?\d*$" title="Ingrese un número decimal" value="<?php echo $usua['cotizacion'] ?>" name="cotizacion" class="form-control">
-                                </div>
-                        </div>
-                        <div class="form-group row">
-                            <div class="col-lg-12 text-center">
-                                <input name="update" type="submit" class="btn btn-primary" value="Save Changes" onclick="validarContrasena()" >
-                            </div>
-                        </div>
-
-                        <?php //} 
-                        ?>
-                    </form>
+        <div class="card">
+            <div class="card-header">
+                <h4>Actualizar ARL</h4>
+            </div>
+            <div class="card-body">
+                <form action="" class="form" name="frm_consulta" method="POST" autocomplete="off">
                     <div class="form-group row">
-                        <div class="col-lg-12 text-center">
+                        <label class="col-lg-3 col-form-label form-control-label">ID</label>
+                        <div class="col-lg-9">
+                            <input class="form-control" name="id_arl" value="<?php echo $usua['id_arl']; ?>" readonly>
                         </div>
                     </div>
-                </div>
+                    <div class="form-group row">
+                        <label class="col-lg-3 col-form-label form-control-label">Tipo Usuario</label>
+                        <div class="col-lg-9">
+                            <input class="form-control" name="tipo" value="<?php echo $usua['tipo']; ?>">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-lg-3 col-form-label form-control-label">Tipo Usuario</label>
+                        <div class="col-lg-9">
+                            <input class="form-control" name="porcentaje " value="<?php echo $usua['porcentaje']; ?>">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-lg-12 text-center">
+                            <input name="update" type="submit" class="btn btn-primary" value="Actualizar">
+                            <button class="btn btn-danger" name="delete" onclick="return confirmarEliminacion()">Eliminar</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
     </main>
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script>
+        function confirmarEliminacion() {
+            return confirm("¿Estás seguro de que deseas eliminar este tipo de usuario?");
+        }
+    </script>
 </body>
 
-</html> 
+</html>

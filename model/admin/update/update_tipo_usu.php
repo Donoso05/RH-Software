@@ -8,7 +8,7 @@ if (!isset($_SESSION["id_usuario"])) {
     echo '<script>window.location.href = "../login.html";</script>';
     exit();
 }
-require_once("../conexion/conexion.php");
+require_once("../../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
 
@@ -25,56 +25,82 @@ if (isset($_POST["update"])) {
 
     $updateSQL->execute();
     echo '<script>alert ("Actualización Exitosa");</script>';
+    echo '<script>window.close();</script>';
 } elseif (isset($_POST["delete"])) { 
     $id_tipo_usuario = $_POST['id_tipo_usuario'];
     
     $deleteSQL = $con->prepare("DELETE FROM tipos_usuarios WHERE id_tipo_usuario = ?");
     $deleteSQL->execute([$id_tipo_usuario]);
     echo '<script>alert("Registro Eliminado Exitosamente");</script>';
-    header('Location: tabla_tipo_usu.php');
+    echo '<script>window.close();</script>';
     exit;
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
-    <script>
-        function centrar() {
-            iz=(screen.width-document.body.clientwidth) / 2;
-            de=(screen.height-document.body.clientHeight) / 2;
-            moveTo(iz,de);
-        }
-    </script>    
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Actualizar Tipo Usuarios</title>
+
+    <!--JQUERY-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+    <!-- FRAMEWORK BOOTSTRAP para el estilo de la pagina-->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+
+    <!-- Los iconos tipo Solid de Fontawesome-->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.8/css/solid.css">
+    <script src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script>
+
+    <!-- Nuestro css-->
+    <link rel="stylesheet" type="text/css" href="../../css/ingreso2.css">
+    <!-- DATA TABLE -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.1/css/bootstrap.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">
 </head>
 
-<body onload="centrar();">
-    <table class="center">
-        <form autocomplete="off" name="frm_consulta" method="POST">
-            <tr>
-                <td>ID</td>
-                <td><input name="id_tipo_usuario" value="<?php echo $usua['id_tipo_usuario']; ?>" readonly> </td>
-            </tr>
-
-            <tr>
-                <td>Tipo Usuario</td>
-                <td><input name ="tipo_usuario" value="<?php echo $usua['tipo_usuario']?>" ></td>
-            </tr>
-
-
-            <tr>
-                <td colspan="2">&nbsp;</td>
-            </tr> 
-            <tr>
-               <td><input type="submit" name="update" value="Actualizar"></td>
-                <td><input type="submit" name="delete" value="Eliminar"></td>
-            </tr>
-        </form>
-    </table>
+<body>
+    <main>
+        <div class="card">
+            <div class="card-header">
+                <h4>Actualizar Tipo Usuarios</h4>
+            </div>
+            <div class="card-body">
+                <form action="" class="form" name="frm_consulta" method="POST" autocomplete="off">
+                    <div class="form-group row">
+                        <label class="col-lg-3 col-form-label form-control-label">ID</label>
+                        <div class="col-lg-9">
+                            <input class="form-control" name="id_tipo_usuario" value="<?php echo $usua['id_tipo_usuario']; ?>" readonly>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-lg-3 col-form-label form-control-label">Tipo Usuario</label>
+                        <div class="col-lg-9">
+                            <input class="form-control" name="tipo_usuario" value="<?php echo $usua['tipo_usuario']; ?>">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-lg-12 text-center">
+                            <input name="update" type="submit" class="btn btn-primary" value="Actualizar">
+                            <button class="btn btn-danger" name="delete" onclick="return confirmarEliminacion()">Eliminar</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+    <script>
+        function confirmarEliminacion() {
+            return confirm("¿Estás seguro de que deseas eliminar este tipo de usuario?");
+        }
+    </script>
 </body>
+
 </html>
-                            

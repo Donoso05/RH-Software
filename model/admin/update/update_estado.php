@@ -12,25 +12,25 @@ require_once("../../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
 
-$sql = $con -> prepare ("SELECT * FROM tipo_permiso WHERE id_tipo_permiso = '".$_GET['id']."'");
+$sql = $con -> prepare ("SELECT * FROM estado WHERE id_estado = '".$_GET['id']."'");
 $sql -> execute();
 $usua = $sql -> fetch();
 ?>
 
 <?php
 if (isset($_POST["update"])) {
-    $id_tipo_permiso = $_POST['id_tipo_permiso'];
-    $tipo_permiso = $_POST['tipo_permiso'];
-    $updateSQL = $con->prepare("UPDATE tipo_permiso SET tipo_permiso = '$tipo_permiso' WHERE id_tipo_permiso = '".$_GET['id']."'");
+    $id_estado = $_POST['id_estado'];
+    $estado = $_POST['estado'];
+    $updateSQL = $con->prepare("UPDATE estado SET estado = '$estado' WHERE id_estado = '".$_GET['id']."'");
 
     $updateSQL->execute();
     echo '<script>alert ("Actualización Exitosa");</script>';
     echo '<script>window.close();</script>';
 } elseif (isset($_POST["delete"])) { 
-    $id_tipo_permiso = $_POST['id_tipo_permiso'];
+    $id_estado = $_POST['id_estado'];
     
-    $deleteSQL = $con->prepare("DELETE FROM tipo_permiso WHERE id_tipo_permiso = ?");
-    $deleteSQL->execute([$id_tipo_permiso]);
+    $deleteSQL = $con->prepare("DELETE FROM estado WHERE id_estado = ?");
+    $deleteSQL->execute([$id_estado]);
     echo '<script>alert("Registro Eliminado Exitosamente");</script>';
     echo '<script>window.close();</script>';
     exit;
@@ -44,7 +44,7 @@ if (isset($_POST["update"])) {
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Actualizar Tipo Permisos</title>
+    <title>Actualizar Estado</title>
 
     <!--JQUERY-->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -70,20 +70,20 @@ if (isset($_POST["update"])) {
     <main>
         <div class="card">
             <div class="card-header">
-                <h4>Actualizar Tipo Permisos</h4>
+                <h4>Actualizar Tipo Usuarios</h4>
             </div>
             <div class="card-body">
                 <form action="" class="form" name="frm_consulta" method="POST" autocomplete="off">
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label form-control-label">ID</label>
                         <div class="col-lg-9">
-                            <input class="form-control" name="id_tipo_permiso" value="<?php echo $usua['id_tipo_permiso']; ?>" readonly>
+                            <input class="form-control" name="id_estado" value="<?php echo $usua['id_estado']; ?>" readonly>
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-lg-3 col-form-label form-control-label">Tipo Permiso</label>
+                        <label class="col-lg-3 col-form-label form-control-label">Tipo Usuario</label>
                         <div class="col-lg-9">
-                            <input class="form-control" name="tipo_permiso" value="<?php echo $usua['tipo_permiso']; ?>">
+                            <input class="form-control" name="estado" value="<?php echo $usua['estado']; ?>">
                         </div>
                     </div>
                     <div class="form-group row">
@@ -98,7 +98,7 @@ if (isset($_POST["update"])) {
     </main>
     <script>
         function confirmarEliminacion() {
-            return confirm("¿Estás seguro de que deseas eliminar este tipo de permiso?");
+            return confirm("¿Estás seguro de que deseas eliminar este tipo de usuario?");
         }
     </script>
 </body>

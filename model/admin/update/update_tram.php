@@ -8,7 +8,7 @@ if (!isset($_SESSION["id_usuario"])) {
     echo '<script>window.location.href = "../login.html";</script>';
     exit();
 }
-require_once("../conexion/conexion.php");
+require_once("../../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
 
@@ -76,12 +76,7 @@ if (isset($_POST["update"])) {
                 ?>
                 <div class="card-body">
                     <form action="" class="form" method="post" role="form" autocomplete="off">
-                        <div class="form-group row">
-                            <label class="col-lg-3 col-form-label form-control-label">Id_Permiso</label>
-                            <div class="col-lg-9">
-                                <input name="id_permiso" value="<?php echo $usua['id_permiso'] ?>" class="form-control" type="text" readonly>
-                            </div>
-                        </div>
+    
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label form-control-label">Documento</label>
                             <div class="col-lg-9">
