@@ -26,15 +26,7 @@ if (isset($_POST["update"])) {
     $updateSQL->execute();
     echo '<script>alert ("Actualización Exitosa");</script>';
     echo '<script>window.close();</script>';
-} elseif (isset($_POST["delete"])) { 
-    $id_tipo_permiso = $_POST['id_tipo_permiso'];
-    
-    $deleteSQL = $con->prepare("DELETE FROM tipo_permiso WHERE id_tipo_permiso = ?");
-    $deleteSQL->execute([$id_tipo_permiso]);
-    echo '<script>alert("Registro Eliminado Exitosamente");</script>';
-    echo '<script>window.close();</script>';
-    exit;
-}
+} 
 ?>
 
 <!DOCTYPE html>
@@ -89,18 +81,12 @@ if (isset($_POST["update"])) {
                     <div class="form-group row">
                         <div class="col-lg-12 text-center">
                             <input name="update" type="submit" class="btn btn-primary" value="Actualizar">
-                            <button class="btn btn-danger" name="delete" onclick="return confirmarEliminacion()">Eliminar</button>
                         </div>
                     </div>
                 </form>
             </div>
         </div>
     </main>
-    <script>
-        function confirmarEliminacion() {
-            return confirm("¿Estás seguro de que deseas eliminar este tipo de permiso?");
-        }
-    </script>
 </body>
 
 </html>

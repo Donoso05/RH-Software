@@ -63,24 +63,20 @@
             <li><a class="dropdown-item" href="tram_permiso.php">Tram. Permiso</a></li>
             <li><a class="dropdown-item" href="tipo_cargo.php">Tipo Cargo</a></li>
             <li><a class="dropdown-item" href="estado.php">Estados</a></li>
+            <li><a class="dropdown-item" href="auxtransporte.php">Aux. Transporte</a></li>
+            <li><a class="dropdown-item" href="arl.php">Arl</a></li>
+            <li><a class="dropdown-item" href="salud.php">Salud</a></li>
+            <li><a class="dropdown-item" href="pension.php">Pension</a></li>
+            
           </ul>
         </div>
         <div class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownRoles" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Roles
+            Procesos
           </a>
           <ul class="dropdown-menu" aria-labelledby="navbarDropdownRoles">
-            <li><a class="dropdown-item" href="tipos_usuario.php">Ver Roles</a></li>
+            <li><a class="dropdown-item" href="tipos_usuario.php"></a></li>
             <li><a class="dropdown-item" href="nuevo_rol.php">Nuevo Rol</a></li>
-          </ul>
-        </div>
-        <div class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownPermisos" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Permisos
-          </a>
-          <ul class="dropdown-menu" aria-labelledby="navbarDropdownPermisos">
-            <li><a class="dropdown-item" href="tipo_permiso.php">Ver Permisos</a></li>
-            <li><a class="dropdown-item" href="nuevo_permiso.php">Nuevo Permiso</a></li>
           </ul>
         </div>
       </div>
