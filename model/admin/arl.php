@@ -84,13 +84,12 @@ VALUES ('$tipo','$porcentaje')");
                             <td><?php echo $fila["id_arl"]; ?></td>
                             <td><?php echo $fila["tipo"]; ?></td>
 							<td><?php echo $fila["porcentaje"]; ?></td>
-							<td><?php echo $fila["tipo"]; ?></td>
                             <td>
-                                <div class="text-center">
+                            <div class="text-center">
                                     <div class="d-flex justify-content-start">
-                                        <a href="edit_rol.php?id_rol=<?php echo $fila["id_arl"]; ?>" class="btn btn-primary btn-sm me-2"><i class="fa-solid fa-pen-to-square"></i></a>
-                                        <a href="elim_rol.php?id_rol=<?php echo $fila["id_arl"]; ?>" class="btn btn-danger btn-sm"><i class="fa-solid fa-user-xmark"></i></a>
+                                    <a href="update_arl.php?id=<?php echo $fila['id_arl']; ?>" onclick="window.open('./update/update_arl.php?id=<?php echo $fila['id_arl']; ?>','','width=500,height=500,toolbar=NO'); return false;"><i class="btn btn-primary">Editar</i></a>
                                     </div>
+                                </div>
                                 </div>
                             </td>
                         </tr>

@@ -101,10 +101,9 @@ VALUES ('$cargo','$salario_base','$id_arl')");
 							<td><?php echo $fila["salario_base"]; ?></td>
 							<td><?php echo $fila["tipo"]; ?></td>
                             <td>
-                                <div class="text-center">
+                            <div class="text-center">
                                     <div class="d-flex justify-content-start">
-                                        <a href="edit_rol.php?id_rol=<?php echo $fila["id_tipo_cargo"]; ?>" class="btn btn-primary btn-sm me-2"><i class="fa-solid fa-pen-to-square"></i></a>
-                                        <a href="elim_rol.php?id_rol=<?php echo $fila["id_tipo_cargo"]; ?>" class="btn btn-danger btn-sm"><i class="fa-solid fa-user-xmark"></i></a>
+                                        <a href="elim_rol.php?id_rol=<?php echo $fila['id_tipo_cargo']; ?>" onclick="window.open('./update/update_cargo.php?id=<?php echo $fila['id_tipo_cargo']; ?>','','width=500,height=500,toolbar=NO'); return false;"><i class="btn btn-primary">Editar</i></a>
                                     </div>
                                 </div>
                             </td>

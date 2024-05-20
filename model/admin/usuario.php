@@ -117,11 +117,6 @@
             </div>
 
             <div class="mb-3">
-                <label for="correo" class="form-label">foto</label>
-                <input type="file" class="form-control" name="foto" id="foto">
-            </div>
-
-            <div class="mb-3">
                 <label for="contrasena" class="form-label">Contraseña</label>
                 <input type="password" name="contrasena" class="form-control" id="exampleInputPassword1">
             </div>
@@ -147,9 +142,6 @@
                         <th scope="col">Correo</th>
                         <th scope="col">Tipo Usuario</th>
                         <th scope="col">NIT empresa</th>
-                        <th scope="col">Foto</th>
-
-
 						<th scope="col">Acciones</th>
 
                     </tr>
@@ -176,10 +168,9 @@
 							<td><?php echo $fila["nit_empresa"]; ?></td>
 							
                             <td>
-                                <div class="text-center">
+                            <div class="text-center">
                                     <div class="d-flex justify-content-start">
-                                        <a href="update/update_usuario.php?id=<?php echo $fila["id_usuario"]; ?>" class="btn btn-primary btn-sm me-2"><i class="fa-solid fa-pen-to-square"></i></a>
-                                        <a href="elim_usu.php?id=<?php echo $fila["id_usuario"]; ?>" class="btn btn-danger btn-sm"><i class="fa-solid fa-user-xmark"></i></a>
+                                    <a href="update_cargo.php?id_rol=<?php echo $fila['id_usuario']; ?>" onclick="window.open('./update/update_usuario.php?id=<?php echo $fila['id_usuario']; ?>','','width=500,height=500,toolbar=NO'); return false;"><i class="btn btn-primary">Editar</i></a>
                                     </div>
                                 </div>
                             </td>
