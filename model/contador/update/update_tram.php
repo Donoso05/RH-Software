@@ -8,16 +8,15 @@ if (!isset($_SESSION["id_usuario"])) {
     echo '<script>window.location.href = "../login.html";</script>';
     exit();
 }
-require_once("../conexion/conexion.php");
+
+require_once("../../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
 
-$sql = $con->prepare("SELECT * FROM tram_permiso,tipo_permiso,estado WHERE tram_permiso.id_tipo_permiso = tipo_permiso.id_tipo_permiso AND tram_permiso.id_estado = estado.id_estado AND tram_permiso.id_permiso = '" . $_GET['id'] . "'");
-$sql->execute();
+$sql = $con->prepare("SELECT * FROM tram_permiso, tipo_permiso, estado WHERE tram_permiso.id_tipo_permiso = tipo_permiso.id_tipo_permiso AND tram_permiso.id_estado = estado.id_estado AND tram_permiso.id_permiso = ?");
+$sql->execute([$_GET['id']]);
 $usua = $sql->fetch();
-?>
 
-<?php
 if (isset($_POST["update"])) {
     $id_permiso = $_POST['id_permiso'];
     $id_usuario = $_POST['id_usuario'];
@@ -26,14 +25,13 @@ if (isset($_POST["update"])) {
     $fecha_fin = $_POST['fecha_fin'];
     $id_estado = $_POST['id_estado'];
     $incapacidad = $_POST['incapacidad'];
-    $insertSQL = $con->prepare("UPDATE tram_permiso SET id_permiso = '$id_permiso', id_usuario = '$id_usuario', id_tipo_permiso = '$id_tipo_permiso', fecha_inicio = '$fecha_inicio', fecha_fin = '$fecha_fin', id_estado = '$id_estado', incapacidad = '$incapacidad'
-    WHERE id_permiso = '" . $_GET['id'] . "'");
-    $insertSQL->execute();
-    echo '<script>alert ("Actualización Exitosa");</script>';
+
+    $updateSQL = $con->prepare("UPDATE tram_permiso SET id_permiso = ?, id_usuario = ?, id_tipo_permiso = ?, fecha_inicio = ?, fecha_fin = ?, id_estado = ?, incapacidad = ? WHERE id_permiso = ?");
+    $updateSQL->execute([$id_permiso, $id_usuario, $id_tipo_permiso, $fecha_inicio, $fecha_fin, $id_estado, $incapacidad, $_GET['id']]);
+
+    echo '<script>alert("Actualización Exitosa");</script>';
     echo '<script>window.close();</script>';
 }
-
-
 ?>
 <!doctype html>
 <html lang="en">
@@ -72,8 +70,6 @@ if (isset($_POST["update"])) {
                 <div class="card-header">
                     <h4>User Information</h4>
                 </div>
-                <?php //foreach ($resultados as $fila) { 
-                ?>
                 <div class="card-body">
                     <form action="" class="form" method="post" role="form" autocomplete="off">
                         <div class="form-group row">
@@ -94,7 +90,7 @@ if (isset($_POST["update"])) {
                                 <select class="form-control" name="id_tipo_permiso">
                                     <option value="">Seleccione uno</option>
                                     <?php
-                                    $control = $con->prepare("select * from tipo_permiso where id_tipo_permiso ");
+                                    $control = $con->prepare("SELECT * FROM tipo_permiso");
                                     $control->execute();
                                     while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
                                         $selected = ($fila['id_tipo_permiso'] == $usua['id_tipo_permiso']) ? 'selected' : '';
@@ -107,56 +103,46 @@ if (isset($_POST["update"])) {
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label form-control-label">Fecha Inicio</label>
                             <div class="col-lg-9">
-                                <div class="col-lg-9">
-                                    <input name="fecha_inicio" value="<?php echo $usua['fecha_inicio'] ?>" class="form-control" type="date">
-                                </div>
+                                <input name="fecha_inicio" value="<?php echo $usua['fecha_inicio'] ?>" class="form-control" type="date">
                             </div>
                         </div>
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label form-control-label">Fecha Fin</label>
                             <div class="col-lg-9">
-                                <div class="col-lg-9">
-                                    <input name="fecha_fin" value="<?php echo $usua['fecha_fin'] ?>" class="form-control" type="date">
-                                </div>
+                                <input name="fecha_fin" value="<?php echo $usua['fecha_fin'] ?>" class="form-control" type="date">
                             </div>
                         </div>
-                        
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label form-control-label">Estado</label>
                             <div class="col-lg-9">
-                                <select class="form-control" name="id_estado" >
-                                <option value="">Seleccione uno</option>
-                                <?php
-                                $control = $con->prepare("SELECT * FROM estado WHERE id_estado > 10");
-                                $control->execute();
-                                while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
-                                    $selected = ($fila['id_estado'] == $usua['id_estado']) ? 'selected' : '';
-                                    echo "<option value=" . $fila['id_estado'] . " $selected>" . $fila['estado'] . "</option>";
-                                }
-                                ?>
+                                <select class="form-control" name="id_estado">
+                                    <option value="">Seleccione uno</option>
+                                    <?php
+                                    $control = $con->prepare("SELECT id_estado, estado FROM estado WHERE id_estado IN (3, 4)");
+                                    $control->execute();
+                                    while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
+                                        $selected = ($fila['id_estado'] == $usua['id_estado']) ? 'selected' : '';
+                                        echo "<option value=" . $fila['id_estado'] . " $selected>" . $fila['estado'] . "</option>";
+                                    }
+                                    ?>
                                 </select>
+
                             </div>
-                            <div class="form-group row">
+                        </div>
+                        <div class="form-group row">
                             <label class="col-lg-3 col-form-label form-control-label">Incapacidad</label>
                             <div class="col-lg-9">
-                                <div class="col-lg-9">
-                                    <textarea class="input100" cols="50" name="incapacidad"  placeholder="Detalles de incapacidad"></textarea>
-                                </div>
+                                <textarea class="form-control" cols="50" name="incapacidad" placeholder="Detalles de incapacidad"><?php echo $usua['incapacidad'] ?></textarea>
                             </div>
                         </div>
                         <div class="form-group row">
                             <div class="col-lg-12 text-center">
-                                <input name="update" type="submit" class="btn btn-primary" value="Save Changes" onclick="validarContrasena()" >
+                                <input name="update" type="submit" class="btn btn-primary" value="Actualizar">
                             </div>
                         </div>
-
-                        </div>
-                        <?php //} 
-                        ?>
                     </form>
                     <div class="form-group row">
-                        <div class="col-lg-12 text-center">
-                        </div>
+                        <div class="col-lg-12 text-center"></div>
                     </div>
                 </div>
     </main>

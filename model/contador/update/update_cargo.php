@@ -28,16 +28,7 @@ if (isset($_POST["update"])) {
     $insertSQL->execute();
     echo '<script>alert ("Actualización Exitosa");</script>';
     echo '<script>window.close();</script>';
-} elseif (isset($_POST["delete"])) {
-    $id_tipo_cargo = $_POST['id_tipo_cargo'];
-
-    $deleteSQL = $con->prepare("DELETE FROM tipo_cargo WHERE id_tipo_cargo = ?");
-    $deleteSQL->execute([$id_tipo_cargo]);
-    echo '<script>alert("Registro Eliminado Exitosamente");</script>';
-    echo '<script>window.close();</script>';
-    header('Location: ../tipo_cargo.php');
-    exit;
-}
+} 
 
 ?>
 <!doctype html>
@@ -127,7 +118,6 @@ if (isset($_POST["update"])) {
                     <div class="form-group row">
                         <div class="col-lg-12 text-center">
                             <input name="update" type="submit" class="btn btn-primary" value="Actualizar" onclick="validarContrasena()">
-                            <button class="btn btn-danger" name="delete" onclick="return confirmarEliminacion()">Eliminar</button>
                         </div>
                     </div>
 

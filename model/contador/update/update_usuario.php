@@ -30,14 +30,6 @@ if (isset($_POST["update"])) {
     $updateSQL->execute();
     echo '<script>alert("Actualización Exitosa");</script>';
     echo '<script>window.close();</script>';
-} elseif (isset($_POST["delete"])) {
-    $id_usuario = $_POST['id_usuario'];
-
-    $deleteSQL = $con->prepare("DELETE FROM usuario WHERE id_usuario = ?");
-    $deleteSQL->execute([$id_usuario]);
-    echo '<script>alert("Registro Eliminado Exitosamente");</script>';
-    echo '<script>window.close();</script>';
-    exit;
 }
 ?>
 
@@ -147,18 +139,12 @@ if (isset($_POST["update"])) {
                     <div class="form-group row">
                         <div class="col-lg-12 text-center">
                             <input name="update" type="submit" class="btn btn-primary" value="Actualizar">
-                            <button class="btn btn-danger" name="delete" onclick="return confirmarEliminacion()">Eliminar</button>
                         </div>
                     </div>
                 </form>
             </div>
         </div>
     </main>
-    <script>
-        function confirmarEliminacion() {
-            return confirm("¿Estás seguro de que deseas eliminar este usuario?");
-        }
-    </script>
 </body>
 
 </html>

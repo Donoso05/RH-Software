@@ -12,23 +12,25 @@ require_once("../../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
 
-$sql = $con -> prepare ("SELECT * FROM tipos_usuarios WHERE id_tipo_usuario = '".$_GET['id']."'");
-$sql -> execute();
-$usua = $sql -> fetch();
+$sql = $con->prepare("SELECT * FROM arl WHERE arl.id_arl = '" . $_GET['id'] . "'");
+$sql->execute();
+$usua = $sql->fetch();
 ?>
 
 <?php
 if (isset($_POST["update"])) {
-    $id_tipo_usuario = $_POST['id_tipo_usuario'];
-    $tipo_usuario = $_POST['tipo_usuario'];
-    $updateSQL = $con->prepare("UPDATE tipos_usuarios SET tipo_usuario = '$tipo_usuario' WHERE id_tipo_usuario = '".$_GET['id']."'");
-
-    $updateSQL->execute();
+    $id_arl = $_POST['id_arl'];
+    $tipo = $_POST['tipo'];    
+    $porcentaje = $_POST['porcentaje'];
+    $insertSQL = $con->prepare("UPDATE arl SET id_arl = '$id_arl', tipo = '$tipo', porcentaje = '$porcentaje'
+    WHERE id_arl = '" . $_GET['id'] . "'");
+    $insertSQL->execute();
     echo '<script>alert ("Actualización Exitosa");</script>';
     echo '<script>window.close();</script>';
-} 
-?>
+}
 
+
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -36,7 +38,7 @@ if (isset($_POST["update"])) {
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Actualizar Tipo Usuarios</title>
+    <title>Actualizar ARL</title>
 
     <!--JQUERY-->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -62,20 +64,26 @@ if (isset($_POST["update"])) {
     <main>
         <div class="card">
             <div class="card-header">
-                <h4>Actualizar Tipo Usuarios</h4>
+                <h4>Actualizar ARL</h4>
             </div>
             <div class="card-body">
                 <form action="" class="form" name="frm_consulta" method="POST" autocomplete="off">
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label form-control-label">ID</label>
                         <div class="col-lg-9">
-                            <input class="form-control" name="id_tipo_usuario" value="<?php echo $usua['id_tipo_usuario']; ?>" readonly>
+                            <input class="form-control" name="id_arl" value="<?php echo $usua['id_arl']; ?>" readonly>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label form-control-label">Tipo Usuario</label>
                         <div class="col-lg-9">
-                            <input class="form-control" name="tipo_usuario" value="<?php echo $usua['tipo_usuario']; ?>">
+                            <input class="form-control" name="tipo" value="<?php echo $usua['tipo']; ?>">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-lg-3 col-form-label form-control-label">Tipo Usuario</label>
+                        <div class="col-lg-9">
+                            <input class="form-control" name="porcentaje" pattern="^\d*\.?\d*$"  title="Ingrese un número decimal" value="<?php echo $usua['porcentaje']; ?>">
                         </div>
                     </div>
                     <div class="form-group row">
