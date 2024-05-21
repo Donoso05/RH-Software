@@ -42,13 +42,15 @@ VALUES ('$cargo','$salario_base','$id_arl')");
     <title>Cargos</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/1057b0ffdd.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="css/nav.css">
+
 </head>
 
 <body>
     <?php include("nav.php") ?>
     <div class="container-fluid row">
         <form class="col-4 p-3" method="post">
-            <h3 class="text-center text-secondary">Registrar Cargos</h3>
+            <h3 class="text-center text-secondary">Cargos</h3>
             <div class="mb-3">
                 <label for="usuario" class="form-label">Tipo Cargo:</label>
                 <input type="text" class="form-control" name="cargo" required>
@@ -98,7 +100,7 @@ VALUES ('$cargo','$salario_base','$id_arl')");
                         <tr>
                             <td><?php echo $fila["id_tipo_cargo"]; ?></td>
                             <td><?php echo $fila["cargo"]; ?></td>
-                            <td><?php echo $fila["salario_base"]; ?></td>
+                            <td><?php echo number_format($fila["salario_base"], 0, '.', ','); ?></td>
                             <td><?php echo $fila["tipo"]; ?></td>
                             <td>
                                 <div class="text-center">

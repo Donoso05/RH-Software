@@ -80,7 +80,7 @@ if (isset($_POST["update"])) {
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label form-control-label">Valor</label>
                             <div class="col-lg-9">
-                            <input type="text" pattern="^\d*\.?\d*$"  title="Ingrese un número decimal" value="<?php echo $usua['valor'] ?>" name="valor" class="form-control">
+                            <input type="text" pattern="^\d*\.?\d*$" title="Ingrese un número decimal" value="<?php echo $usua['valor'] ?>" name="valor" class="form-control">
                             </div>
                         </div>
                         <div class="form-group row">
