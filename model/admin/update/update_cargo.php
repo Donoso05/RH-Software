@@ -35,7 +35,6 @@ if (isset($_POST["update"])) {
     $deleteSQL->execute([$id_tipo_cargo]);
     echo '<script>alert("Registro Eliminado Exitosamente");</script>';
     echo '<script>window.close();</script>';
-    header('Location: ../tipo_cargo.php');
     exit;
 }
 
