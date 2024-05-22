@@ -79,10 +79,9 @@ VALUES ('$porcentaje_p')");
                             <td><?php echo "Pension"; ?></td> 
                             <td><?php echo $fila["porcentaje_p"]; ?></td>
                             <td>
-                                <div class="text-center">
+                            <div class="text-center">
                                     <div class="d-flex justify-content-start">
-                                        <a href="edit_rol.php?id_rol=<?php echo $fila["id_pension"]; ?>" class="btn btn-primary btn-sm me-2"><i class="fa-solid fa-pen-to-square"></i></a>
-                                        <a href="elim_rol.php?id_rol=<?php echo $fila["id_pension"]; ?>" class="btn btn-danger btn-sm"><i class="fa-solid fa-user-xmark"></i></a>
+                                    <a href="update_pension.php?id=<?php echo $fila['id_pension']; ?>" onclick="window.open('./update/update_pension.php?id=<?php echo $fila['id_pension']; ?>','','width=500,height=500,toolbar=NO'); return false;"><i class="btn btn-primary">Editar</i></a>
                                     </div>
                                 </div>
                             </td>

@@ -12,25 +12,25 @@ require_once("../../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
 
-$sql = $con->prepare("SELECT * FROM auxtransporte WHERE auxtransporte.id_auxtransporte = '" . $_GET['id'] . "'");
-$sql->execute();
-$usua = $sql->fetch();
+$sql = $con -> prepare ("SELECT * FROM salud WHERE id_salud = '".$_GET['id']."'");
+$sql -> execute();
+$usua = $sql -> fetch();
 ?>
 
 <?php
 if (isset($_POST["update"])) {
-    $id_auxtransporte = $_POST['id_auxtransporte'];
-    $valor = $_POST['valor'];
-    $insertSQL = $con->prepare("UPDATE auxtransporte SET id_auxtransporte = '$id_auxtransporte', valor = '$valor'
-    WHERE id_auxtransporte = '" . $_GET['id'] . "'");
-    $insertSQL->execute();
+    $id_salud = $_POST['id_salud'];
+    $porcentaje_s = $_POST['porcentaje_s'];
+    $updateSQL = $con->prepare("UPDATE salud SET porcentaje_s = '$porcentaje_s' WHERE id_salud = '".$_GET['id']."'");
+
+    $updateSQL->execute();
     echo '<script>alert ("Actualización Exitosa");</script>';
     echo '<script>window.close();</script>';
-}elseif (isset($_POST["delete"])) { 
-    $id_auxtransporte = $_POST['id_auxtransporte'];
+} elseif (isset($_POST["delete"])) { 
+    $id_salud = $_POST['id_salud'];
     
-    $deleteSQL = $con->prepare("DELETE FROM auxtransporte WHERE id_auxtransporte = ?");
-    $deleteSQL->execute([$id_auxtransporte]);
+    $deleteSQL = $con->prepare("DELETE FROM salud WHERE id_salud = ?");
+    $deleteSQL->execute([$id_salud]);
     echo '<script>alert("Registro Eliminado Exitosamente");</script>';
     echo '<script>window.close();</script>';
     exit;
@@ -44,7 +44,7 @@ if (isset($_POST["update"])) {
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Actualizar Auxilio Transporte</title>
+    <title>Actualizar Salud</title>
 
     <!--JQUERY-->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -70,20 +70,20 @@ if (isset($_POST["update"])) {
     <main>
         <div class="card">
             <div class="card-header">
-                <h4>Actualizar Auxilio Transporte</h4>
+                <h4>Actualizar Salud</h4>
             </div>
             <div class="card-body">
                 <form action="" class="form" name="frm_consulta" method="POST" autocomplete="off">
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label form-control-label">ID</label>
                         <div class="col-lg-9">
-                            <input class="form-control" name="id_auxtransporte" value="<?php echo $usua['id_auxtransporte']; ?>" readonly>
+                            <input class="form-control" name="id_salud" value="<?php echo $usua['id_salud']; ?>" readonly>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label form-control-label">Tipo Usuario</label>
                         <div class="col-lg-9">
-                            <input class="form-control" name="valor" value="<?php echo $usua['valor']; ?>">
+                            <input class="form-control" name="porcentaje_s" value="<?php echo $usua['porcentaje_s']; ?>">
                         </div>
                     </div>
                     <div class="form-group row">

@@ -31,9 +31,15 @@ if (isset($_POST["update"])) {
     $insertSQL->execute();
     echo '<script>alert ("Actualización Exitosa");</script>';
     echo '<script>window.close();</script>';
+}elseif (isset($_POST["delete"])) {
+    $id_permiso = $_POST['id_permiso'];
+
+    $deleteSQL = $con->prepare("DELETE FROM tram_permiso WHERE id_permiso = ?");
+    $deleteSQL->execute([$id_permiso]);
+    echo '<script>alert("Registro Eliminado Exitosamente");</script>';
+    echo '<script>window.close();</script>';
+    exit;
 }
-
-
 ?>
 <!doctype html>
 <html lang="en">
@@ -117,20 +123,23 @@ if (isset($_POST["update"])) {
                         </div>
                         
                         <div class="form-group row">
-                            <label class="col-lg-3 col-form-label form-control-label">Estado</label>
-                            <div class="col-lg-9">
-                                <select class="form-control" name="id_estado" >
-                                <option value="">Seleccione uno</option>
-                                <?php
-                                $control = $con->prepare("SELECT * FROM estado WHERE id_estado > 10");
-                                $control->execute();
-                                while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
-                                    $selected = ($fila['id_estado'] == $usua['id_estado']) ? 'selected' : '';
-                                    echo "<option value=" . $fila['id_estado'] . " $selected>" . $fila['estado'] . "</option>";
-                                }
-                                ?>
-                                </select>
-                            </div>
+    <label class="col-lg-3 col-form-label form-control-label">Estado</label>
+    <div class="col-lg-9">
+        <select class="form-control" name="id_estado">
+            <option value="">Seleccione uno</option>
+            <?php
+            // Modificar la consulta para que solo seleccione los estados con id_estado 3 y 5
+            $control = $con->prepare("SELECT * FROM estado WHERE id_estado IN (3, 5)");
+            $control->execute();
+            while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
+                $selected = ($fila['id_estado'] == $usua['id_estado']) ? 'selected' : '';
+                echo "<option value=" . $fila['id_estado'] . " $selected>" . $fila['estado'] . "</option>";
+            }
+            ?>
+        </select>
+    </div>
+</div>
+
                             <div class="form-group row">
                             <label class="col-lg-3 col-form-label form-control-label">Incapacidad</label>
                             <div class="col-lg-9">
@@ -140,10 +149,11 @@ if (isset($_POST["update"])) {
                             </div>
                         </div>
                         <div class="form-group row">
-                            <div class="col-lg-12 text-center">
-                                <input name="update" type="submit" class="btn btn-primary" value="Save Changes" onclick="validarContrasena()" >
-                            </div>
+                        <div class="col-lg-12 text-center">
+                            <input name="update" type="submit" class="btn btn-primary" value="Actualizar">
+                            <button class="btn btn-danger" name="delete" onclick="return confirmarEliminacion()">Eliminar</button>
                         </div>
+                    </div>
 
                         </div>
                         <?php //} 
