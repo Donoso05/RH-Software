@@ -18,6 +18,12 @@ $stmt = $con->prepare($sql);
 $stmt->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
 $stmt->execute();
 $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Calcular el salario diario
+$salario_diario = 0;
+if (count($result) > 0) {
+    $salario_diario = $result[0]['salario_base'] / 30;
+}
 ?>
 
 <!DOCTYPE html>
@@ -29,20 +35,12 @@ $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/1057b0ffdd.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="css/nav.css">
-    <style>
-        .card-body{
-            display: flex;
-            justify-content: space-evenly;
-            align-items: center;
-            text-align: center;
-        }
-    </style>
-
+    <link rel="stylesheet" href="css/liquidar.css">
 </head>
 <body>
 <?php include("nav.php") ?>
     <div class="container mt-5">
-        <?php if (count($result) > 0): ?>
+    <?php if (count($result) > 0): ?>
             <?php foreach ($result as $row): ?>
                 <div class="card">
                     <div class="card-header">
@@ -54,6 +52,34 @@ $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <p class="card-text"><strong>$</strong> <?php echo number_format($row['salario_base'], 0, '.', ','); ?></p>
                     </div>
                 </div>
+                <script>
+    const salarioDiario = <?php echo $salario_diario; ?>;
+    
+    function calcularNomina() {
+        const diasTrabajados = document.getElementById('dias_trabajados').value;
+        
+        if (diasTrabajados > 30) {
+            document.getElementById('salario_total').innerText = "Número inválido!!!";
+        } else {
+            const salarioTotal = diasTrabajados * salarioDiario;
+            document.getElementById('salario_total').innerText = salarioTotal.toLocaleString('es-ES', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        }
+    }
+</script>
+
+<div class="nomina-section">
+    <h4>Nómina</h4>
+    <form>
+        <div class="mb-3">
+            <label for="dias_trabajados" class="form-label"><strong>Días Trabajados</strong></label>
+            <input type="number" id="dias_trabajados" name="dias_trabajados" class="form-control" min="1" max="30" required oninput="calcularNomina()">
+        </div>
+    </form>
+    <div>
+        <p><strong>Salario Total: </strong><span id="salario_total"></span></p>
+    </div>
+</div>
+
             <?php endforeach; ?>
         <?php else: ?>
             <div class="alert alert-warning" role="alert">
@@ -62,9 +88,6 @@ $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <?php endif; ?>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
 

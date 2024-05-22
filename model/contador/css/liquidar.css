@@ -1,0 +1,23 @@
+
+.card-body {
+    display: flex;
+    justify-content:space-evenly;
+    align-items: center;
+    text-align: center;
+    
+}
+.nomina-section {
+    text-align: center;
+    padding-top: 10px;    
+}
+.nomina-section form {
+    padding-top: 30px;    
+    width: 80px;
+    display: flex;
+    float: right;
+}
+
+.nomina-section p{
+    padding-top: 7%;
+    margin-right: 90%;
+}
