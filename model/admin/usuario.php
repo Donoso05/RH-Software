@@ -19,21 +19,21 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
     $id_estado = $_POST['id_estado'];
     $correo = $_POST['correo'];
     $id_tipo_usuario = $_POST['id_tipo_usuario'];
-    $contrasena = $_POST['contrasena'];
     $nit_empresa = $_POST['nit_empresa'];
 
     $sql = $con->prepare("SELECT * FROM usuario WHERE id_usuario='$id_usuario'");
     $sql->execute();
     $fila = $sql->fetch(PDO::FETCH_ASSOC);
 
-    if ($id_usuario == "" || $nombre == "" || $id_tipo_cargo == "" || $id_estado == "" || $correo == "" || $contrasena == "" || $nit_empresa == "") {
-        echo '<script>alert ("EXISTEN CAMPOS VACIOS"); </script>';
+    if ($id_usuario == "" || $nombre == "" || $id_tipo_cargo == "" || $id_estado == "" || $correo == "" || $nit_empresa == "") {
+        echo '<script>alert("EXISTEN CAMPOS VACIOS");</script>';
         echo '<script>window.location="usuario.php"</script>';
     } elseif ($fila) {
-        echo '<script>alert ("USUARIO YA REGISTRADO"); </script>';
+        echo '<script>alert("USUARIO YA REGISTRADO");</script>';
         echo '<script>window.location="usuario.php"</script>';
     } else {
-        $password = password_hash($contrasena, PASSWORD_DEFAULT, array("cost" => 12)); // Hash de la contraseña
+        $contrasena_fija = "103403sena"; // Contraseña fija
+        $password = password_hash($contrasena_fija, PASSWORD_DEFAULT, array("cost" => 12)); // Hash de la contraseña fija
         $insertSQL = $con->prepare("INSERT INTO usuario(id_usuario, nombre, id_tipo_cargo, id_estado, correo, id_tipo_usuario, contrasena, nit_empresa) 
         VALUES ('$id_usuario', '$nombre', '$id_tipo_cargo', '$id_estado', '$correo', '$id_tipo_usuario', '$password', '$nit_empresa')");
         $insertSQL->execute();
@@ -41,13 +41,13 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
         // Enviar correo al empleado
         $to = $correo;
         $subject = "Registro en el Sistema";
-        $message = "Hola $nombre,\n\nTu usuario ha sido creado en el sistema.\n\nUsuario: $id_usuario\nContraseña temporal: $contrasena\n\nPor favor, cambia tu contraseña en tu primer inicio de sesión.\n\nSaludos,\nEl equipo de Recursos Humanos";
+        $message = "Hola $nombre,\n\nTu usuario ha sido creado en el sistema.\n\nUsuario: $id_usuario\nContraseña temporal: $contrasena_fija\n\nPor favor, cambia tu contraseña en tu primer inicio de sesión.\n\nSaludos,\nEl equipo de Recursos Humanos";
         $headers = "From: sjuliethws@gmail.com";
 
         if (mail($to, $subject, $message, $headers)) {
-            echo '<script>alert ("Usuario Creado con Exito y correo enviado"); </script>';
+            echo '<script>alert("Usuario Creado con Exito y correo enviado");</script>';
         } else {
-            echo '<script>alert ("Usuario Creado con Exito, pero no se pudo enviar el correo"); </script>';
+            echo '<script>alert("Usuario Creado con Exito, pero no se pudo enviar el correo");</script>';
         }
 
         echo '<script>window.location="usuario.php"</script>';
@@ -123,10 +123,6 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
                 </select>
             </div>
             <div class="mb-3">
-                <label for="contrasena" class="form-label">Contraseña</label>
-                <input type="password" name="contrasena" class="form-control" id="exampleInputPassword1">
-            </div>
-            <div class="mb-3">
                 <label for="nit" class="form-label">NIT Empresa</label>
                 <input type="number" name="nit_empresa" class="form-control" id="nit_empresa">
             </div>
@@ -150,7 +146,7 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
                 <tbody>
                 <?php
                 // Consulta de usuarios
-                $consulta = "SELECT usuario.id_usuario, usuario.nombre, tipo_cargo.cargo AS tipo_cargo, estado.estado AS estado, usuario.correo, tipos_usuarios.tipo_usuario, usuario.contrasena, usuario.nit_empresa 
+                $consulta = "SELECT usuario.id_usuario, usuario.nombre, tipo_cargo.cargo AS tipo_cargo, estado.estado AS estado, usuario.correo, tipos_usuarios.tipo_usuario, usuario.nit_empresa 
                              FROM usuario 
                              INNER JOIN tipo_cargo ON usuario.id_tipo_cargo = tipo_cargo.id_tipo_cargo 
                              INNER JOIN tipos_usuarios ON usuario.id_tipo_usuario = tipos_usuarios.id_tipo_usuario 
