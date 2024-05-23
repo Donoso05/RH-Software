@@ -3,7 +3,6 @@ session_start();
 
 // Verificar si la sesión no está iniciada
 if (!isset($_SESSION["id_usuario"])) {
-    // Mostrar un alert y redirigir utilizando JavaScript
     echo '<script>alert("Debes iniciar sesión antes de acceder a la interfaz de administrador.");</script>';
     echo '<script>window.location.href = "../login.html";</script>';
     exit();
@@ -12,12 +11,16 @@ require_once("../../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
 
-$sql = $con->prepare("SELECT * FROM usuario WHERE id_usuario = '" . $_GET['id'] . "'");
-$sql->execute();
+$sql = $con->prepare("SELECT * FROM usuario WHERE id_usuario = :id");
+$sql->execute([':id' => $_GET['id']]);
 $usua = $sql->fetch();
-?>
 
-<?php
+if (!$usua) {
+    echo '<script>alert("Usuario no encontrado.");</script>';
+    echo '<script>window.location.href = "../usuarios.html";</script>';
+    exit();
+}
+
 if (isset($_POST["update"])) {
     $id_usuario = $_POST['id_usuario'];
     $nombre = $_POST['nombre'];
@@ -25,16 +28,32 @@ if (isset($_POST["update"])) {
     $id_estado = $_POST['id_estado'];
     $correo = $_POST['correo'];
     $id_tipo_usuario = $_POST['id_tipo_usuario'];
-    $updateSQL = $con->prepare("UPDATE usuario SET nombre = '$nombre', id_tipo_cargo = '$id_tipo_cargo', id_estado = '$id_estado', correo = '$correo', id_tipo_usuario = '$id_tipo_usuario' WHERE id_usuario = '" . $_GET['id'] . "'");
+    
+    $updateSQL = $con->prepare("UPDATE usuario SET nombre = :nombre, id_tipo_cargo = :id_tipo_cargo, id_estado = :id_estado, correo = :correo, id_tipo_usuario = :id_tipo_usuario WHERE id_usuario = :id");
+    $updateSQL->execute([
+        ':nombre' => $nombre,
+        ':id_tipo_cargo' => $id_tipo_cargo,
+        ':id_estado' => $id_estado,
+        ':correo' => $correo,
+        ':id_tipo_usuario' => $id_tipo_usuario,
+        ':id' => $_GET['id']
+    ]);
 
-    $updateSQL->execute();
     echo '<script>alert("Actualización Exitosa");</script>';
     echo '<script>window.close();</script>';
 } elseif (isset($_POST["delete"])) {
     $id_usuario = $_POST['id_usuario'];
 
-    $deleteSQL = $con->prepare("DELETE FROM usuario WHERE id_usuario = ?");
-    $deleteSQL->execute([$id_usuario]);
+    // Eliminar dependencias en otras tablas primero
+    $tables = ['solic_prestamo', 'triggers', 'nomina', 'tram_permiso'];
+    foreach ($tables as $table) {
+        $deleteDependenciesSQL = $con->prepare("DELETE FROM $table WHERE id_usuario = :id");
+        $deleteDependenciesSQL->execute([':id' => $id_usuario]);
+    }
+
+    $deleteSQL = $con->prepare("DELETE FROM usuario WHERE id_usuario = :id");
+    $deleteSQL->execute([':id' => $id_usuario]);
+
     echo '<script>alert("Registro Eliminado Exitosamente");</script>';
     echo '<script>window.close();</script>';
     exit;
