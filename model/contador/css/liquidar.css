@@ -1,4 +1,5 @@
 
+
 .card-body {
     display: flex;
     justify-content:space-evenly;
@@ -6,18 +7,35 @@
     text-align: center;
     
 }
-.nomina-section {
+.nomina-header {
     text-align: center;
-    padding-top: 10px;    
+    padding-top: 50px;    
 }
-.nomina-section form {
+.nomina-header form {
     padding-top: 30px;    
     width: 80px;
     display: flex;
     float: right;
 }
 
-.nomina-section p{
-    padding-top: 7%;
+.nomina-header p{
+    padding-top: 6%;
     margin-right: 90%;
+}
+
+.nomina-section {
+    display: flex;
+    flex-direction: column; 
+    align-items: center;
+    padding-top: 60px;
+    text-align: center; 
+}
+.form-group {
+    text-align: center;
+}
+
+#horas_extras {
+    width: 80px;
+    text-align: center;
+    margin-left: 30%;
 }
