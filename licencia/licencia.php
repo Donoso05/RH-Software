@@ -1,5 +1,5 @@
 <?php
-require_once("../controller/validarsesion.php");
+
 require_once("../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
@@ -15,20 +15,20 @@ $fin = date("Y-m-d", strtotime($f_hoy . "+ 1 year"));
 
 if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
 
-    $id_licencia = $_POST['nit'];
-    $serial = $_POST['nombre'];
-    $fecha_inicio = $_POST['correo'];
-    $fecha_final = $_POST['correo'];
+    $nit_empresa = $_POST['nit_empresa'];
+    $licencia = $_POST['licencia'];
+    $fecha_inicio = $_POST['fecha_inicio'];
+    $fecha_final = $_POST['fecha_final'];
 
-    $sql = $con->prepare("SELECT * FROM empresas");
+    $sql = $con->prepare("SELECT * FROM licencia");
     $sql->execute();
     $fila = $sql->fetchAll(PDO::FETCH_ASSOC);
 
-    if ($nit == "" || $nombre == "" || $correo == "") {
+    if ($nit_empresa == "" || $licencia == "") {
         echo '<script>alert ("EXISTEN DATOS VACIOS"); </script>';
     } else {
-        $insertSQL = $con->prepare("INSERT INTO empresas(nit_empresa, nombre, correo) 
-	  VALUES ('$nit','$nombre', '$correo')");
+        $insertSQL = $con->prepare("INSERT INTO licencia(nit_empresa, licencia, fecha_inicio, fecha_fin) 
+	  VALUES ('$nit_empresa','$licencia', '$fecha_inicio', '$fecha_fin')");
         $insertSQL->execute();
         echo '<script>alert ("Empresa creada con exito"); </script>';
         echo '<script>window.location="empresas.php"</script>';
