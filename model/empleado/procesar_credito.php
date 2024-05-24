@@ -78,8 +78,8 @@ $idPrestamo = $idUsuario . str_pad($randomNumber, 4, '0', STR_PAD_LEFT);
 $valorCuotas = calcularValorCuotas($monto, $cuotas, $interesAnual);
 
 // Formatear el monto y valor de las cuotas en pesos colombianos
-$montoFormateado = number_format($monto, 2, ',', '.');
-$valorCuotasFormateado = number_format($valorCuotas, 2, ',', '.');
+$montoFormateado = number_format($monto, 0, ',', '.');
+$valorCuotasFormateado = number_format($valorCuotas, 0, ',', '.');
 
 // Insertar el préstamo en la base de datos
 $stmt = $con->prepare("INSERT INTO solic_prestamo (id_prestamo, id_usuario, monto_solicitado, id_estado, valor_cuotas, cant_cuotas, mes, anio) 
