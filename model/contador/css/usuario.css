@@ -1,5 +1,5 @@
 /* Estilos para el contenedor de la tabla con scroll */
 .table-container {
-    max-height: 500px; /* Altura máxima del contenedor */
-    overflow-y: auto; /* Habilita el desplazamiento vertical */
+    max-height: 500px; 
+    overflow-y: auto; 
 }
