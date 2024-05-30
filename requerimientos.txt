@@ -7,3 +7,4 @@ Al empleado debe llegarle al correo cuando se haya creado en el sistema; indican
 y contraseña de acceso (alfanumerica 10), pero esto tendra que cambiarla en el primer ingreso 
 El empleado podra tramitar solicitudes de prestamos y tramites de permisos.
 Tambien podra ver las liquidaciones de las nóminas pagadas y liquidadas de los ultimos seis meses.
+

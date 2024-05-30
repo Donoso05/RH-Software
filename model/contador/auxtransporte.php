@@ -75,8 +75,8 @@ VALUES ('$valor')");
                     while ($fila = $resultado->fetch()) {
                     ?>
                         <tr>
-                            <td><?php echo $fila["id_auxtransporte"]; ?></td>
-                            <td><?php echo $fila["valor"]; ?></td>
+                            <td><?php echo $fila["id_auxtransporte"]; ?></td>     
+                            <td><?php echo number_format($fila['valor'], 0, '.', ','); ?></td>
                             <td>
                                 <div class="text-center">
                                     <div class="d-flex justify-content-start">
