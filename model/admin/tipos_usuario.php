@@ -56,11 +56,11 @@
             <h3 class="text-center text-secondary">Registrar Tipos Usuarios</h3>
             <div class="mb-3">
                 <label for="usuario" class="form-label">Tipo Usuario:</label>
-                <input type="text" class="form-control" name="tipo_usuario" ">
+                <input type="text" class="form-control" name="tipo_usuario" required>
 
             </div>
             <input type="submit" class="btn btn-primary" name="validar" value="Registrar">
-                <input type="hidden" name="MM_insert" value="formreg">
+                <input type="hidden" name="MM_insert" value="formreg" required>
         </form>
 
         <div class="col-8 p-4">

@@ -49,11 +49,11 @@ VALUES ('$porcentaje_s')");
             <h3 class="text-center text-secondary">Salud</h3>
             <div class="mb-3">
                 <label for="usuario" class="form-label">Porcentaje Salud:</label>
-                <input type="number" class="form-control" name="porcentaje_s" >
+                <input type="number" class="form-control" name="porcentaje_s" required>
 
             </div>
             <input type="submit" class="btn btn-primary" name="validar" value="Registrar">
-                <input type="hidden" name="MM_insert" value="formreg">
+                <input type="hidden" name="MM_insert" value="formreg" required>
         </form>
 
         <div class="col-8 p-4">

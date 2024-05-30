@@ -73,15 +73,15 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
             <h3 class="text-center text-secondary">Registrar Usuarios</h3>
             <div class="mb-3">
                 <label for="usuario" class="form-label">Numero de Documento</label>
-                <input type="number" class="form-control" name="id_usuario" id="id_usuario">
+                <input type="number" class="form-control" name="id_usuario" id="id_usuario" required>
             </div>
             <div class="mb-3">
                 <label for="correo" class="form-label">Nombre</label>
-                <input type="text" class="form-control" name="nombre" id="nombre">
+                <input type="text" class="form-control" name="nombre" id="nombre" required>
             </div>
             <div class="mb-3">
                 <label for="cargo" class="form-label">Tipo Cargo</label>
-                <select class="form-control" name="id_tipo_cargo">
+                <select class="form-control" name="id_tipo_cargo" required>
                     <option value="">Selecciona el Tipo de Cargo</option>
                     <?php
                     $control = $con->prepare("SELECT * FROM tipo_cargo");
@@ -94,7 +94,7 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
             </div>
             <div class="mb-3">
                 <label for="estado" class="form-label">Estado</label>
-                <select class="form-control" name="id_estado">
+                <select class="form-control" name="id_estado" required>
                     <option value="">Selecciona el estado</option>
                     <?php
                     $control = $con->prepare("SELECT * FROM estado where id_estado <= 2");
@@ -107,11 +107,11 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
             </div>
             <div class="mb-3">
                 <label for="correo" class="form-label">Correo</label>
-                <input type="email" class="form-control" name="correo" id="exampleInputEmail1">
+                <input type="email" class="form-control" name="correo" id="exampleInputEmail1" required>
             </div>
             <div class="mb-3">
                 <label for="tipo_suario" class="form-label">Tipo Usuario</label>
-                <select class="form-control" name="id_tipo_usuario">
+                <select class="form-control" name="id_tipo_usuario" required>
                     <option value="">Selecciona el Tipo Usuario</option>
                     <?php
                     $control = $con->prepare("SELECT * FROM tipos_usuarios");
@@ -124,7 +124,7 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
             </div>
             <div class="mb-3">
                 <label for="nit" class="form-label">NIT Empresa</label>
-                <input type="number" name="nit_empresa" class="form-control" id="nit_empresa">
+                <input type="number" name="nit_empresa" class="form-control" id="nit_empresa" required>
             </div>
             <input type="submit" class="btn btn-primary" name="validar" value="Registrar">
             <input type="hidden" name="MM_insert" value="formreg">

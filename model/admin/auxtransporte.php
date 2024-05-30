@@ -49,11 +49,11 @@ VALUES ('$valor')");
             <h3 class="text-center text-secondary">Auxilio</h3>
             <div class="mb-3">
                 <label for="usuario" class="form-label">Auxilio de Tranporte:</label>
-                <input type="number" class="form-control" name="valor" >
+                <input type="number" class="form-control" name="valor" required >
 
             </div>
             <input type="submit" class="btn btn-primary" name="validar" value="Registrar">
-                <input type="hidden" name="MM_insert" value="formreg">
+                <input type="hidden" name="MM_insert" value="formreg" required>
         </form>
 
         <div class="col-8 p-4">

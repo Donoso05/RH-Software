@@ -18,7 +18,7 @@ if (isset($_POST["MM_insert"]) && ($_POST["MM_insert"] == "formreg")) {
     $id_tipo_permiso = $_POST['id_tipo_permiso'];
     $fecha_inicio = $_POST['fecha_inicio'];
     $fecha_fin = $_POST['fecha_fin'];
-    $incapacidad = $_POST['incapacidad'];
+    $incapacidad = $_FILES['incapacidad']['name'];
 
     // Validar que los campos no estén vacíos
     if (empty($id_usuario) || empty($id_tipo_permiso) || empty($fecha_inicio) || empty($fecha_fin) || empty($incapacidad)) {
@@ -62,13 +62,13 @@ if (isset($_POST["MM_insert"]) && ($_POST["MM_insert"] == "formreg")) {
 <body>
     <?php include("nav.php") ?>
     <div class="container-fluid row">
-        <form class="col-4 p-3" method="post">
+        <form class="col-4 p-3" method="post" enctype="multipart/form-data">
             <h3 class="text-center text-secondary">Tramite Permiso</h3>
             <div class="mb-3">
 
                 <div class="mb-3">
                     <label for="usuario" class="form-label">Empleado:</label>
-                    <select class="form-control" name="id_usuario">
+                    <select class="form-control" name="id_usuario" required>
                         <option value="">Seleccione el Empleado</option>
                         <?php
                         $control = $con->prepare("SELECT id_usuario FROM usuario");
@@ -80,7 +80,7 @@ if (isset($_POST["MM_insert"]) && ($_POST["MM_insert"] == "formreg")) {
                     </select>
                 </div>
                 <label for="usuario" class="form-label">Tipo Permiso:</label>
-                <select class="form-control" name="id_tipo_permiso">
+                <select class="form-control" name="id_tipo_permiso" required>
                     <option value="">Seleccione el Permiso</option>
                     <?php
                     $control = $con->prepare("SELECT * FROM tipo_permiso");
@@ -95,20 +95,18 @@ if (isset($_POST["MM_insert"]) && ($_POST["MM_insert"] == "formreg")) {
 
             <div class="mb-3">
                 <label for="usuario" class="form-label">Fecha Inicio:</label>
-                <input type="date" class="form-control" name="fecha_inicio">
+                <input type="date" class="form-control" name="fecha_inicio" required>
             </div>
 
             <div class="mb-3">
                 <label for="usuario" class="form-label">Fecha Fin:</label>
-                <input type="date" class="form-control" name="fecha_fin">
+                <input type="date" class="form-control" name="fecha_fin" required>
             </div>
 
             <div class="mb-3">
                 <label for="usuario" class="form-label">Incapacidad:</label>
-                <input type="file" class="form-control" name="incapacidad">
+                <input type="file" class="form-control" name="incapacidad" required>
             </div>
-
-
 
             <input type="submit" class="btn btn-primary" name="validar" value="Registrar">
             <input type="hidden" name="MM_insert" value="formreg">
@@ -153,16 +151,15 @@ if (isset($_POST["MM_insert"]) && ($_POST["MM_insert"] == "formreg")) {
                                         <a href="update_tram.php?id_rol=<?php echo $fila['id_permiso']; ?>" onclick="window.open('./update/update_tram.php?id=<?php echo $fila['id_permiso']; ?>','','width=500,height=500,toolbar=NO'); return false;"><i class="btn btn-primary">Editar</i></a>
                                     </div>
                                 </div>
-        </div>
-        </td>
-        </tr>
-    <?php
+                            </td>
+                        </tr>
+                    <?php
                     }
-    ?>
-    </tbody>
-    </table>
+                    ?>
+                </tbody>
+            </table>
+        </div>
     </div>
-    </div>
-    </body>
+</body>
 
 </html>

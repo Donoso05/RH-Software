@@ -52,16 +52,16 @@ VALUES ('$cargo','$salario_base','$id_arl')");
             <h3 class="text-center text-secondary">Registrar Tipos Cargo</h3>
             <div class="mb-3">
                 <label for="usuario" class="form-label">Tipo Cargo:</label>
-                <input type="text" class="form-control" name="cargo" >
+                <input type="text" class="form-control" name="cargo" required >
 
             </div>
 			<div class="mb-3">
                 <label for="usuario" class="form-label">Salario Base:</label>
-                <input type="number" class="form-control" name="salario_base">
+                <input type="number" class="form-control" name="salario_base" required>
             </div>
 			<div class="mb-3">
                 <label for="usuario" class="form-label">ARL:</label>
-                <select class="form-control" name="id_arl">
+                <select class="form-control" name="id_arl" required>
 				<option value="">Selecciona el Tipo de ARL</option>
 							<?php
 							$control = $con->prepare("SELECT * FROM arl");
@@ -73,7 +73,7 @@ VALUES ('$cargo','$salario_base','$id_arl')");
 						</select>
             </div>
             <input type="submit" class="btn btn-primary" name="validar" value="Registrar">
-                <input type="hidden" name="MM_insert" value="formreg">
+                <input type="hidden" name="MM_insert" value="formreg" required>
         </form>
 
         <div class="col-8 p-4">
