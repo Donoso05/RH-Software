@@ -76,9 +76,9 @@ $creditos = $stmtCreditos->fetchAll(PDO::FETCH_ASSOC);
                     <?php foreach ($creditos as $credito): ?>
                         <tr>
                             <td><?php echo htmlspecialchars($credito['id_prestamo']); ?></td>
-                            <td><?php echo number_format($credito['monto_solicitado'], 2, ',', '.'); ?></td>
+                            <td><?php echo number_format($credito['monto_solicitado'], 0, ',', '.'); ?></td>
                             <td><?php echo htmlspecialchars($credito['cant_cuotas']); ?></td>
-                            <td><?php echo number_format($credito['valor_cuotas'], 2, ',', '.'); ?></td>
+                            <td><?php echo number_format($credito['valor_cuotas'], 0, ',', '.'); ?></td>
                             <td><?php echo htmlspecialchars($credito['mes']); ?></td>
                             <td><?php echo htmlspecialchars($credito['anio']); ?></td>
                             <td><?php echo htmlspecialchars($credito['id_estado']); ?></td>

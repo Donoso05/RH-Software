@@ -102,7 +102,7 @@ $con = null;
 
     <?php if (!$password_changed): ?>
     <!-- Modal para cambiar la contraseña -->
-    <div class="modal fade" id="changePasswordModal" tabindex="-1" role="dialog" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" role="dialog" aria-labelledby="changePasswordModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-primary text-white">
@@ -124,7 +124,6 @@ $con = null;
                         <input type="hidden" name="id_usuario" value="<?php echo $id_usuario; ?>">
                         <div class="modal-footer">
                             <button type="submit" class="btn btn-primary">Cambiar Contraseña</button>
-    
                         </div>
                     </form>
                 </div>
@@ -137,6 +136,7 @@ $con = null;
         $(document).ready(function() {
             // Show the modal if password has not been changed
             <?php if (!$password_changed): ?>
+                $('#changePasswordModal').modal({ backdrop: 'static', keyboard: false });
                 $('#changePasswordModal').modal('show');
             <?php endif; ?>
         });
