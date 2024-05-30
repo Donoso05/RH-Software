@@ -78,7 +78,7 @@
         <a class="nav-link active" aria-current="page" href="index.php">Inicio</a>
         <a class="nav-link" href="tram_permiso.php">Tramite Permisos</a>
         <a class="nav-link" href="credito.php">Prestamos</a>
-        <a class="nav-link" href="solic_prestamo.php">Liquidaciones</a>
+        <a class="nav-link" href="liquidaciones.php">Liquidaciones</a>
         
         <a class="nav-link" href="../../controller/cerrarcesion.php">Cerrar sesión</a>
       </div>
