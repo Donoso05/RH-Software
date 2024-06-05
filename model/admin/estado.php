@@ -60,7 +60,6 @@ VALUES ('$estado')");
             <table class="table">
                 <thead class="bg-info">
                     <tr>
-                        <th scope="col">ID </th>
                         <th scope="col">Estado</th>
                         <th scope="col">Acciones</th>
                     </tr>
@@ -74,7 +73,7 @@ VALUES ('$estado')");
                     while ($fila = $resultado->fetch()) {
                     ?>
                         <tr>
-                            <td><?php echo $fila["id_estado"]; ?></td>
+                        
                             <td><?php echo $fila["estado"]; ?></td>
                             <td>
                             <div class="text-center">

@@ -21,6 +21,21 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
     $id_tipo_usuario = $_POST['id_tipo_usuario'];
     $nit_empresa = $_POST['nit_empresa'];
 
+    // Validación de id_usuario para que solo tenga entre 9 y 10 dígitos y solo números
+    if (!preg_match('/^\d{9,10}$/', $id_usuario)) {
+        echo '<script>alert("El Número de Documento debe contener entre 9 y 10 dígitos.");</script>';
+        echo '<script>window.location="usuario.php"</script>';
+        exit();
+    }
+
+    // Validación de nombre para que solo contenga letras y espacios
+    if (!preg_match('/^[a-zA-Z\s]+$/', $nombre)) {
+        echo '<script>alert("El Nombre solo puede contener letras.");</script>';
+        echo '<script>window.location="usuario.php"</script>';
+        exit();
+    }
+
+    // Resto de la validación
     $sql = $con->prepare("SELECT * FROM usuario WHERE id_usuario='$id_usuario'");
     $sql->execute();
     $fila = $sql->fetch(PDO::FETCH_ASSOC);
@@ -72,12 +87,12 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
         <form class="col-4 p-3" method="post" enctype="multipart/form-data">
             <h3 class="text-center text-secondary">Registrar Usuarios</h3>
             <div class="mb-3">
-                <label for="usuario" class="form-label">Numero de Documento</label>
-                <input type="number" class="form-control" name="id_usuario" id="id_usuario" required>
+                <label for="id_usuario" class="form-label">Numero de Documento</label>
+                <input type="text" class="form-control" name="id_usuario" id="id_usuario" required pattern="\d{9,10}" minlength="9" maxlength="10" title="El numero de documento debe contener entre 9 y 10 dígitos">
             </div>
             <div class="mb-3">
-                <label for="correo" class="form-label">Nombre</label>
-                <input type="text" class="form-control" name="nombre" id="nombre" required>
+                <label for="nombre" class="form-label">Nombre</label>
+                <input type="text" class="form-control" name="nombre" id="nombre" required pattern="[a-zA-Z\s]+" title="Solo se permiten letras">
             </div>
             <div class="mb-3">
                 <label for="cargo" class="form-label">Tipo Cargo</label>
@@ -95,9 +110,8 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
             <div class="mb-3">
                 <label for="estado" class="form-label">Estado</label>
                 <select class="form-control" name="id_estado" required>
-                    <option value="">Selecciona el estado</option>
                     <?php
-                    $control = $con->prepare("SELECT * FROM estado where id_estado <= 2");
+                    $control = $con->prepare("SELECT * FROM estado WHERE id_estado <= 1");
                     $control->execute();
                     while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
                         echo "<option value='" . $fila['id_estado'] . "'>" . $fila['estado'] . "</option>";
@@ -114,7 +128,8 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
                 <select class="form-control" name="id_tipo_usuario" required>
                     <option value="">Selecciona el Tipo Usuario</option>
                     <?php
-                    $control = $con->prepare("SELECT * FROM tipos_usuarios");
+                    // Solo mostrar tipos de usuario con id 2 y 3
+                    $control = $con->prepare("SELECT * FROM tipos_usuarios WHERE id_tipo_usuario IN (2, 3)");
                     $control->execute();
                     while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
                         echo "<option value='" . $fila['id_tipo_usuario'] . "'>" . $fila['tipo_usuario'] . "</option>";

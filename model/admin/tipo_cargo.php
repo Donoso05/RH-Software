@@ -80,7 +80,7 @@ VALUES ('$cargo','$salario_base','$id_arl')");
             <table class="table">
                 <thead class="bg-info">
                     <tr>
-                        <th scope="col">ID </th>
+                    
                         <th scope="col">Tipo Cargo</th>
 						<th scope="col">Salario Base</th>
 						<th scope="col">ARL</th>
@@ -97,7 +97,7 @@ VALUES ('$cargo','$salario_base','$id_arl')");
                     while ($fila = $resultado->fetch()) {
                     ?>
                         <tr>
-                            <td><?php echo $fila["id_tipo_cargo"]; ?></td>
+                           
                             <td><?php echo $fila["cargo"]; ?></td>
 							<td><?php echo $fila["salario_base"]; ?></td>
 							<td><?php echo $fila["tipo"]; ?></td>

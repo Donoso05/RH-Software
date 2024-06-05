@@ -28,7 +28,7 @@ if (isset($_POST["update"])) {
     $id_estado = $_POST['id_estado'];
     $correo = $_POST['correo'];
     $id_tipo_usuario = $_POST['id_tipo_usuario'];
-    
+
     $updateSQL = $con->prepare("UPDATE usuario SET nombre = :nombre, id_tipo_cargo = :id_tipo_cargo, id_estado = :id_estado, correo = :correo, id_tipo_usuario = :id_tipo_usuario WHERE id_usuario = :id");
     $updateSQL->execute([
         ':nombre' => $nombre,
@@ -43,6 +43,13 @@ if (isset($_POST["update"])) {
     echo '<script>window.close();</script>';
 } elseif (isset($_POST["delete"])) {
     $id_usuario = $_POST['id_usuario'];
+
+    // Verificar si el usuario que intenta eliminar es el mismo que el usuario en sesión
+    if ($id_usuario == $_SESSION["id_usuario"]) {
+        echo '<script>alert("No puedes eliminar tu propio registro.");</script>';
+        echo '<script>window.location.href = "../usuarios.html";</script>';
+        exit();
+    }
 
     // Eliminar dependencias en otras tablas primero
     $tables = ['solic_prestamo', 'triggers', 'nomina', 'tram_permiso'];

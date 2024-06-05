@@ -69,7 +69,6 @@
             <table class="table">
                 <thead class="bg-info">
                     <tr>
-                        <th scope="col">ID </th>
                         <th scope="col">Tipo Permiso</th>
                         <th scope="col">Acciones</th>
                     </tr>
@@ -83,7 +82,6 @@
                     while ($fila = $resultado->fetch()) {
                     ?>
                         <tr>
-                            <td><?php echo $fila["id_tipo_permiso"]; ?></td>
                             <td><?php echo $fila["tipo_permiso"]; ?></td>
                             <td>
                             <div class="text-center">

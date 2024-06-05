@@ -61,7 +61,7 @@ VALUES ('$porcentaje_p')");
             <table class="table">
                 <thead class="bg-info">
                     <tr>
-                        <th scope="col">ID </th>
+                    
                         <th scope="col">Pension</th>
                         <th scope="col">Porcentaje</th>
                         <th scope="col">Acciones</th>
@@ -76,7 +76,7 @@ VALUES ('$porcentaje_p')");
                     while ($fila = $resultado->fetch()) {
                     ?>
                         <tr>
-                            <td><?php echo $fila["id_pension"]; ?></td>
+                        
                             <td><?php echo "Pension"; ?></td> 
                             <td><?php echo $fila["porcentaje_p"]; ?></td>
                             <td>

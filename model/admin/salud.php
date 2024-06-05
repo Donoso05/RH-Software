@@ -60,7 +60,6 @@ VALUES ('$porcentaje_s')");
             <table class="table">
                 <thead class="bg-info">
                     <tr>
-                        <th scope="col">ID </th>
                         <th scope="col">Salud</th>
                         <th scope="col">Porcentaje</th>
                         <th scope="col">Acciones</th>
@@ -75,7 +74,6 @@ VALUES ('$porcentaje_s')");
                     while ($fila = $resultado->fetch()) {
                     ?>
                         <tr>
-                            <td><?php echo $fila["id_salud"]; ?></td>
                             <td><?php echo "Salud"; ?></td> 
                             <td><?php echo $fila["porcentaje_s"]; ?></td>
                             <td>

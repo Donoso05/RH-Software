@@ -60,7 +60,6 @@ VALUES ('$valor')");
             <table class="table">
                 <thead class="bg-info">
                     <tr>
-                        <th scope="col">ID </th>
                         <th scope="col">Auxilio </th>
                         <th scope="col">Valor</th>
                         <th scope="col">Acciones</th>
@@ -75,7 +74,6 @@ VALUES ('$valor')");
                     while ($fila = $resultado->fetch()) {
                     ?>
                         <tr>
-                            <td><?php echo $fila["id_auxtransporte"]; ?></td>
                             <td><?php echo "Auxilio de Transporte"; ?></td> 
                             <td><?php echo $fila["valor"]; ?></td>
                             <td>

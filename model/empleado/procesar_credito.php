@@ -96,7 +96,7 @@ $stmt->bindParam(':anio', $anio, PDO::PARAM_STR);
 if ($stmt->execute()) {
     echo '<script>alert("Solicitud de préstamo enviada con éxito.");</script>';
     echo '<script>window.location.href = "credito.php";</script>';
-} else {
+} else {        
     echo '<script>alert("Hubo un error al enviar la solicitud de préstamo. Inténtalo de nuevo.");</script>';
     echo '<script>window.location.href = "credito.php";</script>';
 }
