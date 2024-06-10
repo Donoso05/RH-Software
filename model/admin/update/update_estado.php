@@ -12,21 +12,25 @@ require_once("../../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
 
-$sql = $con -> prepare ("SELECT * FROM estado WHERE id_estado = '".$_GET['id']."'");
-$sql -> execute();
-$usua = $sql -> fetch();
+$sql = $con->prepare("SELECT * FROM estado WHERE id_estado = ?");
+$sql->execute([$_GET['id']]);
+$usua = $sql->fetch();
 ?>
 
 <?php
 if (isset($_POST["update"])) {
     $id_estado = $_POST['id_estado'];
-    $estado = $_POST['estado'];
-    $updateSQL = $con->prepare("UPDATE estado SET estado = '$estado' WHERE id_estado = '".$_GET['id']."'");
+    $estado = trim($_POST['estado']);
 
-    $updateSQL->execute();
-    echo '<script>alert ("Actualización Exitosa");</script>';
-    echo '<script>window.close();</script>';
-} elseif (isset($_POST["delete"])) { 
+    if (empty($estado) || !preg_match('/[a-zA-Z]/', $estado)) {
+        echo '<script>alert("El campo Estado debe contener al menos una letra y no puede estar vacío.");</script>';
+    } else {
+        $updateSQL = $con->prepare("UPDATE estado SET estado = ? WHERE id_estado = ?");
+        $updateSQL->execute([$estado, $_GET['id']]);
+        echo '<script>alert("Actualización Exitosa");</script>';
+        echo '<script>window.close();</script>';
+    }
+} elseif (isset($_POST["delete"])) {
     $id_estado = $_POST['id_estado'];
     
     $deleteSQL = $con->prepare("DELETE FROM estado WHERE id_estado = ?");
@@ -39,7 +43,6 @@ if (isset($_POST["update"])) {
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -64,16 +67,34 @@ if (isset($_POST["update"])) {
     <!-- DATA TABLE -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.1/css/bootstrap.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">
-</head>
 
+    <script>
+        function validateLetters(input) {
+            input.value = input.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '').trimStart();
+        }
+
+        function validateForm() {
+            var estado = document.forms["frm_consulta"]["estado"].value;
+            if (estado.trim() === "" || !/[a-zA-Z]/.test(estado)) {
+                alert("El campo Estado debe contener al menos una letra.");
+                return false;
+            }
+            return true;
+        }
+
+        function confirmarEliminacion() {
+            return confirm("¿Estás seguro de que deseas eliminar este Estado?");
+        }
+    </script>
+</head>
 <body>
     <main>
         <div class="card">
             <div class="card-header">
-                <h4>Actualizar Tipo Usuarios</h4>
+                <h4>Actualizar Estado</h4>
             </div>
             <div class="card-body">
-                <form action="" class="form" name="frm_consulta" method="POST" autocomplete="off">
+                <form action="" class="form" name="frm_consulta" method="POST" autocomplete="off" onsubmit="return validateForm()">
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label form-control-label">ID</label>
                         <div class="col-lg-9">
@@ -81,9 +102,9 @@ if (isset($_POST["update"])) {
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-lg-3 col-form-label form-control-label">Tipo Usuario</label>
+                        <label class="col-lg-3 col-form-label form-control-label">Estado</label>
                         <div class="col-lg-9">
-                            <input class="form-control" name="estado" value="<?php echo $usua['estado']; ?>">
+                            <input class="form-control" name="estado" value="<?php echo $usua['estado']; ?>" oninput="validateLetters(this)">
                         </div>
                     </div>
                     <div class="form-group row">
@@ -96,11 +117,5 @@ if (isset($_POST["update"])) {
             </div>
         </div>
     </main>
-    <script>
-        function confirmarEliminacion() {
-            return confirm("¿Estás seguro de que deseas eliminar este tipo de usuario?");
-        }
-    </script>
 </body>
-
 </html>

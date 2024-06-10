@@ -38,16 +38,7 @@
            
             
           </ul>
-        </div>
-        <div class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownRoles" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            Procesos
-          </a>
-          <ul class="dropdown-menu" aria-labelledby="navbarDropdownRoles">
-            <li><a class="dropdown-item" href="tipos_usuario.php"></a></li>
-            <li><a class="dropdown-item" href="nuevo_rol.php">Nuevo Rol</a></li>
-          </ul>
-        </div>
+        </div>iupo 
       </div>
       <div class="navbar-nav ms-auto">
         <a class="nav-link" href="../../controller/cerrarcesion.php">Cerrar sesión</a>

@@ -15,19 +15,17 @@ $con = $db->conectar();
 
 <?php
 if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
-	$valor = $_POST['valor'];
+    $valor = $_POST['valor'];
 
-
-	if ($valor == "") {
-		echo '<script>alert ("EXISTEN DATOS VACIOS"); </script>';
-		echo '<script>window.location="auxtransporte.php"</script>';
-	} else {
-		$insertSQL = $con->prepare("INSERT INTO auxtransporte(valor) 
-VALUES ('$valor')");
-		$insertSQL->execute();
-		echo '<script>alert ("Registro exitoso");</script>';
-		echo '<script>window.location="auxtransporte.php"</script>';
-	}
+    if ($valor == "") {
+        echo '<script>alert ("EXISTEN DATOS VACIOS"); </script>';
+        echo '<script>window.location="auxtransporte.php"</script>';
+    } else {
+        $insertSQL = $con->prepare("INSERT INTO auxtransporte(valor) VALUES ('$valor')");
+        $insertSQL->execute();
+        echo '<script>alert ("Registro exitoso");</script>';
+        echo '<script>window.location="auxtransporte.php"</script>';
+    }
 }
 ?>
 
@@ -40,6 +38,32 @@ VALUES ('$valor')");
     <title>Auxilio de Transporte</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/1057b0ffdd.js" crossorigin="anonymous"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const valorInput = document.getElementById('valor');
+
+            // Función para validar entrada solo de números
+            function soloNumeros(e) {
+                const char = String.fromCharCode(e.which);
+                if (!/[0-9]/.test(char)) {
+                    e.preventDefault();
+                }
+            }
+
+            // Función para eliminar espacios iniciales
+            function sinEspaciosIniciales(e) {
+                if (e.target.value === '' && e.which === 32) {
+                    e.preventDefault();
+                }
+            }
+
+            // Asignar eventos para validar la entrada
+            valorInput.addEventListener('keypress', function (e) {
+                sinEspaciosIniciales(e);
+                soloNumeros(e);
+            });
+        });
+    </script>
 </head>
 
 <body>
@@ -48,12 +72,11 @@ VALUES ('$valor')");
         <form class="col-4 p-3" method="post">
             <h3 class="text-center text-secondary">Auxilio</h3>
             <div class="mb-3">
-                <label for="usuario" class="form-label">Auxilio de Tranporte:</label>
-                <input type="number" class="form-control" name="valor" required >
-
+                <label for="valor" class="form-label">Auxilio de Transporte:</label>
+                <input type="number" class="form-control" id="valor" name="valor" required>
             </div>
             <input type="submit" class="btn btn-primary" name="validar" value="Registrar">
-                <input type="hidden" name="MM_insert" value="formreg" required>
+            <input type="hidden" name="MM_insert" value="formreg" required>
         </form>
 
         <div class="col-8 p-4">
@@ -91,12 +114,7 @@ VALUES ('$valor')");
                 </tbody>
             </table>
         </div>
-
-
-
-
     </div>
-
 </body>
 
 </html>
