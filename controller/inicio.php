@@ -53,16 +53,19 @@ try {
                             default:
                                 // Manejar el caso en que el tipo de usuario no está definido
                                 echo '<script>alert("Tipo de usuario no definido.");</script>';
+                                echo '<script>window.location.href = "../login.html";</script>';
                                 exit();
                         }
                     } else {
                         // Manejar el caso en que la contraseña es incorrecta
                         echo '<script>alert("ID o contraseña incorrectos.");</script>';
+                        echo '<script>window.location.href = "../login.html";</script>';
                         exit();
                     }
                 } else {
                     // Manejar el caso en que no se encontró ningún usuario
                     echo '<script>alert("ID o contraseña incorrectos.");</script>';
+                    echo '<script>window.location.href = "../login.html";</script>';
                     exit();
                 }
             } catch (PDOException $e) {
@@ -72,6 +75,7 @@ try {
         } else {
             // Manejar el caso en que no se enviaron ambos campos
             echo '<script>alert("No se puede iniciar sesión sin enviar datos.");</script>';
+            echo '<script>window.location.href = "login.html";</script>';
             exit();
         }
     }

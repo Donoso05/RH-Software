@@ -139,7 +139,8 @@ if (isset($_POST["update"])) {
                     $control = $con->prepare("SELECT * FROM tipo_cargo WHERE id_tipo_cargo >= 2");
                     $control->execute();
                     while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
-                        echo "<option value='" . $fila['id_tipo_cargo'] . "'>" . $fila['cargo'] . "</option>";
+                        $selected = ($fila['id_tipo_cargo'] == $usua['id_tipo_cargo']) ? 'selected' : '';
+                        echo "<option value='" . $fila['id_tipo_cargo'] . "' $selected>" . $fila['cargo'] . "</option>";
                     }
                     ?>
                             </select>
@@ -216,6 +217,13 @@ if (isset($_POST["update"])) {
         function confirmarEliminacion() {
             return confirm("¿Estás seguro de que deseas eliminar este usuario?");
         }
+
+        // Set the selected options based on the current user data
+        document.addEventListener('DOMContentLoaded', (event) => {
+            document.getElementById('id_tipo_cargo').value = "<?php echo $usua['id_tipo_cargo'] ?>";
+            document.getElementById('id_tipo_usuario').value = "<?php echo $usua['id_tipo_usuario'] ?>";
+            document.getElementById('id_estado').value = "<?php echo $usua['id_estado'] ?>";
+        });
     </script>
 </body>
 
