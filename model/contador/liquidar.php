@@ -1,6 +1,8 @@
 <?php
 require '../../conexion/conexion.php';
 
+date_default_timezone_set('America/Bogota');  // Establece la zona horaria a Bogotá
+
 $database = new Database();
 $con = $database->conectar();
 
@@ -96,7 +98,7 @@ if (count($result) > 0) {
     $row = $result[0];
     $salario_diario = $row['salario_base'] / 30;
     $deduccion_salud = $row['salario_base'] * $row['porcentaje_s'] / 100;
-    $deduccion_pension = $row['salario_base'] * $row['porcentaje_p'] / 100;
+    $deduccion_pension = $row['salario_base'] * $row['porcentaje_p'] ;
     $valorArl = $row['precio_arl'];
     $valorCuotas = isset($row['valor_cuotas']) ? $row['valor_cuotas'] : 0;
     $valorAuxTransporte = isset($row['valor_aux_transporte']) ? $row['valor_aux_transporte'] : 0;
@@ -185,7 +187,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             var diasTrabajados = parseInt(document.getElementById('dias_trabajados').value);
 
             if (diasTrabajados < 0 || diasTrabajados > 30) {
-                document.getElementById('error-dias-msg').innerHTML = '<div class="alert alert-warning" role="alert">Días trabajados debe ser entre 0 y 30.</div>';
+                document.getElementById('error-dias-msg').innerHTML = '<div class="alert alert-danger" role="alert">Días trabajados debe ser entre 0 y 30.</div>';
                 document.getElementById('dias_trabajados').value = diasTrabajados < 0 ? 0 : 30;
                 diasTrabajados = diasTrabajados < 0 ? 0 : 30;
             } else {
@@ -203,11 +205,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             var horasExtras = parseInt(document.getElementById('horas_extras').value);
 
             if (horasExtras > 48) {
-                document.getElementById('error-horas-msg').innerHTML = '<div class="alert alert-warning" role="alert">No puede ingresar más de 48 horas extras.</div>';
+                document.getElementById('error-horas-msg').innerHTML = '<div class="alert alert-danger" role="alert">No puede ingresar más de 48 horas extras.</div>';
                 document.getElementById('horas_extras').value = 48;
                 horasExtras = 48;
             } else if (horasExtras < 0) {
-                document.getElementById('error-horas-msg').innerHTML = '<div class="alert alert-warning" role="alert">Horas extras no puede ser negativo.</div>';
+                document.getElementById('error-horas-msg').innerHTML = '<div class="alert alert-danger" role="alert">Horas extras no puede ser negativo.</div>';
                 document.getElementById('horas_extras').value = 0;
                 horasExtras = 0;
             } else {
