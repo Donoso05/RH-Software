@@ -69,7 +69,7 @@ $con = null;
                         <div class="col-md-4">
                             <div class="profile-container">
                                 <div class="profile-img-wrapper">
-                                    <img src="<?php echo !empty($foto) ? $foto : 'img/user.webp'; ?>" class="img-fluid profile-img" alt="Foto de perfil">
+                                    <img src="<?php echo !empty($foto) ? $foto : 'img/user.webp'; ?>" class="img-fluid rounded" alt="Foto de perfil">
                                 </div>
                                 <form action="upload.php" method="post" enctype="multipart/form-data" style="margin-top: 20px;">
                                     <div class="file-input-wrapper">

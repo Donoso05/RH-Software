@@ -25,15 +25,7 @@
           </a>
           <ul class="dropdown-menu" aria-labelledby="navbarDropdownUsuarios">
             <li><a class="dropdown-item" href="usuario.php">Usuarios</a></li>
-            <li><a class="dropdown-item" href="tipos_usuario.php">Roles</a></li>
-            <li><a class="dropdown-item" href="tipo_permiso.php">Tipo Permiso</a></li>
             <li><a class="dropdown-item" href="tram_permiso.php">Tram. Permiso</a></li>
-            <li><a class="dropdown-item" href="tipo_cargo.php">Tipo Cargo</a></li>
-            <li><a class="dropdown-item" href="estado.php">Estados</a></li>
-            <li><a class="dropdown-item" href="auxtransporte.php">Aux. Transporte</a></li>
-            <li><a class="dropdown-item" href="arl.php">Arl</a></li>
-            <li><a class="dropdown-item" href="salud.php">Salud</a></li>
-            <li><a class="dropdown-item" href="pension.php">Pension</a></li>
             
           </ul>
         </div>

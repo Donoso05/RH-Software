@@ -20,7 +20,7 @@
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
         <a class="nav-link active" aria-current="page" href="index.php">Inicio</a>
-        <div class="nav-item dropdown">
+        <div class="nav-item dropdown">   
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownUsuarios" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             Usuarios
           </a>

@@ -53,16 +53,15 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/1057b0ffdd.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="css/nav.css">
-    <link rel="stylesheet" href="css/usuario.css">
 
 </head>
 
 <body>
     <?php include("nav.php") ?>
     <div class="container-fluid row">
-        <form class="col-4 p-3" method="post" enctype="multipart/form-data">
+        <form class="col-3 p-3" method="post" enctype="multipart/form-data">
             <h3 class="text-center text-secondary">Registrar Usuarios</h3>
-            <div class="mb-3">
+            <div class="mb-2">
                 <label for="usuario" class="form-label">Numero de Documento</label>
                 <input type="number" class="form-control" name="id_usuario" id="id_usuario">
 
@@ -110,7 +109,7 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
                 <select class="form-control" name="id_tipo_usuario">
                     <option value="">Selecciona el Tipo Usuario</option>
                     <?php
-                    $control = $con->prepare("SELECT * FROM tipos_usuarios");
+                    $control = $con->prepare("SELECT * FROM tipos_usuarios where id_tipo_usuario >= 2");
                     $control->execute();
                     while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
                         echo "<option value='" . $fila['id_tipo_usuario'] . "'>" . $fila['tipo_usuario'] . "</option>";
@@ -120,20 +119,9 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
             </div>
 
             <div class="mb-3">
-                <label for="correo" class="form-label">foto</label>
-                <input type="file" class="form-control" name="foto" id="foto">
-            </div>
-
-            <div class="mb-3">
-                <label for="contrasena" class="form-label">Contraseña</label>
-                <input type="password" name="contrasena" class="form-control" id="exampleInputPassword1">
-            </div>
-
-            <div class="mb-3">
                 <label for="nit" class="form-label">NIT Empresa</label>
                 <input type="number" name="nit_empresa" class="form-control" id="nit_empresa">
             </div>
-
 
             <input type="submit" class="btn btn-primary" name="validar" value="Registrar">
             <input type="hidden" name="MM_insert" value="formreg">
@@ -151,8 +139,6 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
                             <th scope="col">Correo</th>
                             <th scope="col">Tipo Usuario</th>
                             <th scope="col">NIT empresa</th>
-                            <th scope="col">Foto</th>
-
 
                             <th scope="col">Acciones</th>
 
@@ -178,13 +164,9 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
                                 <td><?php echo $fila["correo"]; ?></td>
                                 <td><?php echo $fila["tipo_usuario"]; ?></td>
                                 <td><?php echo $fila["nit_empresa"]; ?></td>
-                                <td> </td>
                                 <td>
                                     <div class="text-center">
                                         <div class="d-flex justify-content-start">
-                                            <a href="update_cargo.php?id_rol=<?php echo $fila['id_usuario']; ?>" onclick="window.open('./update/update_usuario.php?id=<?php echo $fila['id_usuario']; ?>','','width=500,height=500,toolbar=NO'); return false;" class="me-2">
-                                                <i class="btn btn-primary">Editar</i>
-                                            </a>
                                             <a href="liquidar.php?id_usuario=<?php echo $fila['id_usuario']; ?>" class="ms-2">
                                                 <i class="btn btn-danger">Liquidar</i>
                                             </a>
