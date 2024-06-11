@@ -37,6 +37,16 @@ $stmt_check_nomina->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
 $stmt_check_nomina->execute();
 $user_in_nomina = $stmt_check_nomina->fetchColumn();
 
+if ($user_in_nomina == 0) {
+    // Insertar un nuevo registro en la tabla 'nomina'
+    $sql_insert_nomina = "INSERT INTO nomina (id_usuario, id_salud, id_pension, id_arl, id_auxtransporte, salario_base) VALUES (:id_usuario, 1, 1, :id_arl, 1, :salario_base)";
+    $stmt_insert_nomina = $con->prepare($sql_insert_nomina);
+    $stmt_insert_nomina->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
+    $stmt_insert_nomina->bindParam(':id_arl', $id_arl, PDO::PARAM_INT);
+    $stmt_insert_nomina->bindParam(':salario_base', $salario_base, PDO::PARAM_INT);
+    $stmt_insert_nomina->execute();
+}
+
 // Función para verificar y actualizar el id_estado si el mes ha cambiado
 function actualizarEstadoSiCambiaElMes($con, $id_usuario) {
     $sql_get_last_nomina = "SELECT mes FROM nomina WHERE id_usuario = :id_usuario ORDER BY fecha_li DESC LIMIT 1";
@@ -57,16 +67,6 @@ function actualizarEstadoSiCambiaElMes($con, $id_usuario) {
 
 // Llamar a la función para verificar y actualizar el estado si el mes ha cambiado
 actualizarEstadoSiCambiaElMes($con, $id_usuario);
-
-if ($user_in_nomina == 0) {
-    // Insertar un nuevo registro en la tabla 'nomina'
-    $sql_insert_nomina = "INSERT INTO nomina (id_usuario, id_salud, id_pension, id_arl, id_auxtransporte, salario_base) VALUES (:id_usuario, 1, 1, :id_arl, 1, :salario_base)";
-    $stmt_insert_nomina = $con->prepare($sql_insert_nomina);
-    $stmt_insert_nomina->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
-    $stmt_insert_nomina->bindParam(':id_arl', $id_arl, PDO::PARAM_INT);
-    $stmt_insert_nomina->bindParam(':salario_base', $salario_base, PDO::PARAM_INT);
-    $stmt_insert_nomina->execute();
-}
 
 // Continuar con la lógica de selección y renderizado de la vista HTML
 $sql = "SELECT usuario.id_usuario, usuario.nombre, tipo_cargo.cargo, tipo_cargo.salario_base, 
@@ -96,7 +96,7 @@ if (count($result) > 0) {
     $row = $result[0];
     $salario_diario = $row['salario_base'] / 30;
     $deduccion_salud = $row['salario_base'] * $row['porcentaje_s'] / 100;
-    $deduccion_pension = $row['salario_base'] * $row['porcentaje_p'];
+    $deduccion_pension = $row['salario_base'] * $row['porcentaje_p'] / 100;
     $valorArl = $row['precio_arl'];
     $valorCuotas = isset($row['valor_cuotas']) ? $row['valor_cuotas'] : 0;
     $valorAuxTransporte = isset($row['valor_aux_transporte']) ? $row['valor_aux_transporte'] : 0;
@@ -108,13 +108,33 @@ if (count($result) > 0) {
     $total_deducciones = $deduccion_salud + $deduccion_pension + $valorCuotas;
     $total_ingresos = 0;
     $valor_neto = 0;
+} else {
+    die("Error al obtener los detalles del usuario.");
+}
 
-    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+$show_success_message = false;
+$show_error_message = false;
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Verificar si ya se ha realizado una liquidación en el mes actual
+    $current_mes = date('m');
+    $current_anio = date('Y');
+
+    $sql_check_current_month = "SELECT COUNT(*) FROM nomina WHERE id_usuario = :id_usuario AND mes = :mes AND anio = :anio";
+    $stmt_check_current_month = $con->prepare($sql_check_current_month);
+    $stmt_check_current_month->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
+    $stmt_check_current_month->bindParam(':mes', $current_mes, PDO::PARAM_INT);
+    $stmt_check_current_month->bindParam(':anio', $current_anio, PDO::PARAM_INT);
+    $stmt_check_current_month->execute();
+    $exists_current_month = $stmt_check_current_month->fetchColumn();
+
+    if ($exists_current_month == 0) {
         $dias_trabajados = isset($_POST['dias_trabajados']) ? (int)$_POST['dias_trabajados'] : 0;
         $horas_extras = isset($_POST['horas_extras']) ? (int)$_POST['horas_extras'] : 0;
 
         $salario_total = $salario_diario * $dias_trabajados;
         $valorHorasExtras = $horas_extras * 12300;
+
         $total_ingresos = $valorAuxTransporte + $valorHorasExtras;
         $valor_neto = $salario_total + $total_ingresos - $total_deducciones;
 
@@ -126,7 +146,7 @@ if (count($result) > 0) {
         $sql_update_nomina = "UPDATE nomina 
                               SET dias_trabajados = :dias_trabajados, horas_extras = :horas_extras, salario_total = :salario_total, 
                                   total_deducciones = :total_deducciones, total_ingresos = :total_ingresos, valor_neto = :valor_neto, 
-                                  valor_horas_extras = :valor_horas_extras, fecha_li = :fecha_li, mes = :mes, anio = :anio  
+                                  valor_horas_extras = :valor_horas_extras, fecha_li = :fecha_li, mes = :mes, anio = :anio, salario_base = :salario_base
                               WHERE id_usuario = :id_usuario";
         $stmt_update_nomina = $con->prepare($sql_update_nomina);
         $stmt_update_nomina->bindParam(':dias_trabajados', $dias_trabajados, PDO::PARAM_INT);
@@ -139,8 +159,13 @@ if (count($result) > 0) {
         $stmt_update_nomina->bindParam(':fecha_li', $fecha_li, PDO::PARAM_STR);
         $stmt_update_nomina->bindParam(':mes', $mes, PDO::PARAM_INT);
         $stmt_update_nomina->bindParam(':anio', $anio, PDO::PARAM_INT);
+        $stmt_update_nomina->bindParam(':salario_base', $salario_base, PDO::PARAM_INT);
         $stmt_update_nomina->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
         $stmt_update_nomina->execute();
+
+        $show_success_message = true;
+    } else {
+        $show_error_message = true;
     }
 }
 ?>
@@ -160,59 +185,71 @@ if (count($result) > 0) {
             var diasTrabajados = parseInt(document.getElementById('dias_trabajados').value);
 
             if (diasTrabajados < 0 || diasTrabajados > 30) {
-                document.getElementById('error-dias-msg').innerHTML = '<div class="alert alert-danger" role="alert">Días trabajados debe ser entre 0 y 30.</div>';
+                document.getElementById('error-dias-msg').innerHTML = '<div class="alert alert-warning" role="alert">Días trabajados debe ser entre 0 y 30.</div>';
+                document.getElementById('dias_trabajados').value = diasTrabajados < 0 ? 0 : 30;
                 diasTrabajados = diasTrabajados < 0 ? 0 : 30;
             } else {
                 document.getElementById('error-dias-msg').innerHTML = '';
             }
 
             var salarioBase = parseFloat(<?php echo $row['salario_base']; ?>);
-            var sueldoNeto = (salarioBase / 30) * diasTrabajados;
+            var sueldoNeto = Math.floor((salarioBase / 30) * diasTrabajados);
 
-            document.getElementById('salario_total').textContent = sueldoNeto.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,') + ' COP';
-            document.getElementById('sueldo_neto').value = sueldoNeto.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+            document.getElementById('salario_total').textContent = sueldoNeto.toLocaleString('es-CO') + ' COP';
+            document.getElementById('sueldo_neto').value = sueldoNeto.toLocaleString('es-CO');
         }
 
         function calcularSalarioExtra() {
             var horasExtras = parseInt(document.getElementById('horas_extras').value);
 
             if (horasExtras > 48) {
-                document.getElementById('error-horas-msg').innerHTML = '<div class="alert alert-danger" role="alert">No puede ingresar más de 48 horas extras.</div>';
+                document.getElementById('error-horas-msg').innerHTML = '<div class="alert alert-warning" role="alert">No puede ingresar más de 48 horas extras.</div>';
+                document.getElementById('horas_extras').value = 48;
                 horasExtras = 48;
             } else if (horasExtras < 0) {
-                document.getElementById('error-horas-msg').innerHTML = '<div class="alert alert-danger" role="alert">Horas extras no puede ser negativo.</div>';
+                document.getElementById('error-horas-msg').innerHTML = '<div class="alert alert-warning" role="alert">Horas extras no puede ser negativo.</div>';
                 document.getElementById('horas_extras').value = 0;
                 horasExtras = 0;
             } else {
                 document.getElementById('error-horas-msg').innerHTML = '';
             }
 
-            var valorHorasExtras = horasExtras * 12300;
+            var valorHorasExtras = Math.floor(horasExtras * 12300);
 
-            document.getElementById('valor_horas_extras').textContent = valorHorasExtras.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,') + ' COP';
+            document.getElementById('valor_horas_extras').textContent = valorHorasExtras.toLocaleString('es-CO') + ' COP';
 
             var auxilioTransporte = parseFloat(<?php echo is_null($row['valor_aux_transporte']) ? '0' : $row['valor_aux_transporte']; ?>);
-            var totalIngresos = valorHorasExtras + auxilioTransporte;
+            var totalIngresos = Math.floor(valorHorasExtras + auxilioTransporte);
             var totalDeducciones = parseFloat(<?php echo $deduccion_salud + $deduccion_pension + $valorCuotas; ?>);
 
-            document.getElementById('total_ingresos').textContent = totalIngresos.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,') + ' COP';
-            document.getElementById('total_deducciones').textContent = totalDeducciones.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,') + ' COP';
+            document.getElementById('total_ingresos').textContent = totalIngresos.toLocaleString('es-CO') + ' COP';
+            document.getElementById('total_deducciones').textContent = totalDeducciones.toLocaleString('es-CO') + ' COP';
 
             var salarioBase = parseFloat(<?php echo $row['salario_base']; ?>);
             var diasTrabajados = parseInt(document.getElementById('dias_trabajados').value);
-            var sueldoNeto = (salarioBase / 30) * diasTrabajados;
+            var sueldoNeto = Math.floor((salarioBase / 30) * diasTrabajados);
 
-            var salarioNeto = sueldoNeto + totalIngresos - totalDeducciones;
+            var salarioNeto = Math.floor(sueldoNeto + totalIngresos - totalDeducciones);
 
-            document.getElementById('valor_neto').textContent = salarioNeto.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,') + ' COP';
+            document.getElementById('valor_neto').textContent = salarioNeto.toLocaleString('es-CO') + ' COP';
         }
     </script>
 
 </head>
 
-<body>
+<body onload="document.getElementById('dias_trabajados').focus();">
     <?php include("nav.php") ?>
     <div class="container mt-5">
+        <?php if ($show_success_message) : ?>
+            <div class="alert alert-success" role="alert">
+                La liquidación se ha realizado con éxito.
+            </div>
+        <?php endif; ?>
+        <?php if ($show_error_message) : ?>
+            <div class="alert alert-danger" role="alert">
+                La liquidación ya se ha realizado para el mes actual.
+            </div>
+        <?php endif; ?>
         <?php if (count($result) > 0) : ?>
             <?php foreach ($result as $row) : ?>
                 <div class="card bg-dark text-white">
@@ -263,7 +300,7 @@ if (count($result) > 0) {
                                     <p><strong>ARL: </strong><span><?php echo number_format($row['precio_arl'], 0, '.', ','); ?> COP</span></p>
                                     <p><strong>Salud: </strong><span><?php echo number_format($deduccion_salud, 0, '.', ','); ?> COP</span></p>
                                     <p><strong>Pensión: </strong><span><?php echo number_format($deduccion_pension, 0, '.', ','); ?> COP</span></p>
-                                    <p><strong>Cuotas Préstamo: </strong><span><?php echo $valorCuotas; ?></span></p>
+                                    <p><strong>Cuotas Préstamo: </strong><span><?php echo number_format($valorCuotas, 0, '.', ','); ?> COP</span></p>
                                     <p><strong>Total Deducciones: </strong><span id="total_deducciones"><?php echo number_format($total_deducciones, 0, '.', ','); ?> COP</span></p>
                                 </div>
                             </form>

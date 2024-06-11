@@ -111,55 +111,9 @@ if (isset($_POST['id_permiso'])) {
     <div class="data-bs-target">
     <?php include("nav.php") ?>
     <div class="container-fluid row">
-        <form class="col-4 p-3" method="post">
-            <h3 class="text-center text-secondary">Tramite Permiso</h3>
-            <div class="mb-3">
+    <h3 class="text-center text-secondary">Tramite Permiso</h3>
 
-                <div class="mb-3">
-                    <label for="usuario" class="form-label">Empleado:</label>
-                    <select class="form-control" name="id_usuario">
-                        <option value="">Seleccione el Empleado</option>
-                        <?php
-                        $control = $con->prepare("SELECT id_usuario FROM usuario");
-                        $control->execute();
-                        while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
-                            echo "<option value='" . $fila['id_usuario'] . "'>" . $fila['id_usuario'] . "</option>";
-                        }
-                        ?>
-                    </select>
-                </div>
-                <label for="usuario" class="form-label">Tipo Permiso:</label>
-                <select class="form-control" name="id_tipo_permiso">
-                    <option value="">Seleccione el Permiso</option>
-                    <?php
-                    $control = $con->prepare("SELECT * FROM tipo_permiso");
-                    $control->execute();
-                    while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
-                        echo "<option value='" . $fila['id_tipo_permiso'] . "'>" . $fila['tipo_permiso'] . "</option>";
-                    }
-                    ?>
-                </select>
 
-            </div>
-
-            <div class="mb-3">
-                <label for="usuario" class="form-label">Fecha Inicio:</label>
-                <input type="date" class="form-control" name="fecha_inicio">
-            </div>
-
-            <div class="mb-3">
-                <label for="usuario" class="form-label">Fecha Fin:</label>
-                <input type="date" class="form-control" name="fecha_fin">
-            </div>
-
-            <div class="mb-3">
-                <label for="usuario" class="form-label">Incapacidad:</label>
-                <input type="file" class="form-control" name="incapacidad">
-            </div>
-
-            <input type="submit" class="btn btn-primary" name="validar" value="Registrar">
-            <input type="hidden" name="MM_insert" value="formreg">
-        </form>
 
         <div class="col-8 p-4">
             <table class="table">
@@ -195,9 +149,6 @@ if (isset($_POST['id_permiso'])) {
                             <td>
                                 <div class="text-center">
                                     <div class="d-flex justify-content-start">
-                                        <a href="update_tram.php?id=<?php echo $fila['id_permiso']; ?>" onclick="window.open('./update/update_tram.php?id=<?php echo $fila['id_permiso']; ?>','','width=500,height=500,toolbar=NO'); return false;">
-                                            <i class="btn btn-primary">Editar</i>
-                                        </a>
                                         <?php if ($fila["id_estado"] == 3) { ?>
                                             <button onclick="aprobarPermiso(<?php echo $fila['id_permiso']; ?>)" class="btn btn-success ms-2">Aprobar</button>
                                         <?php } elseif ($fila["id_estado"] == 5) { ?>

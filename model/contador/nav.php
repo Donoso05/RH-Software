@@ -26,6 +26,7 @@
           <ul class="dropdown-menu" aria-labelledby="navbarDropdownUsuarios">
             <li><a class="dropdown-item" href="usuario.php">Usuarios</a></li>
             <li><a class="dropdown-item" href="tram_permiso.php">Tram. Permiso</a></li>
+            <li><a class="dropdown-item" href="credito.php">Prestamos</a></li>
             
           </ul>
         </div>
