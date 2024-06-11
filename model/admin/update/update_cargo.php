@@ -12,22 +12,28 @@ require_once("../../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
 
-$sql = $con->prepare("SELECT * FROM tipo_cargo,arl WHERE tipo_cargo.id_arl = arl.id_arl AND tipo_cargo.id_tipo_cargo = '" . $_GET['id'] . "'");
-$sql->execute();
+$sql = $con->prepare("SELECT * FROM tipo_cargo, arl WHERE tipo_cargo.id_arl = arl.id_arl AND tipo_cargo.id_tipo_cargo = ?");
+$sql->execute([$_GET['id']]);
 $usua = $sql->fetch();
 ?>
 
 <?php
 if (isset($_POST["update"])) {
     $id_tipo_cargo = $_POST['id_tipo_cargo'];
-    $cargo = $_POST['cargo'];
-    $salario_base = $_POST['salario_base'];
-    $id_arl = $_POST['id_arl'];
-    $insertSQL = $con->prepare("UPDATE tipo_cargo SET id_tipo_cargo = '$id_tipo_cargo', cargo = '$cargo', salario_base = '$salario_base', id_arl = '$id_arl'
-    WHERE id_tipo_cargo = '" . $_GET['id'] . "'");
-    $insertSQL->execute();
-    echo '<script>alert ("Actualización Exitosa");</script>';
-    echo '<script>window.close();</script>';
+    $cargo = trim($_POST['cargo']);
+    $salario_base = trim($_POST['salario_base']);
+    $id_arl = trim($_POST['id_arl']);
+
+    if (empty($cargo) || empty($salario_base) || empty($id_arl)) {
+        echo '<script>alert("EXISTEN DATOS VACIOS");</script>';
+    } elseif (!preg_match('/[a-zA-Z]/', $cargo) || !is_numeric($salario_base) || !is_numeric($id_arl)) {
+        echo '<script>alert("Datos inválidos. Verifique que el cargo contenga letras y que el salario y ARL sean números válidos.");</script>';
+    } else {
+        $insertSQL = $con->prepare("UPDATE tipo_cargo SET cargo = ?, salario_base = ?, id_arl = ? WHERE id_tipo_cargo = ?");
+        $insertSQL->execute([$cargo, $salario_base, $id_arl, $id_tipo_cargo]);
+        echo '<script>alert("Actualización Exitosa");</script>';
+        echo '<script>window.close();</script>';
+    }
 } elseif (isset($_POST["delete"])) {
     $id_tipo_cargo = $_POST['id_tipo_cargo'];
 
@@ -37,8 +43,8 @@ if (isset($_POST["update"])) {
     echo '<script>window.close();</script>';
     exit;
 }
-
 ?>
+
 <!doctype html>
 <html lang="en">
 
@@ -62,11 +68,20 @@ if (isset($_POST["update"])) {
     <script src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script>
 
     <!-- Nuestro css-->
-    <link rel="stylesheet" type="text/css" href="../css/ingreso2.css" th:href="@{/css/ingreso2.css}">
+    <link rel="stylesheet" type="text/css" href="../css/ingreso2.css">
     <!-- DATA TABLE -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.1/css/bootstrap.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">
 
+    <script>
+        function validateLetters(input) {
+            input.value = input.value.replace(/[^a-zA-ZñÑáéíóúÁÉÍÓÚ\s]/g, '').trimStart();
+        }
+
+        function validateNumbers(input) {
+            input.value = input.value.replace(/[^0-9]/g, '').trimStart();
+        }
+    </script>
 </head>
 
 <body>
@@ -80,32 +95,32 @@ if (isset($_POST["update"])) {
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label form-control-label">Id_Tipo_Cargo</label>
                         <div class="col-lg-9">
-                            <input name="id_tipo_cargo" value="<?php echo $usua['id_tipo_cargo'] ?>" class="form-control" type="text" readonly>
+                            <input name="id_tipo_cargo" value="<?php echo htmlspecialchars($usua['id_tipo_cargo'], ENT_QUOTES, 'UTF-8') ?>" class="form-control" type="text" readonly>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label form-control-label">Cargo</label>
                         <div class="col-lg-9">
-                            <input name="cargo" pattern="[A-Za-zñÑáéíóúÁÉÍÓÚ\s]+" title="No es posible ingresar números en el nombre" value="<?php echo $usua['cargo'] ?>" class="form-control" type="text">
+                            <input name="cargo" pattern="[A-Za-zñÑáéíóúÁÉÍÓÚ\s]+" title="No es posible ingresar números en el nombre" value="<?php echo htmlspecialchars($usua['cargo'], ENT_QUOTES, 'UTF-8') ?>" class="form-control" type="text" oninput="validateLetters(this)" required>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label form-control-label">Salario Base</label>
                         <div class="col-lg-9">
-                            <input name="salario_base" type="text" pattern="[0-9]*" title="Ingrese solo números" value="<?php echo $usua['salario_base'] ?>" class="form-control">
+                            <input name="salario_base" type="text" pattern="[0-9]*" title="Ingrese solo números" value="<?php echo htmlspecialchars($usua['salario_base'], ENT_QUOTES, 'UTF-8') ?>" class="form-control" oninput="validateNumbers(this)" required>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label form-control-label">ARL</label>
                         <div class="col-lg-9">
-                            <select class="form-control" name="id_arl">
+                            <select class="form-control" name="id_arl" required>
                                 <option value="">Seleccione uno</option>
                                 <?php
-                                $control = $con->prepare("select * from arl where id_arl ");
+                                $control = $con->prepare("SELECT * FROM arl");
                                 $control->execute();
                                 while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
                                     $selected = ($fila['id_arl'] == $usua['id_arl']) ? 'selected' : '';
-                                    echo "<option value=" . $fila['id_arl'] . " $selected>" . $fila['tipo'] . "</option>";
+                                    echo "<option value='" . htmlspecialchars($fila['id_arl'], ENT_QUOTES, 'UTF-8') . "' $selected>" . htmlspecialchars($fila['tipo'], ENT_QUOTES, 'UTF-8') . "</option>";
                                 }
                                 ?>
                             </select>
@@ -113,36 +128,22 @@ if (isset($_POST["update"])) {
                     </div>
                     <script>
                         function confirmarEliminacion() {
-                            if (confirm("¿Estás seguro de que deseas eliminar este agente?")) {
-                                document.forms["frm_consulta"].submit();
-                                // Limpiar el formulario
-                                document.getElementById("frm_consulta").reset();
-                            } else {
-                                // Cancelar la eliminación
-                                return false;
-                            }
+                            return confirm("¿Estás seguro de que deseas eliminar este Cargo?");
                         }
                     </script>
                     <div class="form-group row">
                         <div class="col-lg-12 text-center">
-                            <input name="update" type="submit" class="btn btn-primary" value="Actualizar" onclick="validarContrasena()">
+                            <input name="update" type="submit" class="btn btn-primary" value="Actualizar">
                             <button class="btn btn-danger" name="delete" onclick="return confirmarEliminacion()">Eliminar</button>
                         </div>
                     </div>
-
-                    <?php //} 
-                    ?>
                 </form>
-                <div class="form-group row">
-                    <div class="col-lg-12 text-center">
-                    </div>
-                </div>
             </div>
     </main>
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6jty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 </body>
 

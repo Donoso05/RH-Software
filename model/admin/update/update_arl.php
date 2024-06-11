@@ -3,7 +3,6 @@ session_start();
 
 // Verificar si la sesión no está iniciada
 if (!isset($_SESSION["id_usuario"])) {
-    // Mostrar un alert y redirigir utilizando JavaScript
     echo '<script>alert("Debes iniciar sesión antes de acceder a la interfaz de administrador.");</script>';
     echo '<script>window.location.href = "../login.html";</script>';
     exit();
@@ -12,25 +11,34 @@ require_once("../../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
 
-$sql = $con->prepare("SELECT * FROM arl WHERE arl.id_arl = '" . $_GET['id'] . "'");
+$sql = $con->prepare("SELECT * FROM arl WHERE arl.id_arl = :id");
+$sql->bindParam(':id', $_GET['id']);
 $sql->execute();
 $usua = $sql->fetch();
-?>
 
-<?php
 if (isset($_POST["update"])) {
     $id_arl = $_POST['id_arl'];
     $tipo = $_POST['tipo'];    
     $porcentaje = $_POST['porcentaje'];
-    $insertSQL = $con->prepare("UPDATE arl SET id_arl = '$id_arl', tipo = '$tipo', porcentaje = '$porcentaje'
-    WHERE id_arl = '" . $_GET['id'] . "'");
-    $insertSQL->execute();
-    echo '<script>alert ("Actualización Exitosa");</script>';
+    $updateSQL = $con->prepare("UPDATE arl SET tipo = :tipo, porcentaje = :porcentaje WHERE id_arl = :id_arl");
+    $updateSQL->bindParam(':id_arl', $id_arl);
+    $updateSQL->bindParam(':tipo', $tipo);
+    $updateSQL->bindParam(':porcentaje', $porcentaje);
+    $updateSQL->execute();
+    echo '<script>alert("Actualización Exitosa");</script>';
     echo '<script>window.close();</script>';
 }
 
-
+if (isset($_POST["delete"])) {
+    $id_arl = $_POST['id_arl'];
+    $deleteSQL = $con->prepare("DELETE FROM arl WHERE id_arl = :id_arl");
+    $deleteSQL->bindParam(':id_arl', $id_arl);
+    $deleteSQL->execute();
+    echo '<script>alert("Registro eliminado exitosamente.");</script>';
+    echo '<script>window.close();</script>';
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -71,25 +79,25 @@ if (isset($_POST["update"])) {
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label form-control-label">ID</label>
                         <div class="col-lg-9">
-                            <input class="form-control" name="id_arl" value="<?php echo $usua['id_arl']; ?>" readonly>
+                            <input class="form-control" name="id_arl" value="<?php echo $usua['id_arl']; ?>" readonly required>
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-lg-3 col-form-label form-control-label">Tipo Usuario</label>
+                        <label class="col-lg-3 col-form-label form-control-label">Tipo ARL</label>
                         <div class="col-lg-9">
-                            <input class="form-control" name="tipo" value="<?php echo $usua['tipo']; ?>">
+                            <input class="form-control" name="tipo" value="<?php echo $usua['tipo']; ?>" oninput="allowOnlyLetters(this)" required>
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-lg-3 col-form-label form-control-label">Tipo Usuario</label>
+                        <label class="col-lg-3 col-form-label form-control-label">Porcentaje</label>
                         <div class="col-lg-9">
-                            <input class="form-control" name="porcentaje " value="<?php echo $usua['porcentaje']; ?>">
+                            <input class="form-control" name="porcentaje" value="<?php echo $usua['porcentaje']; ?>" oninput="allowOnlyNumbers(this)" required>
                         </div>
                     </div>
                     <div class="form-group row">
                         <div class="col-lg-12 text-center">
                             <input name="update" type="submit" class="btn btn-primary" value="Actualizar">
-                            <button class="btn btn-danger" name="delete" onclick="return confirmarEliminacion()">Eliminar</button>
+                            <button type="submit" class="btn btn-danger" name="delete" onclick="return confirmarEliminacion()">Eliminar</button>
                         </div>
                     </div>
                 </form>
@@ -97,8 +105,16 @@ if (isset($_POST["update"])) {
         </div>
     </main>
     <script>
+        function allowOnlyLetters(input) {
+            input.value = input.value.replace(/[^a-zA-Z\s]/g, '').replace(/^\s+/g, '');
+        }
+
+        function allowOnlyNumbers(input) {
+            input.value = input.value.replace(/[^\d]/g, '');
+        }
+
         function confirmarEliminacion() {
-            return confirm("¿Estás seguro de que deseas eliminar este tipo de usuario?");
+            return confirm("¿Estás seguro de que deseas eliminar este tipo de ARL?");
         }
     </script>
 </body>

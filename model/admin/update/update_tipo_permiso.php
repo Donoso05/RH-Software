@@ -73,7 +73,7 @@ if (isset($_POST["update"])) {
                 <h4>Actualizar Tipo Permisos</h4>
             </div>
             <div class="card-body">
-                <form action="" class="form" name="frm_consulta" method="POST" autocomplete="off">
+                <form action="" class="form" name="frm_consulta" method="POST" autocomplete="off" onsubmit="return validarFormulario()">
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label form-control-label">ID</label>
                         <div class="col-lg-9">
@@ -83,7 +83,7 @@ if (isset($_POST["update"])) {
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label form-control-label">Tipo Permiso</label>
                         <div class="col-lg-9">
-                            <input class="form-control" name="tipo_permiso" value="<?php echo $usua['tipo_permiso']; ?>">
+                            <input class="form-control" name="tipo_permiso" id="tipo_permiso" value="<?php echo $usua['tipo_permiso']; ?>">
                         </div>
                     </div>
                     <div class="form-group row">
@@ -100,7 +100,16 @@ if (isset($_POST["update"])) {
         function confirmarEliminacion() {
             return confirm("¿Estás seguro de que deseas eliminar este tipo de permiso?");
         }
-    </script>
+
+        function validarFormulario() {
+        var tipoPermiso = document.getElementById('tipo_permiso').value.trim();
+        if (!/^[a-zA-Z\s]+$/.test(tipoPermiso)) {
+            alert("El campo 'Tipo Permiso' solo puede contener letras.");
+            return false;
+        }
+        return true;
+    }
+</script>
 </body>
 
 </html>
