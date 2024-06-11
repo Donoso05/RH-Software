@@ -17,7 +17,7 @@ $con = $db->conectar();
 
 $id_usuario = $_SESSION["id_usuario"];
 
-// Consultar tipos de permiso
+// Consultar tipos de permiso  
 $consultaTipos = $con->prepare("SELECT id_tipo_permiso, tipo_permiso, dias FROM tipo_permiso");
 $consultaTipos->execute();
 $tipos_permiso = $consultaTipos->fetchAll(PDO::FETCH_ASSOC);
