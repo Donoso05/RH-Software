@@ -38,8 +38,16 @@ $creditos = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solicitud de Préstamo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <script src="https://kit.fontawesome.com/1057b0ffdd.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="css/nav.css">
-    <link rel="stylesheet" href="css/presta.css">
+    <style>
+        .table thead {
+            background-color: #343a40;
+            color: white;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         function actualizarEstado(id_prestamo, estado_actual) {
             var nuevo_estado = estado_actual == 5 ? 7 : 5;
@@ -59,48 +67,50 @@ $creditos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <body>
     <?php include("nav.php") ?>
-    <div class="container">
-        <div class="table-container">
-            <h2>Créditos Actuales</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID Préstamo</th>
-                        <th>Monto Solicitado</th>
-                        <th>Cantidad de Cuotas</th>
-                        <th>Valor de Cuotas</th>
-                        <th>Mes</th>
-                        <th>Año</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (!empty($creditos)): ?>
-                        <?php foreach ($creditos as $credito): ?>
-                            <tr>
-                                <td><?php echo htmlspecialchars($credito['id_prestamo']); ?></td>
-                                <td><?php echo number_format($credito['monto_solicitado'], 0, ',', '.'); ?></td>
-                                <td><?php echo htmlspecialchars($credito['cant_cuotas']); ?></td>
-                                <td><?php echo number_format($credito['valor_cuotas'], 0, ',', '.'); ?></td>
-                                <td><?php echo htmlspecialchars($credito['mes']); ?></td>
-                                <td><?php echo htmlspecialchars($credito['anio']); ?></td>
-                                <td><?php echo htmlspecialchars($credito['estado']); ?></td>
-                                <td>
-                                    <button class="<?php echo $credito['id_estado'] == 5 ? 'btn-cancel' : 'btn-approve'; ?>"
-                                            onclick="actualizarEstado(<?php echo $credito['id_prestamo']; ?>, <?php echo $credito['id_estado']; ?>)">
-                                        <?php echo $credito['id_estado'] == 5 ? 'Cancelar' : 'Aprobar'; ?>
-                                    </button>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    <?php else: ?>
+    <div class="container-fluid">
+        <h3 class="text-center text-secondary my-4">Solicitud de Préstamo</h3>
+        <div class="col-12 p-4">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
                         <tr>
-                            <td colspan="8">No hay créditos para mostrar</td>
+                            <th scope="col">ID Préstamo</th>
+                            <th scope="col">Monto Solicitado</th>
+                            <th scope="col">Cantidad de Cuotas</th>
+                            <th scope="col">Valor de Cuotas</th>
+                            <th scope="col">Mes</th>
+                            <th scope="col">Año</th>
+                            <th scope="col">Estado</th>
+                            <th scope="col">Acciones</th>
                         </tr>
-                    <?php endif; ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <?php if (!empty($creditos)): ?>
+                            <?php foreach ($creditos as $credito): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($credito['id_prestamo']); ?></td>
+                                    <td><?php echo number_format($credito['monto_solicitado'], 0, ',', '.'); ?></td>
+                                    <td><?php echo htmlspecialchars($credito['cant_cuotas']); ?></td>
+                                    <td><?php echo number_format($credito['valor_cuotas'], 0, ',', '.'); ?></td>
+                                    <td><?php echo htmlspecialchars($credito['mes']); ?></td>
+                                    <td><?php echo htmlspecialchars($credito['anio']); ?></td>
+                                    <td><?php echo htmlspecialchars($credito['estado']); ?></td>
+                                    <td>
+                                        <button class="<?php echo $credito['id_estado'] == 5 ? 'btn btn-danger' : 'btn btn-success'; ?>"
+                                                onclick="actualizarEstado(<?php echo $credito['id_prestamo']; ?>, <?php echo $credito['id_estado']; ?>)">
+                                            <?php echo $credito['id_estado'] == 5 ? 'Cancelar' : 'Aprobar'; ?>
+                                        </button>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="8">No hay créditos para mostrar</td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </body>

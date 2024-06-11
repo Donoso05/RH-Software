@@ -86,7 +86,12 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/1057b0ffdd.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="css/nav.css">
-
+    <style>
+        .table thead {
+            background-color: #343a40;
+            color: white;
+        }
+    </style>
 </head>
 
 <body>
@@ -153,10 +158,10 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
             <input type="hidden" name="MM_insert" value="formreg">
         </form>
 
-        <div class="col-8 p-4">
+        <div class="col-9 p-4">
             <div class="table-container">
                 <table class="table">
-                    <thead class="bg-info">
+                    <thead >
                         <tr>
                             <th scope="col">Documento</th>
                             <th scope="col">Nombre</th>

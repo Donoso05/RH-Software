@@ -1,10 +1,18 @@
 <?php
-require '../../conexion/conexion.php';
+session_start(); // Iniciar la sesión
 
+// Verificar si la sesión no está iniciada
+if (!isset($_SESSION["id_usuario"])) {
+    // Mostrar un alert y redirigir utilizando JavaScript
+    echo '<script>alert("Debes iniciar sesión antes de acceder a la interfaz de administrador.");</script>';
+    echo '<script>window.location.href = "../../login.html";</script>';
+    exit();
+}
+
+require_once("../../conexion/conexion.php");
+$db = new Database();
+$con = $db->conectar();
 date_default_timezone_set('America/Bogota');  // Establece la zona horaria a Bogotá
-
-$database = new Database();
-$con = $database->conectar();
 
 $id_usuario = isset($_GET['id_usuario']) ? (int)$_GET['id_usuario'] : 0;
 
@@ -66,6 +74,29 @@ function actualizarEstadoSiCambiaElMes($con, $id_usuario) {
         $stmt_update_estado->execute();
     }
 }
+
+// Función para actualizar el estado a "pagado" al final del mes
+function actualizarEstadoAPagado($con) {
+    $current_mes = date('m');
+    $current_anio = date('Y');
+
+    // Verificar si es el último día del mes
+    if (date('d') == date('t')) {
+        echo '<script>console.log("Actualizando estado a pagado...");</script>';
+        $sql_update_estado = "UPDATE nomina 
+                              SET id_estado = 8 
+                              WHERE mes = :mes AND anio = :anio";
+        $stmt_update_estado = $con->prepare($sql_update_estado);
+        $stmt_update_estado->bindParam(':mes', $current_mes, PDO::PARAM_INT);
+        $stmt_update_estado->bindParam(':anio', $current_anio, PDO::PARAM_INT);
+        $stmt_update_estado->execute();
+    } else {
+        echo '<script>console.log("No es el último día del mes.");</script>';
+    }
+}
+
+// Llamar a la función para actualizar el estado a "pagado" si es el último día del mes
+actualizarEstadoAPagado($con);
 
 // Llamar a la función para verificar y actualizar el estado si el mes ha cambiado
 actualizarEstadoSiCambiaElMes($con, $id_usuario);
@@ -148,7 +179,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $sql_update_nomina = "UPDATE nomina 
                               SET dias_trabajados = :dias_trabajados, horas_extras = :horas_extras, salario_total = :salario_total, 
                                   total_deducciones = :total_deducciones, total_ingresos = :total_ingresos, valor_neto = :valor_neto, 
-                                  valor_horas_extras = :valor_horas_extras, fecha_li = :fecha_li, mes = :mes, anio = :anio, salario_base = :salario_base
+                                  valor_horas_extras = :valor_horas_extras, fecha_li = :fecha_li, mes = :mes, anio = :anio, salario_base = :salario_base,
+                                  id_estado = 4
                               WHERE id_usuario = :id_usuario";
         $stmt_update_nomina = $con->prepare($sql_update_nomina);
         $stmt_update_nomina->bindParam(':dias_trabajados', $dias_trabajados, PDO::PARAM_INT);

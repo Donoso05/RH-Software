@@ -35,8 +35,7 @@
             Procesos
           </a>
           <ul class="dropdown-menu" aria-labelledby="navbarDropdownRoles">
-            <li><a class="dropdown-item" href="tipos_usuario.php"></a></li>
-            <li><a class="dropdown-item" href="nuevo_rol.php">Nuevo Rol</a></li>
+            <li><a class="dropdown-item" href="ver_liquidacion.php">Liquidaciones</a></li>
           </ul>
         </div>
       </div>
