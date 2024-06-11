@@ -12,25 +12,33 @@ require_once("../../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
 
-$sql = $con -> prepare ("SELECT * FROM pension WHERE id_pension = '".$_GET['id']."'");
-$sql -> execute();
-$usua = $sql -> fetch();
+$sql = $con->prepare("SELECT * FROM pension WHERE id_pension = :id");
+$sql->bindParam(':id', $_GET['id']);
+$sql->execute();
+$usua = $sql->fetch();
 ?>
 
 <?php
 if (isset($_POST["update"])) {
     $id_pension = $_POST['id_pension'];
-    $porcentaje_p = $_POST['porcentaje_p'];
-    $updateSQL = $con->prepare("UPDATE pension SET porcentaje_p = '$porcentaje_p' WHERE id_pension = '".$_GET['id']."'");
+    $porcentaje_p = trim($_POST['porcentaje_p']);
 
-    $updateSQL->execute();
-    echo '<script>alert ("Actualización Exitosa");</script>';
-    echo '<script>window.close();</script>';
+    if ($porcentaje_p == "" || !filter_var($porcentaje_p, FILTER_VALIDATE_INT)) {
+        echo '<script>alert("El campo \'Porcentaje Pension\' debe contener solo números y no estar vacío.");</script>';
+    } else {
+        $updateSQL = $con->prepare("UPDATE pension SET porcentaje_p = :porcentaje_p WHERE id_pension = :id_pension");
+        $updateSQL->bindParam(':porcentaje_p', $porcentaje_p);
+        $updateSQL->bindParam(':id_pension', $id_pension);
+        $updateSQL->execute();
+        echo '<script>alert("Actualización Exitosa");</script>';
+        echo '<script>window.close();</script>';
+    }
 } elseif (isset($_POST["delete"])) { 
     $id_pension = $_POST['id_pension'];
     
-    $deleteSQL = $con->prepare("DELETE FROM pension WHERE id_pension = ?");
-    $deleteSQL->execute([$id_pension]);
+    $deleteSQL = $con->prepare("DELETE FROM pension WHERE id_pension = :id_pension");
+    $deleteSQL->bindParam(':id_pension', $id_pension);
+    $deleteSQL->execute();
     echo '<script>alert("Registro Eliminado Exitosamente");</script>';
     echo '<script>window.close();</script>';
     exit;
@@ -73,7 +81,7 @@ if (isset($_POST["update"])) {
                 <h4>Actualizar Pension</h4>
             </div>
             <div class="card-body">
-                <form action="" class="form" name="frm_consulta" method="POST" autocomplete="off">
+                <form action="" class="form" name="frm_consulta" method="POST" autocomplete="off" onsubmit="return validateForm()">
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label form-control-label">ID</label>
                         <div class="col-lg-9">
@@ -81,9 +89,9 @@ if (isset($_POST["update"])) {
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-lg-3 col-form-label form-control-label">Tipo Usuario</label>
+                        <label class="col-lg-3 col-form-label form-control-label">Porcentaje Pension</label>
                         <div class="col-lg-9">
-                            <input class="form-control" name="porcentaje_p" value="<?php echo $usua['porcentaje_p']; ?>">
+                            <input class="form-control" name="porcentaje_p" value="<?php echo $usua['porcentaje_p']; ?>" required oninput="sanitizeInput(event, 'numeric')">
                         </div>
                     </div>
                     <div class="form-group row">
@@ -98,7 +106,29 @@ if (isset($_POST["update"])) {
     </main>
     <script>
         function confirmarEliminacion() {
-            return confirm("¿Estás seguro de que deseas eliminar este tipo de usuario?");
+            return confirm("¿Estás seguro de que deseas eliminar Pension?");
+        }
+
+        function sanitizeInput(event, type) {
+            const input = event.target;
+            let value = input.value;
+
+            if (type === 'numeric') {
+                value = value.replace(/\D/g, ''); // Eliminar todo lo que no sea dígito
+            }
+
+            input.value = value;
+        }
+
+        function validateForm() {
+            const porcentaje_p = document.forms["frm_consulta"]["porcentaje_p"].value.trim();
+
+            if (porcentaje_p === "" || !/^\d+$/.test(porcentaje_p)) {
+                alert("El campo 'Porcentaje Pension' debe contener solo números y no estar vacío.");
+                return false;
+            }
+
+            return true;
         }
     </script>
 </body>

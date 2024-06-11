@@ -85,8 +85,8 @@ $con = null;
                         </div>
                         <div class="col-md-8">
                             <h2><?php echo $nombre; ?></h2>
-                            <p><strong>ID de Usuario:</strong> <?php echo $id_usuario; ?></p>
-                            <p><strong>Correo:</strong> <?php echo $correo; ?></p>
+                            <p><strong>Documento:</strong> <?php echo $id_usuario; ?></p>
+                            <p><strong>Correo Electronico</strong> <?php echo $correo; ?></p>
                             <p><strong>NIT de la Empresa:</strong> <?php echo $nit_empresa; ?></p>
                             <p><strong>Estado:</strong> <?php echo $estado; ?></p>
                             <p><strong>Cargo:</strong> <?php echo $cargo; ?></p>

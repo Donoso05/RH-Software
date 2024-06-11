@@ -17,18 +17,32 @@ $usua = $sql->fetch();
 
 if (!$usua) {
     echo '<script>alert("Usuario no encontrado.");</script>';
-    echo '<script>window.location.href = "../usuarios.html";</script>';
+    echo '<script>window.location.href = "../usuarios.php";</script>';
     exit();
 }
 
 if (isset($_POST["update"])) {
     $id_usuario = $_POST['id_usuario'];
-    $nombre = $_POST['nombre'];
+    $nombre = trim($_POST['nombre']);
     $id_tipo_cargo = $_POST['id_tipo_cargo'];
     $id_estado = $_POST['id_estado'];
-    $correo = $_POST['correo'];
+    $correo = trim($_POST['correo']);
     $id_tipo_usuario = $_POST['id_tipo_usuario'];
-    
+
+    // Validación de nombre para que solo contenga letras y espacios, y no solo espacios
+    if (!preg_match('/^[a-zA-Z\s]+$/', $nombre) || !preg_match('/[a-zA-Z]/', $nombre)) {
+        echo '<script>alert("El Nombre solo puede contener letras y no puede estar compuesto solo por espacios.");</script>';
+        echo '<script>window.location="update_usuario.php?id=' . $id_usuario . '"</script>';
+        exit();
+    }
+
+    // Validación de correo
+    if (!filter_var($correo, FILTER_VALIDATE_EMAIL)) {
+        echo '<script>alert("El Correo no es válido.");</script>';
+        echo '<script>window.location="update_usuario.php?id=' . $id_usuario . '"</script>';
+        exit();
+    }
+
     $updateSQL = $con->prepare("UPDATE usuario SET nombre = :nombre, id_tipo_cargo = :id_tipo_cargo, id_estado = :id_estado, correo = :correo, id_tipo_usuario = :id_tipo_usuario WHERE id_usuario = :id");
     $updateSQL->execute([
         ':nombre' => $nombre,
@@ -43,6 +57,13 @@ if (isset($_POST["update"])) {
     echo '<script>window.close();</script>';
 } elseif (isset($_POST["delete"])) {
     $id_usuario = $_POST['id_usuario'];
+
+    // Verificar si el usuario que intenta eliminar es el mismo que el usuario en sesión
+    if ($id_usuario == $_SESSION["id_usuario"]) {
+        echo '<script>alert("No puedes eliminar tu propio registro.");</script>';
+        echo '<script>window.location.href = "../usuarios.html";</script>';
+        exit();
+    }
 
     // Eliminar dependencias en otras tablas primero
     $tables = ['solic_prestamo', 'triggers', 'nomina', 'tram_permiso'];
@@ -59,7 +80,6 @@ if (isset($_POST["update"])) {
     exit;
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -97,7 +117,7 @@ if (isset($_POST["update"])) {
                 <h4>Actualizar usuario</h4>
             </div>
             <div class="card-body">
-                <form action="" class="form" name="frm_consulta" method="POST" autocomplete="off">
+                <form action="" class="form" name="frm_consulta" method="POST" autocomplete="off" onsubmit="return validarFormulario()">
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label form-control-label">Documento</label>
                         <div class="col-lg-9">
@@ -107,29 +127,28 @@ if (isset($_POST["update"])) {
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label form-control-label">Nombre</label>
                         <div class="col-lg-9">
-                            <input class="form-control" name="nombre" value="<?php echo $usua['nombre'] ?>">
+                            <input class="form-control" name="nombre" value="<?php echo $usua['nombre'] ?>" required pattern="[A-Za-z\s]+">
                         </div>
                     </div>
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label form-control-label">Cargo</label>
                         <div class="col-lg-9">
-                            <select class="form-control" name="id_tipo_cargo" id="id_tipo_cargo">
+                            <select class="form-control" name="id_tipo_cargo" id="id_tipo_cargo" required>
                                 <option value="">Seleccione un Cargo</option>
                                 <?php
-                                $control = $con->prepare("select * from tipo_cargo where id_tipo_cargo ");
-                                $control->execute();
-                                while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
-                                    $selected = ($fila['id_tipo_cargo'] == $usua['id_tipo_cargo']) ? 'selected' : '';
-                                    echo "<option value=" . $fila['id_tipo_cargo'] . " $selected>" . $fila['cargo'] . "</option>";
-                                }
-                                ?>
+                    $control = $con->prepare("SELECT * FROM tipo_cargo WHERE id_tipo_cargo >= 2");
+                    $control->execute();
+                    while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
+                        echo "<option value='" . $fila['id_tipo_cargo'] . "'>" . $fila['cargo'] . "</option>";
+                    }
+                    ?>
                             </select>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label form-control-label">Estado</label>
                         <div class="col-lg-9">
-                            <select class="form-control" name="id_estado" id="id_estado">
+                            <select class="form-control" name="id_estado" id="id_estado" required>
                                 <?php
                                 $control = $con->prepare("select * from estado where id_estado <= 2");
                                 $control->execute();
@@ -144,15 +163,15 @@ if (isset($_POST["update"])) {
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label form-control-label">Correo</label>
                         <div class="col-lg-9">
-                            <input class="form-control" name="correo" value="<?php echo $usua['correo'] ?>">
+                            <input class="form-control" name="correo" value="<?php echo $usua['correo'] ?>" required>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label form-control-label">Tipo Usuario</label>
                         <div class="col-lg-9">
-                            <select class="form-control" name="id_tipo_usuario" id="id_tipo_usuario">
+                            <select class="form-control" name="id_tipo_usuario" id="id_tipo_usuario" required>
                                 <?php
-                                $control = $con->prepare("select * from tipos_usuarios where id_tipo_usuario");
+                                $control = $con->prepare("select * from tipos_usuarios where id_tipo_usuario in (2, 3)");
                                 $control->execute();
                                 while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
                                     $selected = ($fila['id_tipo_usuario'] == $usua['id_tipo_usuario']) ? 'selected' : '';
@@ -174,6 +193,26 @@ if (isset($_POST["update"])) {
         </div>
     </main>
     <script>
+        function validarFormulario() {
+            const nombre = document.querySelector('input[name="nombre"]').value.trim();
+            const nombreRegex = /^[A-Za-z\s]+$/;
+
+            if (!nombre || !nombreRegex.test(nombre) || !/[a-zA-Z]/.test(nombre)) {
+                alert('El nombre solo puede contener letras, no puede estar compuesto solo por espacios.');
+                return false;
+            }
+
+            const correo = document.querySelector('input[name="correo"]').value.trim();
+            const correoRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+            if (!correoRegex.test(correo)) {
+                alert('El correo no es válido.');
+                return false;
+            }
+
+            return true;
+        }
+
         function confirmarEliminacion() {
             return confirm("¿Estás seguro de que deseas eliminar este usuario?");
         }

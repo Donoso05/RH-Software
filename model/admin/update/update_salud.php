@@ -12,7 +12,8 @@ require_once("../../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
 
-$sql = $con -> prepare ("SELECT * FROM salud WHERE id_salud = '".$_GET['id']."'");
+$sql = $con -> prepare ("SELECT * FROM salud WHERE id_salud = :id");
+$sql -> bindParam(':id', $_GET['id']);
 $sql -> execute();
 $usua = $sql -> fetch();
 ?>
@@ -20,17 +21,24 @@ $usua = $sql -> fetch();
 <?php
 if (isset($_POST["update"])) {
     $id_salud = $_POST['id_salud'];
-    $porcentaje_s = $_POST['porcentaje_s'];
-    $updateSQL = $con->prepare("UPDATE salud SET porcentaje_s = '$porcentaje_s' WHERE id_salud = '".$_GET['id']."'");
+    $porcentaje_s = trim($_POST['porcentaje_s']);
 
-    $updateSQL->execute();
-    echo '<script>alert ("Actualización Exitosa");</script>';
-    echo '<script>window.close();</script>';
+    if ($porcentaje_s == "" || !filter_var($porcentaje_s, FILTER_VALIDATE_INT)) {
+        echo '<script>alert("El campo \'Porcentaje Salud\' debe contener solo números y no estar vacío.");</script>';
+    } else {
+        $updateSQL = $con->prepare("UPDATE salud SET porcentaje_s = :porcentaje_s WHERE id_salud = :id_salud");
+        $updateSQL->bindParam(':porcentaje_s', $porcentaje_s);
+        $updateSQL->bindParam(':id_salud', $id_salud);
+        $updateSQL->execute();
+        echo '<script>alert("Actualización Exitosa");</script>';
+        echo '<script>window.close();</script>';
+    }
 } elseif (isset($_POST["delete"])) { 
     $id_salud = $_POST['id_salud'];
     
-    $deleteSQL = $con->prepare("DELETE FROM salud WHERE id_salud = ?");
-    $deleteSQL->execute([$id_salud]);
+    $deleteSQL = $con->prepare("DELETE FROM salud WHERE id_salud = :id_salud");
+    $deleteSQL->bindParam(':id_salud', $id_salud);
+    $deleteSQL->execute();
     echo '<script>alert("Registro Eliminado Exitosamente");</script>';
     echo '<script>window.close();</script>';
     exit;
@@ -73,7 +81,7 @@ if (isset($_POST["update"])) {
                 <h4>Actualizar Salud</h4>
             </div>
             <div class="card-body">
-                <form action="" class="form" name="frm_consulta" method="POST" autocomplete="off">
+                <form action="" class="form" name="frm_consulta" method="POST" autocomplete="off" onsubmit="return validateForm()">
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label form-control-label">ID</label>
                         <div class="col-lg-9">
@@ -81,9 +89,9 @@ if (isset($_POST["update"])) {
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-lg-3 col-form-label form-control-label">Tipo Usuario</label>
+                        <label class="col-lg-3 col-form-label form-control-label">Porcentaje Salud</label>
                         <div class="col-lg-9">
-                            <input class="form-control" name="porcentaje_s" value="<?php echo $usua['porcentaje_s']; ?>">
+                            <input class="form-control" name="porcentaje_s" value="<?php echo $usua['porcentaje_s']; ?>" required oninput="sanitizeInput(event, 'numeric')">
                         </div>
                     </div>
                     <div class="form-group row">
@@ -98,7 +106,29 @@ if (isset($_POST["update"])) {
     </main>
     <script>
         function confirmarEliminacion() {
-            return confirm("¿Estás seguro de que deseas eliminar este tipo de usuario?");
+            return confirm("¿Estás seguro de que deseas eliminar Salud?");
+        }
+
+        function validateForm() {
+            const porcentaje_s = document.forms["frm_consulta"]["porcentaje_s"].value.trim();
+
+            if (porcentaje_s === "" || !/^\d+$/.test(porcentaje_s)) {
+                alert("El campo 'Porcentaje Salud' debe contener solo números y no estar vacío.");
+                return false;
+            }
+
+            return true;
+        }
+
+        function sanitizeInput(event, type) {
+            const input = event.target;
+            let value = input.value;
+
+            if (type === 'numeric') {
+                value = value.replace(/\D/g, ''); // Eliminar todo lo que no sea dígito
+            }
+
+            input.value = value;
         }
     </script>
 </body>

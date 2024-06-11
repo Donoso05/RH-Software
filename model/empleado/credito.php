@@ -19,9 +19,12 @@ $con = $db->conectar();
 $id_usuario = $_SESSION["id_usuario"];
 
 // Consultar los créditos del usuario
-$stmtCreditos = $con->prepare("SELECT id_prestamo, monto_solicitado, cant_cuotas, valor_cuotas, mes, anio, id_estado 
-                               FROM solic_prestamo 
-                               WHERE id_usuario = :id_usuario");
+$stmtCreditos = $con->prepare("
+    SELECT sp.id_prestamo, sp.monto_solicitado, sp.cant_cuotas, sp.valor_cuotas, sp.mes, sp.anio, e.estado AS nombre_estado 
+    FROM solic_prestamo sp
+    JOIN estado e ON sp.id_estado = e.id_estado
+    WHERE sp.id_usuario = :id_usuario
+");
 $stmtCreditos->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
 $stmtCreditos->execute();
 $creditos = $stmtCreditos->fetchAll(PDO::FETCH_ASSOC);
@@ -81,7 +84,7 @@ $creditos = $stmtCreditos->fetchAll(PDO::FETCH_ASSOC);
                             <td><?php echo number_format($credito['valor_cuotas'], 0, ',', '.'); ?></td>
                             <td><?php echo htmlspecialchars($credito['mes']); ?></td>
                             <td><?php echo htmlspecialchars($credito['anio']); ?></td>
-                            <td><?php echo htmlspecialchars($credito['id_estado']); ?></td>
+                            <td><?php echo htmlspecialchars($credito['nombre_estado']); ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -92,3 +95,5 @@ $creditos = $stmtCreditos->fetchAll(PDO::FETCH_ASSOC);
 </body>
 
 </html>
+
+

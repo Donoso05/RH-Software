@@ -73,7 +73,7 @@ if (isset($_POST["update"])) {
                 <h4>Actualizar Tipo Usuarios</h4>
             </div>
             <div class="card-body">
-                <form action="" class="form" name="frm_consulta" method="POST" autocomplete="off">
+                <form action="" class="form" name="frm_consulta" method="POST" autocomplete="off" onsubmit="return validarFormulario()">
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label form-control-label">ID</label>
                         <div class="col-lg-9">
@@ -83,7 +83,7 @@ if (isset($_POST["update"])) {
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label form-control-label">Tipo Usuario</label>
                         <div class="col-lg-9">
-                            <input class="form-control" name="tipo_usuario" value="<?php echo $usua['tipo_usuario']; ?>">
+                            <input class="form-control" name="tipo_usuario" id="tipo_usuario" value="<?php echo $usua['tipo_usuario']; ?>">
                         </div>
                     </div>
                     <div class="form-group row">
@@ -99,6 +99,15 @@ if (isset($_POST["update"])) {
     <script>
         function confirmarEliminacion() {
             return confirm("¿Estás seguro de que deseas eliminar este tipo de usuario?");
+        }
+
+        function validarFormulario() {
+            var tipoUsuario = document.getElementById('tipo_usuario').value.trim();
+            if (!/^[a-zA-Z\s]+$/.test(tipoUsuario)) {
+                alert("El campo 'Tipo Usuario' solo puede contener letras.");
+                return false;
+            }
+            return true;
         }
     </script>
 </body>

@@ -1,21 +1,18 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const montoInput = document.getElementById('monto');
-    const cuotasInput = document.getElementById('cuotas');
-    const valorCuotasSpan = document.getElementById('valorCuotas');
+document.getElementById('creditoForm').addEventListener('submit', function(event) {
+    const monto = parseFloat(document.getElementById('monto').value);
+    const cuotas = parseInt(document.getElementById('cuotas').value, 10);
+    const errors = [];
 
-    montoInput.addEventListener('input', calcularValorCuotas);
-    cuotasInput.addEventListener('input', calcularValorCuotas);
+    if (monto < 500000) {
+        errors.push('El monto mínimo es de 500,000 pesos colombianos.');
+    }
 
-    function calcularValorCuotas() {
-        const monto = parseFloat(montoInput.value);
-        const cuotas = parseInt(cuotasInput.value);
+    if (cuotas > 36) {
+        errors.push('El número máximo de cuotas es de 36.');
+    }
 
-        if (isNaN(monto) || isNaN(cuotas) || monto <= 0 || cuotas <= 0) {
-            valorCuotasSpan.textContent = 'Ingrese un monto y cantidad de cuotas válidos';
-            return;
-        }
-
-        const valorCuota = monto / cuotas;
-        valorCuotasSpan.textContent = `$${valorCuota.toFixed(2)} por cuota`;
+    if (errors.length > 0) {
+        alert(errors.join('\n'));
+        event.preventDefault(); // Evita el envío del formulario
     }
 });
