@@ -112,7 +112,7 @@ $con = null;
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form action="cambiar_contrasena.php" method="POST">
+                    <form id="changePasswordForm" action="cambiar_contrasena.php" method="POST">
                         <div class="mb-3">
                             <label for="password" class="form-label">Nueva Contraseña</label>
                             <input type="password" id="password" name="password" class="form-control" required>
@@ -139,6 +139,29 @@ $con = null;
                 $('#changePasswordModal').modal({ backdrop: 'static', keyboard: false });
                 $('#changePasswordModal').modal('show');
             <?php endif; ?>
+
+            // Validate the password before submitting the form
+            $('#changePasswordForm').on('submit', function(e) {
+                const password = $('#password').val();
+                const confirmPassword = $('#confirm_password').val();
+                const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{10,}$/;
+
+                if (!passwordPattern.test(password)) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'La contraseña debe ser alfanumérica y tener al menos 10 caracteres.'
+                    });
+                } else if (password !== confirmPassword) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Las contraseñas no coinciden.'
+                    });
+                }
+            });
         });
     </script>
 </body>

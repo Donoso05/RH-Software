@@ -45,15 +45,10 @@ if ($result) {
 }
 
 $stmt->closeCursor();
-
-// Verificar si el usuario ha cambiado su contraseña
-$sql = "SELECT COUNT(*) FROM triggers WHERE id_usuario = ?";
-$stmt = $con->prepare($sql);
-$stmt->bindParam(1, $id_usuario, PDO::PARAM_INT);
-$stmt->execute();
-$password_changed = $stmt->fetchColumn() > 0;
-$stmt->closeCursor();
 $con = null;
+
+// Determinar si la contraseña ha sido cambiada (lógica simplificada, deberías tener tu propia lógica)
+$password_changed = false;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -64,10 +59,9 @@ $con = null;
     <link rel="stylesheet" href="css/style.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/1057b0ffdd.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="css/nav.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-KyZXEAg3QhqLMpG8r+Knujsl7/6kT7YtY5H4OFYwM7E=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2b4h4p/yZMBrUlKX2WB3BrOaI/j1tnilOOFxWejAozD7TYdY4f0HRugoy1u" crossorigin="anonymous"></script>
 </head>
 <body>
     <?php include("nav.php") ?>
@@ -80,7 +74,7 @@ $con = null;
                         <div class="col-md-4">
                             <div class="profile-container">
                                 <div class="profile-img-wrapper">
-                                <img src="<?php echo !empty($foto) ? $foto : 'img/user.webp'; ?>" class="img-fluid rounded" alt="Foto de perfil">
+                                    <img src="<?php echo !empty($foto) ? $foto : 'img/user.webp'; ?>" class="img-fluid rounded" alt="Foto de perfil">
                                 </div>
                                 <form action="upload.php" method="post" enctype="multipart/form-data" style="margin-top: 20px;">
                                     <div class="file-input-wrapper">
@@ -120,7 +114,7 @@ $con = null;
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="changePasswordForm" action="cambiar_contrasena.php" method="POST">
+                    <form action="cambiar_contrasena.php" method="POST">
                         <div class="mb-3">
                             <label for="password" class="form-label">Nueva Contraseña</label>
                             <input type="password" id="password" name="password" class="form-control" required>
@@ -147,29 +141,6 @@ $con = null;
                 $('#changePasswordModal').modal({ backdrop: 'static', keyboard: false });
                 $('#changePasswordModal').modal('show');
             <?php endif; ?>
-
-            // Validate the password before submitting the form
-            $('#changePasswordForm').on('submit', function(e) {
-                const password = $('#password').val();
-                const confirmPassword = $('#confirm_password').val();
-                const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{10,}$/;
-
-                if (!passwordPattern.test(password)) {
-                    e.preventDefault();
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'La contraseña debe ser alfanumérica y tener al menos 10 caracteres.'
-                    });
-                } else if (password !== confirmPassword) {
-                    e.preventDefault();
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Las contraseñas no coinciden.'
-                    });
-                }
-            });
         });
     </script>
 </body>
