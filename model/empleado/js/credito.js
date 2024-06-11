@@ -1,18 +1,43 @@
-document.getElementById('creditoForm').addEventListener('submit', function(event) {
-    const monto = parseFloat(document.getElementById('monto').value);
-    const cuotas = parseInt(document.getElementById('cuotas').value, 10);
-    const errors = [];
+document.addEventListener('DOMContentLoaded', function () {
+    const montoInput = document.getElementById('monto');
+    const cuotasInput = document.getElementById('cuotas');
+    const valorCuotasSpan = document.getElementById('valorCuotas');
 
-    if (monto < 500000) {
-        errors.push('El monto mínimo es de 500,000 pesos colombianos.');
+    function calcularValorCuotas(monto, cuotas, interesAnual = 12) {
+        const interesMensual = interesAnual / 12 / 100;
+        if (interesMensual === 0) {
+            return monto / cuotas;
+        }
+        const valorCuota = monto * (interesMensual * Math.pow(1 + interesMensual, cuotas)) / (Math.pow(1 + interesMensual, cuotas) - 1);
+        return valorCuota;
     }
 
-    if (cuotas > 36) {
-        errors.push('El número máximo de cuotas es de 36.');
+    function actualizarValorCuotas() {
+        const monto = parseFloat(montoInput.value);
+        const cuotas = parseInt(cuotasInput.value, 10);
+        if (!isNaN(monto) && !isNaN(cuotas) && cuotas > 0) {
+            const valorCuotas = calcularValorCuotas(monto, cuotas);
+            valorCuotasSpan.textContent = valorCuotas.toFixed(2);
+        } else {
+            valorCuotasSpan.textContent = '';
+        }
     }
 
-    if (errors.length > 0) {
-        alert(errors.join('\n'));
-        event.preventDefault(); // Evita el envío del formulario
-    }
+    montoInput.addEventListener('input', actualizarValorCuotas);
+    cuotasInput.addEventListener('input', actualizarValorCuotas);
+
+    document.getElementById('creditoForm').addEventListener('submit', function (event) {
+        const monto = parseFloat(montoInput.value);
+        const cuotas = parseInt(cuotasInput.value, 10);
+
+        if (monto < 500000) {
+            alert('El monto mínimo es de 500,000 pesos colombianos.');
+            event.preventDefault();
+        }
+
+        if (cuotas > 36) {
+            alert('El número máximo de cuotas es de 36.');
+            event.preventDefault();
+        }
+    });
 });
