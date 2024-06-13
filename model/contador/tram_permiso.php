@@ -11,39 +11,6 @@ require_once("../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
 
-if (isset($_POST["MM_insert"]) && ($_POST["MM_insert"] == "formreg")) {
-    // Obtener los datos del formulario
-    $id_usuario = $_POST['id_usuario'];
-    $id_tipo_permiso = $_POST['id_tipo_permiso'];
-    $fecha_inicio = $_POST['fecha_inicio'];
-    $fecha_fin = $_POST['fecha_fin'];
-    $incapacidad = $_POST['incapacidad'];
-
-    // Validar que los campos no estén vacíos
-    if (empty($id_usuario) || empty($id_tipo_permiso) || empty($fecha_inicio) || empty($fecha_fin) || empty($incapacidad)) {
-        echo '<script>alert("EXISTEN DATOS VACIOS");</script>';
-        echo '<script>window.location="";</script>';
-    } else {
-        // Preparar la consulta SQL para insertar los datos
-        $insertSQL = $con->prepare("INSERT INTO tram_permiso (id_usuario, id_tipo_permiso, fecha_inicio, fecha_fin, incapacidad) 
-                            VALUES (:id_usuario, :id_tipo_permiso, :fecha_inicio, :fecha_fin, :incapacidad)");
-
-        // Vincular los parámetros
-        $insertSQL->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
-        $insertSQL->bindParam(':id_tipo_permiso', $id_tipo_permiso, PDO::PARAM_INT);
-        $insertSQL->bindParam(':fecha_inicio', $fecha_inicio);
-        $insertSQL->bindParam(':fecha_fin', $fecha_fin);
-        $insertSQL->bindParam(':incapacidad', $incapacidad);
-
-        // Ejecutar la consulta SQL
-        if ($insertSQL->execute()) {
-            echo '<script>alert("Registro exitoso");</script>';
-            echo '<script>window.location="";</script>';
-        } else {
-            echo '<script>alert("Error al guardar los datos");</script>';
-        }
-    }
-}
 
 if (isset($_POST['id_permiso'])) {
     // Alternar el estado del permiso

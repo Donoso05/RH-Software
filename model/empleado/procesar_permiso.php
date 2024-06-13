@@ -25,7 +25,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Manejo de archivo subido
     $archivo = $_FILES['archivo'];
     $nombreArchivo = $archivo['name'];
-    $rutaArchivo = 'uploads/' . $nombreArchivo;
+    $rutaArchivo = '../../uploads/' . $nombreArchivo;
 
     // Mover el archivo subido a la ubicación deseada
     if (move_uploaded_file($archivo['tmp_name'], $rutaArchivo)) {
