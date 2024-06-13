@@ -147,7 +147,6 @@ if (count($result) > 0) {
 
 $show_success_message = false;
 $show_error_message = false;
-$error_message = "";
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Verificar si ya se ha realizado una liquidación en el mes actual
@@ -162,16 +161,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $stmt_check_current_month->execute();
     $exists_current_month = $stmt_check_current_month->fetchColumn();
 
-    $dias_trabajados = isset($_POST['dias_trabajados']) ? (int)$_POST['dias_trabajados'] : 0;
-    $horas_extras = isset($_POST['horas_extras']) ? (int)$_POST['horas_extras'] : 0;
+    if ($exists_current_month == 0) {
+        $dias_trabajados = isset($_POST['dias_trabajados']) ? (int)$_POST['dias_trabajados'] : 0;
+        $horas_extras = isset($_POST['horas_extras']) ? (int)$_POST['horas_extras'] : 0;
 
-    if ($dias_trabajados <= 0 || !is_numeric($dias_trabajados)) {
-        $show_error_message = true;
-        $error_message = "El campo 'Días Trabajados' es obligatorio y debe ser mayor que 0.";
-    } elseif ($horas_extras < 0 || !is_numeric($horas_extras)) {
-        $show_error_message = true;
-        $error_message = "El campo 'Horas Extras' no puede ser negativo.";
-    } elseif ($exists_current_month == 0) {
         $salario_total = $salario_diario * $dias_trabajados;
         $valorHorasExtras = $horas_extras * 12300;
 
@@ -207,13 +200,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $show_success_message = true;
     } else {
         $show_error_message = true;
-        $error_message = "Ya se ha realizado una liquidación para este mes.";
     }
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -275,7 +268,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             document.getElementById('valor_neto').textContent = salarioNeto.toLocaleString('es-CO') + ' COP';
         }
     </script>
+
 </head>
+
 <body onload="document.getElementById('dias_trabajados').focus();">
     <?php include("nav.php") ?>
     <div class="container mt-5">
@@ -286,7 +281,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <?php endif; ?>
         <?php if ($show_error_message) : ?>
             <div class="alert alert-danger" role="alert">
-                <?php echo $error_message; ?>
+                La liquidación ya se ha realizado para el mes actual.
             </div>
         <?php endif; ?>
         <?php if (count($result) > 0) : ?>
@@ -321,7 +316,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         </div>
                         <div class="mb-4">
                             <label for="horas_extras" class="form-label"><strong>Horas Extras</strong></label>
-                            <input type="number" id="horas_extras" name="horas_extras" class="form-control" min="0" max="48" required oninput="calcularSalarioExtra()">
+                            <input type="number" id="horas_extras" name="horas_extras" class="form-control" min="0" max="48" oninput="calcularSalarioExtra()">
                             <div id="error-horas-msg" style="color: red;"></div>
                         </div>
                         <div class="mb-4">
@@ -376,4 +371,5 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <?php endif; ?>
     </div>
 </body>
+
 </html>
