@@ -4,35 +4,72 @@ session_start();
 // Verificar si la sesión no está iniciada
 if (!isset($_SESSION["id_usuario"])) {
     echo '<script>alert("Debes iniciar sesión antes de acceder a la interfaz de administrador.");</script>';
-    echo '<script>window.location.href = "../../login.html";</script>';
+    echo '<script>window.location.href = "../login.html";</script>';
     exit();
 }
-
 require_once("../../conexion/conexion.php");
-
-// Crear una instancia de la clase Database
 $db = new Database();
-// Conectar a la base de datos
 $con = $db->conectar();
 
-$id_usuario = $_SESSION["id_usuario"];
+if (isset($_POST["MM_insert"]) && ($_POST["MM_insert"] == "formreg")) {
+    // Obtener los datos del formulario
+    $id_usuario = $_POST['id_usuario'];
+    $id_tipo_permiso = $_POST['id_tipo_permiso'];
+    $fecha_inicio = $_POST['fecha_inicio'];
+    $fecha_fin = $_POST['fecha_fin'];
+    $incapacidad = $_POST['incapacidad'];
 
-// Consultar tipos de permiso  
-$consultaTipos = $con->prepare("SELECT id_tipo_permiso, tipo_permiso, dias FROM tipo_permiso");
-$consultaTipos->execute();
-$tipos_permiso = $consultaTipos->fetchAll(PDO::FETCH_ASSOC);
+    // Validar que los campos no estén vacíos
+    if (empty($id_usuario) || empty($id_tipo_permiso) || empty($fecha_inicio) || empty($fecha_fin) || empty($incapacidad)) {
+        echo '<script>alert("EXISTEN DATOS VACIOS");</script>';
+        echo '<script>window.location="";</script>';
+    } else {
+        // Preparar la consulta SQL para insertar los datos
+        $insertSQL = $con->prepare("INSERT INTO tram_permiso (id_usuario, id_tipo_permiso, fecha_inicio, fecha_fin, incapacidad) 
+                            VALUES (:id_usuario, :id_tipo_permiso, :fecha_inicio, :fecha_fin, :incapacidad)");
 
-// Consultar permisos solicitados por el usuario
-$consultaPermisos = $con->prepare("SELECT tp.descripcion, tp.incapacidad, tp.fecha_inicio, tp.fecha_fin, e.estado, tperm.tipo_permiso 
-                                   FROM tram_permiso tp 
-                                   JOIN tipo_permiso tperm ON tp.id_tipo_permiso = tperm.id_tipo_permiso 
-                                   JOIN estado e ON tp.id_estado = e.id_estado
-                                   WHERE tp.id_usuario = :id_usuario");
-$consultaPermisos->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
-$consultaPermisos->execute();
-$permisos = $consultaPermisos->fetchAll(PDO::FETCH_ASSOC);
+        // Vincular los parámetros
+        $insertSQL->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
+        $insertSQL->bindParam(':id_tipo_permiso', $id_tipo_permiso, PDO::PARAM_INT);
+        $insertSQL->bindParam(':fecha_inicio', $fecha_inicio);
+        $insertSQL->bindParam(':fecha_fin', $fecha_fin);
+        $insertSQL->bindParam(':incapacidad', $incapacidad);
+
+        // Ejecutar la consulta SQL
+        if ($insertSQL->execute()) {
+            echo '<script>alert("Registro exitoso");</script>';
+            echo '<script>window.location="";</script>';
+        } else {
+            echo '<script>alert("Error al guardar los datos");</script>';
+        }
+    }
+}
+
+if (isset($_POST['id_permiso'])) {
+    // Alternar el estado del permiso
+    $id_permiso = $_POST['id_permiso'];
+    
+    // Obtener el estado actual
+    $selectSQL = $con->prepare("SELECT id_estado FROM tram_permiso WHERE id_permiso = :id_permiso");
+    $selectSQL->bindParam(':id_permiso', $id_permiso, PDO::PARAM_INT);
+    $selectSQL->execute();
+    $estadoActual = $selectSQL->fetch(PDO::FETCH_ASSOC)['id_estado'];
+    
+    // Determinar el nuevo estado
+    $nuevoEstado = ($estadoActual == 3) ? 5 : 3;
+    
+    // Actualizar el estado
+    $updateSQL = $con->prepare("UPDATE tram_permiso SET id_estado = :nuevo_estado WHERE id_permiso = :id_permiso");
+    $updateSQL->bindParam(':nuevo_estado', $nuevoEstado, PDO::PARAM_INT);
+    $updateSQL->bindParam(':id_permiso', $id_permiso, PDO::PARAM_INT);
+    if ($updateSQL->execute()) {
+        echo json_encode(['success' => true]);
+    } else {
+        echo json_encode(['success' => false]);
+    }
+    exit();
+}
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
