@@ -14,9 +14,8 @@ $db = new Database();
 // Conectar a la base de datos
 $con = $db->conectar();
 
-$id_usuario = $_SESSION["id_usuario"];
-
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $id_usuario = $_POST['id_usuario'];  // Obtener el id_usuario del formulario
     $descripcion = $_POST['descripcion'];
     $fecha_inicio = $_POST['fecha_inicio'];
     $tipo_permiso = $_POST['tipo_permiso'];
@@ -25,7 +24,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Manejo de archivo subido
     $archivo = $_FILES['archivo'];
     $nombreArchivo = $archivo['name'];
-    $rutaArchivo = '../../uploads' . $nombreArchivo;
+    $rutaArchivo = '../../uploads/' . $nombreArchivo;  // Corregir la ruta del archivo
 
     // Mover el archivo subido a la ubicación deseada
     if (move_uploaded_file($archivo['tmp_name'], $rutaArchivo)) {
@@ -33,7 +32,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $insertSQL = $con->prepare("INSERT INTO tram_permiso (id_usuario, id_tipo_permiso, descripcion, fecha_inicio, fecha_fin, incapacidad) 
                             VALUES (:id_usuario, :id_tipo_permiso, :descripcion, :fecha_inicio, :fecha_fin, :incapacidad)");
 
-        $insertSQL->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
+        $insertSQL->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);  // Usar el id_usuario del formulario
         $insertSQL->bindParam(':id_tipo_permiso', $tipo_permiso, PDO::PARAM_INT);
         $insertSQL->bindParam(':descripcion', $descripcion);
         $insertSQL->bindParam(':fecha_inicio', $fecha_inicio);
