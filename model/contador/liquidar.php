@@ -3,7 +3,6 @@ session_start(); // Iniciar la sesión
 
 // Verificar si la sesión no está iniciada
 if (!isset($_SESSION["id_usuario"])) {
-    // Mostrar un alert y redirigir utilizando JavaScript
     echo '<script>alert("Debes iniciar sesión antes de acceder a la interfaz de administrador.");</script>';
     echo '<script>window.location.href = "../../login.html";</script>';
     exit();
@@ -40,6 +39,12 @@ $user_details = $stmt_get_details->fetch(PDO::FETCH_ASSOC);
 $id_arl = $user_details['id_arl'];
 $salario_base = $user_details['salario_base'];
 
+// Obtener el valor del aux_transporte
+$sql_get_aux_transporte = "SELECT valor FROM auxtransporte WHERE id_auxtransporte = 1"; // Ajusta el ID según sea necesario
+$stmt_get_aux_transporte = $con->prepare($sql_get_aux_transporte);
+$stmt_get_aux_transporte->execute();
+$aux_transporte_valor = $stmt_get_aux_transporte->fetchColumn();
+
 // Verificar si el usuario ya tiene un registro en la tabla 'nomina'
 $sql_check_nomina = "SELECT COUNT(*) FROM nomina WHERE id_usuario = :id_usuario";
 $stmt_check_nomina = $con->prepare($sql_check_nomina);
@@ -49,57 +54,15 @@ $user_in_nomina = $stmt_check_nomina->fetchColumn();
 
 if ($user_in_nomina == 0) {
     // Insertar un nuevo registro en la tabla 'nomina'
-    $sql_insert_nomina = "INSERT INTO nomina (id_usuario, id_salud, id_pension, id_arl, id_auxtransporte, salario_base) VALUES (:id_usuario, 1, 1, :id_arl, 1, :salario_base)";
+    $sql_insert_nomina = "INSERT INTO nomina (id_usuario, deduccion_salud, deduccion_pension, precio_arl, aux_transporte_valor, salario_base) 
+                          VALUES (:id_usuario, 0, 0, 0, :aux_transporte_valor, :salario_base)";
     $stmt_insert_nomina = $con->prepare($sql_insert_nomina);
     $stmt_insert_nomina->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
-    $stmt_insert_nomina->bindParam(':id_arl', $id_arl, PDO::PARAM_INT);
+    $stmt_insert_nomina->bindParam(':aux_transporte_valor', $aux_transporte_valor, PDO::PARAM_INT);
     $stmt_insert_nomina->bindParam(':salario_base', $salario_base, PDO::PARAM_INT);
     $stmt_insert_nomina->execute();
 }
 
-// Función para verificar y actualizar el id_estado si el mes ha cambiado
-function actualizarEstadoSiCambiaElMes($con, $id_usuario) {
-    $sql_get_last_nomina = "SELECT mes FROM nomina WHERE id_usuario = :id_usuario ORDER BY fecha_li DESC LIMIT 1";
-    $stmt_get_last_nomina = $con->prepare($sql_get_last_nomina);
-    $stmt_get_last_nomina->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
-    $stmt_get_last_nomina->execute();
-    $last_mes = $stmt_get_last_nomina->fetchColumn();
-
-    $current_mes = date('m');
-
-    if ($last_mes && $last_mes != $current_mes) {
-        $sql_update_estado = "UPDATE nomina SET id_estado = 3 WHERE id_usuario = :id_usuario";
-        $stmt_update_estado = $con->prepare($sql_update_estado);
-        $stmt_update_estado->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
-        $stmt_update_estado->execute();
-    }
-}
-
-// Función para actualizar el estado a "pagado" al final del mes
-function actualizarEstadoAPagado($con) {
-    $current_mes = date('m');
-    $current_anio = date('Y');
-
-    // Verificar si es el último día del mes
-    if (date('d') == date('t')) {
-        echo '<script>console.log("Actualizando estado a pagado...");</script>';
-        $sql_update_estado = "UPDATE nomina 
-                              SET id_estado = 8 
-                              WHERE mes = :mes AND anio = :anio";
-        $stmt_update_estado = $con->prepare($sql_update_estado);
-        $stmt_update_estado->bindParam(':mes', $current_mes, PDO::PARAM_INT);
-        $stmt_update_estado->bindParam(':anio', $current_anio, PDO::PARAM_INT);
-        $stmt_update_estado->execute();
-    } else {
-        echo '<script>console.log("No es el último día del mes.");</script>';
-    }
-}
-
-// Llamar a la función para actualizar el estado a "pagado" si es el último día del mes
-actualizarEstadoAPagado($con);
-
-// Llamar a la función para verificar y actualizar el estado si el mes ha cambiado
-actualizarEstadoSiCambiaElMes($con, $id_usuario);
 
 // Continuar con la lógica de selección y renderizado de la vista HTML
 $sql = "SELECT usuario.id_usuario, usuario.nombre, tipo_cargo.cargo, tipo_cargo.salario_base, 
@@ -114,8 +77,8 @@ $sql = "SELECT usuario.id_usuario, usuario.nombre, tipo_cargo.cargo, tipo_cargo.
         INNER JOIN tipo_cargo ON usuario.id_tipo_cargo = tipo_cargo.id_tipo_cargo
         INNER JOIN arl ON tipo_cargo.id_arl = arl.id_arl
         INNER JOIN nomina ON usuario.id_usuario = nomina.id_usuario
-        INNER JOIN salud ON nomina.id_salud = salud.id_salud
-        INNER JOIN pension ON nomina.id_pension = pension.id_pension
+        INNER JOIN salud ON 1 = 1 -- Asume el porcentaje de salud es el mismo para todos
+        INNER JOIN pension ON 1 = 1 -- Asume el porcentaje de pensión es el mismo para todos
         LEFT JOIN solic_prestamo ON usuario.id_usuario = solic_prestamo.id_usuario
         LEFT JOIN auxtransporte ON auxtransporte.id_auxtransporte = 1
         WHERE usuario.id_usuario = :id_usuario";
@@ -147,6 +110,7 @@ if (count($result) > 0) {
 
 $show_success_message = false;
 $show_error_message = false;
+$error_message = "";
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Verificar si ya se ha realizado una liquidación en el mes actual
@@ -161,10 +125,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $stmt_check_current_month->execute();
     $exists_current_month = $stmt_check_current_month->fetchColumn();
 
-    if ($exists_current_month == 0) {
-        $dias_trabajados = isset($_POST['dias_trabajados']) ? (int)$_POST['dias_trabajados'] : 0;
-        $horas_extras = isset($_POST['horas_extras']) ? (int)$_POST['horas_extras'] : 0;
+    $dias_trabajados = isset($_POST['dias_trabajados']) ? (int)$_POST['dias_trabajados'] : 0;
+    $horas_extras = isset($_POST['horas_extras']) ? (int)$_POST['horas_extras'] : 0;
 
+    if ($dias_trabajados <= 5 || !is_numeric($dias_trabajados)) {
+        $show_error_message = true;
+        $error_message = "El campo 'Días Trabajados' es obligatorio y debe ser mayor que 5.";
+    } elseif ($horas_extras < 0 || !is_numeric($horas_extras)) {
+        $show_error_message = true;
+        $error_message = "El campo 'Horas Extras' no puede ser negativo.";
+    } elseif ($exists_current_month == 0) {
         $salario_total = $salario_diario * $dias_trabajados;
         $valorHorasExtras = $horas_extras * 12300;
 
@@ -180,6 +150,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                               SET dias_trabajados = :dias_trabajados, horas_extras = :horas_extras, salario_total = :salario_total, 
                                   total_deducciones = :total_deducciones, total_ingresos = :total_ingresos, valor_neto = :valor_neto, 
                                   valor_horas_extras = :valor_horas_extras, fecha_li = :fecha_li, mes = :mes, anio = :anio, salario_base = :salario_base,
+                                  deduccion_salud = :deduccion_salud, deduccion_pension = :deduccion_pension, precio_arl = :precio_arl,
                                   id_estado = 4
                               WHERE id_usuario = :id_usuario";
         $stmt_update_nomina = $con->prepare($sql_update_nomina);
@@ -194,12 +165,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt_update_nomina->bindParam(':mes', $mes, PDO::PARAM_INT);
         $stmt_update_nomina->bindParam(':anio', $anio, PDO::PARAM_INT);
         $stmt_update_nomina->bindParam(':salario_base', $salario_base, PDO::PARAM_INT);
+        $stmt_update_nomina->bindParam(':deduccion_salud', $deduccion_salud, PDO::PARAM_INT);
+        $stmt_update_nomina->bindParam(':deduccion_pension', $deduccion_pension, PDO::PARAM_INT);
+        $stmt_update_nomina->bindParam(':precio_arl', $valorArl, PDO::PARAM_INT);
         $stmt_update_nomina->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
         $stmt_update_nomina->execute();
 
         $show_success_message = true;
     } else {
         $show_error_message = true;
+        $error_message = "Ya se ha realizado una liquidación para este mes.";
     }
 }
 ?>
@@ -267,6 +242,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             document.getElementById('valor_neto').textContent = salarioNeto.toLocaleString('es-CO') + ' COP';
         }
+
+        // Función para llamar al script PHP que actualiza el estado a pagado
+        window.onload = function() {
+            fetch('ruta_a_tu_script.php?update=true')
+                .then(response => response.text())
+                .then(data => {
+                    console.log(data);
+                });
+        }
     </script>
 
 </head>
@@ -281,7 +265,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <?php endif; ?>
         <?php if ($show_error_message) : ?>
             <div class="alert alert-danger" role="alert">
-                La liquidación ya se ha realizado para el mes actual.
+                <?php echo $error_message; ?>
             </div>
         <?php endif; ?>
         <?php if (count($result) > 0) : ?>

@@ -11,15 +11,39 @@ require_once("../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
 
+// Función para actualizar el estado a pagado al final del mes
+function actualizarEstadoAPagado($con) {
+    $current_date = date('Y-m-d');
+    $last_day_of_month = date('Y-m-t'); // Obtener el último día del mes
+
+    // Verificar si es el último día del mes
+    if ($current_date == $last_day_of_month) {
+        echo '<script>console.log("Actualizando estado a pagado...");</script>';
+        $current_mes = date('m');
+        $current_anio = date('Y');
+        $sql_update_estado = "UPDATE nomina 
+                              SET id_estado = 8 
+                              WHERE mes = :mes AND anio = :anio";
+        $stmt_update_estado = $con->prepare($sql_update_estado);
+        $stmt_update_estado->bindParam(':mes', $current_mes, PDO::PARAM_INT);
+        $stmt_update_estado->bindParam(':anio', $current_anio, PDO::PARAM_INT);
+        $stmt_update_estado->execute();
+    } else {
+        echo '<script>console.log("No es el último día del mes.");</script>';
+    }
+}
+
+// Verificar si la llamada es desde JavaScript
+if (isset($_GET['update'])) {
+    actualizarEstadoAPagado($con);
+    exit(); // Terminar la ejecución después de la actualización
+}
+
 // Consulta SQL para obtener los datos de la tabla nomina
-$sql = "SELECT n.*, u.nombre, e.estado AS estado_nombre, arl.tipo AS arl_tipo, s.porcentaje_s, p.porcentaje_p, at.valor AS auxtransporte_valor
+$sql = "SELECT n.*, u.nombre, e.estado AS estado_nombre
         FROM nomina n
         INNER JOIN usuario u ON n.id_usuario = u.id_usuario
-        INNER JOIN estado e ON n.id_estado = e.id_estado
-        INNER JOIN arl ON n.id_arl = arl.id_arl
-        INNER JOIN salud s ON n.id_salud = s.id_salud
-        INNER JOIN pension p ON n.id_pension = p.id_pension
-        INNER JOIN auxtransporte at ON n.id_auxtransporte = at.id_auxtransporte";
+        INNER JOIN estado e ON n.id_estado = e.id_estado";
 $stmt = $con->prepare($sql);
 $stmt->execute();
 
@@ -81,8 +105,8 @@ $nominas = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <th scope="col">Mes</th>
                         <th scope="col">Año</th>
                         <th scope="col">Estado</th>
+                        <th scope="col">Salario Base</th>   
                         <th scope="col">ARL</th>
-                        <th scope="col">Salario Base</th>
                         <th scope="col">Salud</th>
                         <th scope="col">Pensión</th>
                         <th scope="col">Total Deducciones</th>
@@ -103,10 +127,10 @@ $nominas = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <td><?php echo $nomina["mes"]; ?></td>
                             <td><?php echo $nomina["anio"]; ?></td>
                             <td><?php echo $nomina["estado_nombre"]; ?></td>
-                            <td><?php echo $nomina["arl_tipo"]; ?></td>
-                            <td><?php echo number_format($nomina["salario_base"], 0, ',', '.'); ?></td>
-                            <td><?php echo $nomina["porcentaje_s"]; ?>%</td>
-                            <td><?php echo $nomina["porcentaje_p"]; ?>%</td>
+                            <td><?php echo number_format($nomina["salario_base"], 0, ',', '.'); ?></td> 
+                            <td><?php echo number_format($nomina["precio_arl"], 0, ',', '.'); ?></td>
+                            <td><?php echo number_format($nomina["deduccion_salud"], 0, ',', '.'); ?></td>
+                            <td><?php echo  number_format($nomina["deduccion_pension"], 0, ',', '.'); ?></td>
                             <td><?php echo number_format($nomina["total_deducciones"], 0, ',', '.'); ?></td>
                             <td>
                                 <?php 
@@ -130,6 +154,16 @@ $nominas = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </table>
         </div>
     </div>
+    <script>
+        // Función para llamar al script PHP que actualiza el estado a pagado
+        window.onload = function() {
+            fetch('ver_liquidacion.php?update=true')
+                .then(response => response.text())
+                .then(data => {
+                    console.log(data);
+                });
+        }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+Y3tGSOE2mDkGjm9PYf47FZ5gmpG5" crossorigin="anonymous"></script>
 </body>
 
