@@ -1,83 +1,96 @@
 <?php
 session_start();
 
-// Verificar si la sesión no está iniciada
 if (!isset($_SESSION["id_usuario"])) {
-    // Mostrar un alert y redirigir utilizando JavaScript
     echo '<script>alert("Debes iniciar sesión antes de acceder a la interfaz de administrador.");</script>';
-    echo '<script>window.location.href = "../login.html";</script>';
+    echo '<script>window.location.href = "../../login.html";</script>';
     exit();
 }
+
 require_once("../../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
 
-$sql = $con->prepare("SELECT * FROM tram_permiso, tipo_permiso, estado WHERE tram_permiso.id_tipo_permiso = tipo_permiso.id_tipo_permiso AND tram_permiso.id_estado = estado.id_estado AND tram_permiso.id_permiso = ?");
-$sql->execute([$_GET['id']]);
+$id_permiso = $_GET['id_permiso'] ?? null;
+
+if (!$id_permiso) {
+    echo '<script>alert("ID de permiso no especificado.");</script>';
+    echo '<script>window.location.href = "../listado_permisos.php";</script>';
+    exit();
+}
+
+$sql = $con->prepare("SELECT * FROM tram_permiso tp
+                      JOIN tipo_permiso tperm ON tp.id_tipo_permiso = tperm.id_tipo_permiso
+                      JOIN estado e ON tp.id_estado = e.id_estado
+                      WHERE tp.id_permiso = ?");
+$sql->execute([$id_permiso]);
 $usua = $sql->fetch();
 
 if (!$usua) {
-    // Manejar el caso donde no se encontraron resultados
     echo '<script>alert("No se encontraron resultados para el permiso especificado.");</script>';
     echo '<script>window.location.href = "../listado_permisos.php";</script>';
     exit();
 }
-?>
 
-<?php
-if (isset($_POST["update"])) {
-    $id_permiso = $_POST['id_permiso'];
-    $id_usuario = $_POST['id_usuario'];
-    $id_tipo_permiso = $_POST['id_tipo_permiso'];
-    $fecha_inicio = $_POST['fecha_inicio'];
-    $fecha_fin = $_POST['fecha_fin'];
-    $id_estado = $_POST['id_estado'];
-    $incapacidad = $_POST['incapacidad'];
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    if (isset($_POST["update"])) {
+        $id_usuario = $_POST['id_usuario'];
+        $id_tipo_permiso = $_POST['id_tipo_permiso'];
+        $fecha_inicio = $_POST['fecha_inicio'];
+        $fecha_fin = $_POST['fecha_fin'];
+        $id_estado = $_POST['id_estado'];
+        $descripcion = $_POST['descripcion'];
 
-    $updateSQL = $con->prepare("UPDATE tram_permiso SET id_permiso = ?, id_usuario = ?, id_tipo_permiso = ?, fecha_inicio = ?, fecha_fin = ?, id_estado = ?, incapacidad = ? WHERE id_permiso = ?");
-    $updateSQL->execute([$id_permiso, $id_usuario, $id_tipo_permiso, $fecha_inicio, $fecha_fin, $id_estado, $incapacidad, $_GET['id']]);
+        // Manejo de archivo subido
+        $archivo = $_FILES['incapacidad'];
+        $rutaArchivo = $usua['incapacidad']; // Ruta del archivo actual
 
-    echo '<script>alert("Actualización Exitosa");</script>';
-    echo '<script>window.close();</script>';
-} elseif (isset($_POST["delete"])) {
-    $id_permiso = $_POST['id_permiso'];
+        if (!empty($archivo['tmp_name'])) {
+            $nombreArchivo = $archivo['name'];
+            $rutaArchivo = '../../uploads/' . $nombreArchivo;
 
-    $deleteSQL = $con->prepare("DELETE FROM tram_permiso WHERE id_permiso = ?");
-    $deleteSQL->execute([$id_permiso]);
+            // Mover el archivo subido a la ubicación deseada
+            if (!move_uploaded_file($archivo['tmp_name'], $rutaArchivo)) {
+                echo '<script>alert("Error al subir el archivo.");</script>';
+                exit();
+            }
+        }
 
-    echo '<script>alert("Registro Eliminado Exitosamente");</script>';
-    echo '<script>window.close();</script>';
-    exit;
+        $updateSQL = $con->prepare("UPDATE tram_permiso SET id_usuario = ?, id_tipo_permiso = ?, fecha_inicio = ?, fecha_fin = ?, id_estado = ?, descripcion = ?, incapacidad = ? WHERE id_permiso = ?");
+        $updateSQL->execute([$id_usuario, $id_tipo_permiso, $fecha_inicio, $fecha_fin, $id_estado, $descripcion, $rutaArchivo, $id_permiso]);
+
+        echo '<script>alert("Actualización Exitosa");</script>';
+        echo '<script>window.close();</script>';
+    } elseif (isset($_POST["delete"])) {
+        $deleteSQL = $con->prepare("DELETE FROM tram_permiso WHERE id_permiso = ?");
+        $deleteSQL->execute([$id_permiso]);
+
+        echo '<script>alert("Registro Eliminado Exitosamente");</script>';
+        echo '<script>window.close();</script>';
+        exit();
+    }
 }
 ?>
+
 <!doctype html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Permiso</title>
     <link rel="stylesheet" href="../css/ingreso2.css">
-    <title>Editar</title>
 
-    <!--JQUERY-->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-
-    <!-- FRAMEWORK BOOTSTRAP para el estilo de la pagina-->
+    <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7H7UibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-
-    <!-- Los iconos tipo Solid de Fontawesome-->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.8/css/solid.css">
     <script src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script>
-
-    <!-- Nuestro css-->
-    <link rel="stylesheet" type="text/css" href="../css/ingreso2.css" th:href="@{/css/ingreso2.css}">
-    <!-- DATA TABLE -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.1/css/bootstrap.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">
-
 </head>
 
 <body>
@@ -85,10 +98,10 @@ if (isset($_POST["update"])) {
         <div class="container">
             <div class="card">
                 <div class="card-header">
-                    <h4>Información del Usuario</h4>
+                    <h4>Editar Información del Permiso</h4>
                 </div>
                 <div class="card-body">
-                    <form action="" class="form" method="post" role="form" autocomplete="off">
+                    <form action="" method="post" role="form" autocomplete="off" enctype="multipart/form-data">
                         <input type="hidden" name="id_permiso" value="<?php echo htmlspecialchars($usua['id_permiso'], ENT_QUOTES, 'UTF-8'); ?>">
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label form-control-label">Documento</label>
@@ -99,14 +112,14 @@ if (isset($_POST["update"])) {
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label form-control-label">Tipo Permiso</label>
                             <div class="col-lg-9">
-                                <select class="form-control" name="id_tipo_permiso" required>
+                                <select class="form-control" name="id_tipo_permiso" id="id_tipo_permiso" required>
                                     <option value="">Seleccione uno</option>
                                     <?php
                                     $control = $con->prepare("SELECT * FROM tipo_permiso");
                                     $control->execute();
                                     while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
                                         $selected = ($fila['id_tipo_permiso'] == $usua['id_tipo_permiso']) ? 'selected' : '';
-                                        echo "<option value='" . htmlspecialchars($fila['id_tipo_permiso'], ENT_QUOTES, 'UTF-8') . "' $selected>" . htmlspecialchars($fila['tipo_permiso'], ENT_QUOTES, 'UTF-8') . "</option>";
+                                        echo "<option value='" . htmlspecialchars($fila['id_tipo_permiso'], ENT_QUOTES, 'UTF-8') . "' data-dias='" . htmlspecialchars($fila['dias'], ENT_QUOTES, 'UTF-8') . "' $selected>" . htmlspecialchars($fila['tipo_permiso'], ENT_QUOTES, 'UTF-8') . "</option>";
                                     }
                                     ?>
                                 </select>
@@ -115,13 +128,27 @@ if (isset($_POST["update"])) {
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label form-control-label">Fecha Inicio</label>
                             <div class="col-lg-9">
-                                <input name="fecha_inicio" value="<?php echo htmlspecialchars($usua['fecha_inicio'], ENT_QUOTES, 'UTF-8'); ?>" class="form-control" type="date" required>
+                                <input name="fecha_inicio" value="<?php echo htmlspecialchars($usua['fecha_inicio'], ENT_QUOTES, 'UTF-8'); ?>" class="form-control" type="date" id="fecha_inicio" required>
                             </div>
                         </div>
                         <div class="form-group row">
                             <label class="col-lg-3 col-form-label form-control-label">Fecha Fin</label>
                             <div class="col-lg-9">
-                                <input name="fecha_fin" value="<?php echo htmlspecialchars($usua['fecha_fin'], ENT_QUOTES, 'UTF-8'); ?>" class="form-control" type="date" required>
+                                <input name="fecha_fin" value="<?php echo htmlspecialchars($usua['fecha_fin'], ENT_QUOTES, 'UTF-8'); ?>" class="form-control" type="date" id="fecha_fin" readonly required>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-lg-3 col-form-label form-control-label">Descripción</label>
+                            <div class="col-lg-9">
+                                <textarea id="descripcion" name="descripcion" class="form-control" required><?php echo htmlspecialchars($usua['descripcion'], ENT_QUOTES, 'UTF-8'); ?></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-lg-3 col-form-label form-control-label">Archivo</label>
+                            <div class="col-lg-9">
+                                <input type="file" id="incapacidad" name="incapacidad" class="form-control" accept="application/pdf">
+                                <small class="form-text text-muted">Dejar en blanco para mantener el archivo actual.</small>
+                                <a href="<?php echo htmlspecialchars($usua['incapacidad'], ENT_QUOTES, 'UTF-8'); ?>" target="_blank">Ver archivo actual</a>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -139,7 +166,7 @@ if (isset($_POST["update"])) {
                                     ?>
                                 </select>
                             </div>
-                        </div>  
+                        </div>
                         <div class="form-group row">
                             <div class="col-lg-12 text-center">
                                 <input name="update" type="submit" class="btn btn-primary" value="Actualizar">
@@ -151,11 +178,25 @@ if (isset($_POST["update"])) {
             </div>
         </div>
     </main>
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRHEtkt6B6tQRtrwE5e" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGaBlx9gQfw5YZgPfk/tASz3dx" crossorigin="anonymous"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-smHYkdOkWxQ3fZZxS+lfE0bM0p4yT1AW8vgHazD6O/tjxMj6Qmow5D5arupUN9p3" crossorigin="anonymous"></script>
+    <script>
+        document.getElementById('fecha_inicio').addEventListener('change', calcularFechaFin);
+        document.getElementById('id_tipo_permiso').addEventListener('change', calcularFechaFin);
+
+        function calcularFechaFin() {
+            var fechaInicio = document.getElementById('fecha_inicio').value;
+            var tipoPermiso = document.getElementById('id_tipo_permiso');
+            var duracionPermiso = tipoPermiso.options[tipoPermiso.selectedIndex].getAttribute('data-dias');
+            if (fechaInicio && duracionPermiso) {
+                var fechaInicioDate = new Date(fechaInicio);
+                fechaInicioDate.setDate(fechaInicioDate.getDate() + parseInt(duracionPermiso));
+                var dd = String(fechaInicioDate.getDate()).padStart(2, '0');
+                var mm = String(fechaInicioDate.getMonth() + 1).padStart(2, '0');
+                var yyyy = fechaInicioDate.getFullYear();
+                var fechaFin = yyyy + '-' + mm + '-' + dd;
+                document.getElementById('fecha_fin').value = fechaFin;
+            }
+        }
+    </script>
     <script>
         function confirmarEliminacion() {
             return confirm('¿Estás seguro de que deseas eliminar este registro?');

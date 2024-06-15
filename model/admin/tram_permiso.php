@@ -20,13 +20,19 @@ $consultaTipos = $con->prepare("SELECT id_tipo_permiso, tipo_permiso, dias FROM 
 $consultaTipos->execute();
 $tipos_permiso = $consultaTipos->fetchAll(PDO::FETCH_ASSOC);
 
-// Consultar todos los permisos
-$consultaPermisos = $con->prepare("SELECT tp.descripcion, tp.incapacidad, tp.fecha_inicio, tp.fecha_fin, e.estado, tperm.tipo_permiso 
+// Consultar todos los permisos con información del usuario
+$consultaPermisos = $con->prepare("SELECT tp.id_permiso, tp.descripcion, tp.incapacidad, tp.fecha_inicio, tp.fecha_fin, e.estado, tperm.tipo_permiso, u.id_usuario, u.nombre 
                                    FROM tram_permiso tp 
                                    JOIN tipo_permiso tperm ON tp.id_tipo_permiso = tperm.id_tipo_permiso 
-                                   JOIN estado e ON tp.id_estado = e.id_estado");
+                                   JOIN estado e ON tp.id_estado = e.id_estado
+                                   JOIN usuario u ON tp.id_usuario = u.id_usuario");
 $consultaPermisos->execute();
 $permisos = $consultaPermisos->fetchAll(PDO::FETCH_ASSOC);
+
+// Consultar todos los usuarios
+$consultaUsuarios = $con->prepare("SELECT id_usuario, nombre FROM usuario");
+$consultaUsuarios->execute();
+$usuarios = $consultaUsuarios->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -43,8 +49,21 @@ $permisos = $consultaPermisos->fetchAll(PDO::FETCH_ASSOC);
 <body>
     <?php include("nav.php") ?>
     <div class="container-fluid row">
-        <form class="col-4 p-3" id="permisoForm" action="procesar_permiso.php" method="post" enctype="multipart/form-data">
+        <form class="col-3 p-3" id="permisoForm" action="procesar_permiso.php" method="post" enctype="multipart/form-data">
             <h3 class="text-center text-secondary">Trámite Permiso</h3>
+            <div class="mb-3">
+                <label for="id_usuario" class="form-label">Documento:</label>
+                <select id="id_usuario" name="id_usuario" class="form-control" required>
+                    <option value="">Seleccione el Usuario</option>
+                    <?php foreach ($usuarios as $usuario): ?>
+                        <option value="<?php echo $usuario['id_usuario']; ?>"><?php echo $usuario['id_usuario']; ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="nombre_usuario" class="form-label">Nombre del Usuario:</label>
+                <input type="text" id="nombre_usuario" name="nombre_usuario" class="form-control" readonly>
+            </div>
             <div class="mb-3">
                 <label for="descripcion" class="form-label">Descripción de la excusa:</label>
                 <textarea id="descripcion" name="descripcion" class="form-control" required></textarea>
@@ -73,28 +92,39 @@ $permisos = $consultaPermisos->fetchAll(PDO::FETCH_ASSOC);
             <button type="submit" class="btn btn-primary">Solicitar Permiso</button>
         </form>
 
-        <div class="col-8 p-4">
-           
+        <div class="col-9 p-4">
             <table class="table">
                 <thead class="bg-info">
                     <tr>
+                        <th scope="col">ID Usuario</th>
+                        <th scope="col">Nombre</th>
                         <th scope="col">Descripción</th>
                         <th scope="col">Archivo</th>
                         <th scope="col">Fecha de Inicio</th>
                         <th scope="col">Fecha de Fin</th>
                         <th scope="col">Tipo de Permiso</th>
                         <th scope="col">Estado</th>
+                        <th scope="col">Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="permisoTableBody">
                     <?php foreach ($permisos as $permiso): ?>
                         <tr>
+                            <td><?php echo htmlspecialchars($permiso['id_usuario']); ?></td>
+                            <td><?php echo htmlspecialchars($permiso['nombre']); ?></td>
                             <td><?php echo htmlspecialchars($permiso['descripcion']); ?></td>
                             <td><a href="<?php echo htmlspecialchars($permiso['incapacidad']); ?>" target="_blank">Ver Archivo</a></td>
                             <td><?php echo htmlspecialchars($permiso['fecha_inicio']); ?></td>
                             <td><?php echo htmlspecialchars($permiso['fecha_fin']); ?></td>
                             <td><?php echo htmlspecialchars($permiso['tipo_permiso']); ?></td>
                             <td><?php echo htmlspecialchars($permiso['estado']); ?></td>
+                            <td>
+                                <div class="text-center">
+                                    <div class="d-flex justify-content-start">
+                                        <a href="update_tram.php?id_permiso=<?php echo $permiso['id_permiso']; ?>" onclick="window.open('./update/update_tram.php?id_permiso=<?php echo $permiso['id_permiso']; ?>','','width=500,height=500,toolbar=NO'); return false;" class="btn btn-primary">Editar</a>
+                                    </div>
+                                </div>
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -102,6 +132,19 @@ $permisos = $consultaPermisos->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
     <script>
+        document.getElementById('id_usuario').addEventListener('change', function() {
+            var usuarios = <?php echo json_encode($usuarios); ?>;
+            var selectedId = this.value;
+            var nombreUsuario = '';
+            for (var i = 0; i < usuarios.length; i++) {
+                if (usuarios[i]['id_usuario'] == selectedId) {
+                    nombreUsuario = usuarios[i]['nombre'];
+                    break;
+                }
+            }
+            document.getElementById('nombre_usuario').value = nombreUsuario;
+        });
+
         document.getElementById('fecha_inicio').addEventListener('change', calcularFechaFin);
         document.getElementById('tipo_permiso').addEventListener('change', calcularFechaFin);
 
@@ -120,7 +163,6 @@ $permisos = $consultaPermisos->fetchAll(PDO::FETCH_ASSOC);
             }
         }
 
-        // Populate the select options with data-dias attribute for JavaScript calculation
         var tiposPermiso = <?php echo json_encode($tipos_permiso); ?>;
         var selectTipoPermiso = document.getElementById('tipo_permiso');
         selectTipoPermiso.innerHTML = tiposPermiso.map(function(tipo) {
