@@ -11,23 +11,18 @@ require_once("../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
 
-
-if (isset($_POST['id_permiso'])) {
-    // Alternar el estado del permiso
+if (isset($_POST['id_permiso']) && isset($_POST['accion'])) {
     $id_permiso = $_POST['id_permiso'];
-    
-    // Obtener el estado actual
-    $selectSQL = $con->prepare("SELECT id_estado FROM tram_permiso WHERE id_permiso = :id_permiso");
-    $selectSQL->bindParam(':id_permiso', $id_permiso, PDO::PARAM_INT);
-    $selectSQL->execute();
-    $estadoActual = $selectSQL->fetch(PDO::FETCH_ASSOC)['id_estado'];
+    $accion = $_POST['accion'];
+    $motivo_rechazo = isset($_POST['motivo_rechazo']) ? $_POST['motivo_rechazo'] : null;
     
     // Determinar el nuevo estado
-    $nuevoEstado = ($estadoActual == 3) ? 5 : 3;
+    $nuevoEstado = ($accion === 'aprobar') ? 5 : 7;
     
-    // Actualizar el estado
-    $updateSQL = $con->prepare("UPDATE tram_permiso SET id_estado = :nuevo_estado WHERE id_permiso = :id_permiso");
+    // Actualizar el estado y el motivo de rechazo si es necesario
+    $updateSQL = $con->prepare("UPDATE tram_permiso SET id_estado = :nuevo_estado, motivo_rechazo = :motivo_rechazo WHERE id_permiso = :id_permiso");
     $updateSQL->bindParam(':nuevo_estado', $nuevoEstado, PDO::PARAM_INT);
+    $updateSQL->bindParam(':motivo_rechazo', $motivo_rechazo, PDO::PARAM_INT);
     $updateSQL->bindParam(':id_permiso', $id_permiso, PDO::PARAM_INT);
     if ($updateSQL->execute()) {
         echo json_encode(['success' => true]);
@@ -51,24 +46,49 @@ if (isset($_POST['id_permiso'])) {
     <link rel="stylesheet" href="css/tram.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        function aprobarPermiso(id_permiso) {
-            if (confirm('¿Estás seguro de que deseas cambiar el estado de este permiso?')) {
+        function cambiarEstadoPermiso(id_permiso, accion) {
+            if (accion === 'aprobar') {
+                if (confirm('¿Estás seguro de que deseas aprobar este permiso?')) {
+                    $.ajax({
+                        type: 'POST',
+                        url: '',
+                        data: { id_permiso: id_permiso, accion: accion },
+                        success: function(response) {
+                            const result = JSON.parse(response);
+                            if (result.success) {
+                                alert('Estado del permiso actualizado exitosamente.');
+                                document.getElementById('acciones-' + id_permiso).innerHTML = '<span class="text-success">Permiso ya procesado</span>';
+                            } else {
+                                alert('Error al actualizar el estado del permiso.');
+                            }
+                        }
+                    });
+                }
+            } else if (accion === 'no_aprobar') {
+                document.getElementById('motivoRechazoSelect-' + id_permiso).style.display = 'block';
+                document.getElementById('btnAprobar-' + id_permiso).disabled = true;
+            }
+        }
+
+        function enviarRechazo(id_permiso) {
+            const motivo_rechazo = document.getElementById('selectMotivoRechazo-' + id_permiso).value;
+            if (motivo_rechazo) {
                 $.ajax({
                     type: 'POST',
                     url: '',
-                    data: { id_permiso: id_permiso },
+                    data: { id_permiso: id_permiso, accion: 'no_aprobar', motivo_rechazo: motivo_rechazo },
                     success: function(response) {
                         const result = JSON.parse(response);
                         if (result.success) {
                             alert('Estado del permiso actualizado exitosamente.');
-                            location.reload();
+                            document.getElementById('acciones-' + id_permiso).innerHTML = '<span class="text-success">Permiso ya procesado</span>';
                         } else {
                             alert('Error al actualizar el estado del permiso.');
                         }
                     }
                 });
             } else {
-                alert('El cambio de estado ha sido cancelado.');
+                alert('Por favor, seleccione un motivo de rechazo.');
             }
         }
     </script>
@@ -116,15 +136,35 @@ if (isset($_POST['id_permiso'])) {
                                         <td><?php echo $fila["fecha_inicio"]; ?></td>
                                         <td><?php echo $fila["fecha_fin"]; ?></td>
                                         <td><?php echo $fila["estado"]; ?></td>
-                                        <td>
-                                            <div class="text-center">
-                                                <div class="d-flex justify-content-start">
-                                                    <button onclick="aprobarPermiso(<?php echo $fila['id_permiso']; ?>)" 
-                                                            class="btn <?php echo $fila['id_estado'] == 3 ? 'btn-success' : 'btn-danger'; ?> ms-2">
-                                                        <?php echo $fila['id_estado'] == 3 ? 'Aprobar' : 'Cancelar'; ?>
-                                                    </button>
+                                        <td id="acciones-<?php echo $fila['id_permiso']; ?>">
+                                            <?php if ($fila["id_estado"] == 5 || $fila["id_estado"] == 7) { ?>
+                                                <span class="text-success">Permiso ya procesado</span>
+                                            <?php } else { ?>
+                                                <div class="text-center">
+                                                    <div class="d-flex justify-content-start">
+                                                        <button id="btnAprobar-<?php echo $fila['id_permiso']; ?>" onclick="cambiarEstadoPermiso(<?php echo $fila['id_permiso']; ?>, 'aprobar')" 
+                                                                class="btn btn-success ms-2">
+                                                            Aprobar
+                                                        </button>
+                                                        <button onclick="cambiarEstadoPermiso(<?php echo $fila['id_permiso']; ?>, 'no_aprobar')" 
+                                                                class="btn btn-danger ms-2">
+                                                            No Aprobar
+                                                        </button>
+                                                    </div>
+                                                    <div id="motivoRechazoSelect-<?php echo $fila['id_permiso']; ?>" style="display: none;">
+                                                        <select id="selectMotivoRechazo-<?php echo $fila['id_permiso']; ?>" class="form-select mt-2">
+                                                            <option value="">Seleccione un motivo</option>
+                                                            <?php
+                                                            $observaciones = $con->query("SELECT * FROM observaciones");
+                                                            while ($obs = $observaciones->fetch()) {
+                                                                echo '<option value="'.$obs['id_observacion'].'">'.$obs['observacion'].'</option>';
+                                                            }
+                                                            ?>
+                                                        </select>
+                                                        <button class="btn btn-primary mt-2" onclick="enviarRechazo(<?php echo $fila['id_permiso']; ?>)">Enviar</button>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            <?php } ?>
                                         </td>
                                     </tr>
                             <?php

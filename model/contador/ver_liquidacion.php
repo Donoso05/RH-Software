@@ -137,7 +137,7 @@ $nominas = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 if ($nomina["salario_base"] >= 2600000) {
                                     echo "No aplica";
                                 } else {
-                                    echo number_format($nomina["auxtransporte_valor"], 0, ',', '.'); 
+                                    echo number_format($nomina["aux_transporte_valor"], 0, ',', '.'); 
                                 }
                                 ?>
                             </td>

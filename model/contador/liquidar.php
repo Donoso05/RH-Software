@@ -63,12 +63,39 @@ if ($user_in_nomina == 0) {
     $stmt_insert_nomina->execute();
 }
 
+// Función para actualizar el estado a pagado al final del mes
+function actualizarEstadoAPagado($con) {
+    $current_date = date('Y-m-d');
+    $last_day_of_month = date('Y-m-t'); // Obtener el último día del mes
+
+    // Verificar si es el último día del mes
+    if ($current_date == $last_day_of_month) {
+        echo '<script>console.log("Actualizando estado a pagado...");</script>';
+        $current_mes = date('m');
+        $current_anio = date('Y');
+        $sql_update_estado = "UPDATE nomina 
+                              SET id_estado = 8 
+                              WHERE mes = :mes AND anio = :anio";
+        $stmt_update_estado = $con->prepare($sql_update_estado);
+        $stmt_update_estado->bindParam(':mes', $current_mes, PDO::PARAM_INT);
+        $stmt_update_estado->bindParam(':anio', $current_anio, PDO::PARAM_INT);
+        $stmt_update_estado->execute();
+    } else {
+        echo '<script>console.log("No es el último día del mes.");</script>';
+    }
+}
+
+// Verificar si la llamada es desde JavaScript
+if (isset($_GET['update'])) {
+    actualizarEstadoAPagado($con);
+    exit(); // Terminar la ejecución después de la actualización
+}
 
 // Continuar con la lógica de selección y renderizado de la vista HTML
-$sql = "SELECT usuario.id_usuario, usuario.nombre, tipo_cargo.cargo, tipo_cargo.salario_base, 
+$sql = "SELECT usuario.id_usuario, usuario.nombre, tipo_cargo.cargo, tipo_cargo.salario_base, solic_prestamo.cant_cuotas,
                tipo_cargo.salario_base < 2600000 AS aplica_aux_transporte,
                tipo_cargo.salario_base * arl.porcentaje / 100 AS precio_arl,
-               salud.porcentaje_s, pension.porcentaje_p, solic_prestamo.valor_cuotas,
+               salud.porcentaje_s, pension.porcentaje_p, solic_prestamo.valor_cuotas, solic_prestamo.monto_solicitado, solic_prestamo.id_estado AS estado_prestamo,
                CASE
                    WHEN tipo_cargo.salario_base < 2600000 THEN auxtransporte.valor
                    ELSE NULL
@@ -88,20 +115,50 @@ $stmt->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
 $stmt->execute();
 $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-if (count($result) > 0) {
+if (is_array($result) && count($result) > 0) {
     $row = $result[0];
     $salario_diario = $row['salario_base'] / 30;
     $deduccion_salud = $row['salario_base'] * $row['porcentaje_s'] / 100;
-    $deduccion_pension = $row['salario_base'] * $row['porcentaje_p'] ;
+    $deduccion_pension = $row['salario_base'] * $row['porcentaje_p'];
     $valorArl = $row['precio_arl'];
-    $valorCuotas = isset($row['valor_cuotas']) ? $row['valor_cuotas'] : 0;
+    $valorCuotas = 0;
+    $montoSolicitado = 0;
+    $estadoPrestamo = $row['estado_prestamo'];
+    $cantCuotas = $row['cant_cuotas'];
+    
+    // Asignar valores según el estado del préstamo
+    if ($estadoPrestamo == 3) { // Estado En espera
+        $valorCuotas = "Préstamo en espera";
+        $montoSolicitado = "Préstamo en espera";
+    } elseif ($estadoPrestamo == 5) { //Estado Aprobado
+        $valorCuotas = "Cuota en próxima liquidación";
+        $montoSolicitado = $row['monto_solicitado'];
+    } elseif ($estadoPrestamo == 8) { // Estado Pagado
+        $valorCuotas = $row['valor_cuotas'];
+        $montoSolicitado = "Ya ha sido cargado el monto";
+        $cantCuotas -= 1;
+        if ($cantCuotas == 0) {
+            $estadoPrestamo = 9;
+        }
+        // Actualizar el número de cuotas y el estado en la base de datos
+        $sql_update_prestamo = "UPDATE solic_prestamo SET cant_cuotas = :cant_cuotas, id_estado = :estado WHERE id_usuario = :id_usuario";
+        $stmt_update_prestamo = $con->prepare($sql_update_prestamo);
+        $stmt_update_prestamo->bindParam(':cant_cuotas', $cantCuotas, PDO::PARAM_INT);
+        $stmt_update_prestamo->bindParam(':estado', $estadoPrestamo, PDO::PARAM_INT);
+        $stmt_update_prestamo->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
+        $stmt_update_prestamo->execute();
+    } elseif ($estadoPrestamo == 9) { // Estado Terminado
+        $valorCuotas = 0;
+        $montoSolicitado = 0;
+    }
+
     $valorAuxTransporte = isset($row['valor_aux_transporte']) ? $row['valor_aux_transporte'] : 0;
 
     // Valores iniciales para la vista
     $dias_trabajados = 0;
     $horas_extras = 0;
     $salario_total = 0;
-    $total_deducciones = $deduccion_salud + $deduccion_pension + $valorCuotas;
+    $total_deducciones = $deduccion_salud + $deduccion_pension + (is_numeric($valorCuotas) ? $valorCuotas : 0);
     $total_ingresos = 0;
     $valor_neto = 0;
 } else {
@@ -128,9 +185,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $dias_trabajados = isset($_POST['dias_trabajados']) ? (int)$_POST['dias_trabajados'] : 0;
     $horas_extras = isset($_POST['horas_extras']) ? (int)$_POST['horas_extras'] : 0;
 
-    if ($dias_trabajados <= 5 || !is_numeric($dias_trabajados)) {
+    if ($dias_trabajados < 5 || !is_numeric($dias_trabajados)) {
         $show_error_message = true;
-        $error_message = "El campo 'Días Trabajados' es obligatorio y debe ser mayor que 5.";
+        $error_message = "El campo 'Días Trabajados' es obligatorio y debe ser mayor o igual a 5.";
     } elseif ($horas_extras < 0 || !is_numeric($horas_extras)) {
         $show_error_message = true;
         $error_message = "El campo 'Horas Extras' no puede ser negativo.";
@@ -138,7 +195,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $salario_total = $salario_diario * $dias_trabajados;
         $valorHorasExtras = $horas_extras * 12300;
 
-        $total_ingresos = $valorAuxTransporte + $valorHorasExtras;
+        $total_ingresos = $valorAuxTransporte + $valorHorasExtras + (is_numeric($montoSolicitado) ? $montoSolicitado : 0);
         $valor_neto = $salario_total + $total_ingresos - $total_deducciones;
 
         $fecha_li = date('Y-m-d H:i:s');  // Obtener la fecha y hora actual
@@ -151,7 +208,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                   total_deducciones = :total_deducciones, total_ingresos = :total_ingresos, valor_neto = :valor_neto, 
                                   valor_horas_extras = :valor_horas_extras, fecha_li = :fecha_li, mes = :mes, anio = :anio, salario_base = :salario_base,
                                   deduccion_salud = :deduccion_salud, deduccion_pension = :deduccion_pension, precio_arl = :precio_arl,
-                                  id_estado = 4
+                                  valor_cuotas = :valor_cuotas, monto_solicitado = :monto_solicitado, id_estado = 4
                               WHERE id_usuario = :id_usuario";
         $stmt_update_nomina = $con->prepare($sql_update_nomina);
         $stmt_update_nomina->bindParam(':dias_trabajados', $dias_trabajados, PDO::PARAM_INT);
@@ -168,8 +225,36 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt_update_nomina->bindParam(':deduccion_salud', $deduccion_salud, PDO::PARAM_INT);
         $stmt_update_nomina->bindParam(':deduccion_pension', $deduccion_pension, PDO::PARAM_INT);
         $stmt_update_nomina->bindParam(':precio_arl', $valorArl, PDO::PARAM_INT);
+        $stmt_update_nomina->bindParam(':valor_cuotas', $valorCuotas, PDO::PARAM_INT);
+        $stmt_update_nomina->bindParam(':monto_solicitado', $montoSolicitado, PDO::PARAM_INT);
         $stmt_update_nomina->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
         $stmt_update_nomina->execute();
+
+        // Actualizar el estado del préstamo a pagado si se ha liquidado
+        if ($estadoPrestamo == 5) {
+            $sql_update_prestamo = "UPDATE solic_prestamo SET id_estado = 8 WHERE id_usuario = :id_usuario AND id_estado = 5";
+            $stmt_update_prestamo = $con->prepare($sql_update_prestamo);
+            $stmt_update_prestamo->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
+            $stmt_update_prestamo->execute();
+        }
+
+        // Insertar detalles de la liquidación en la tabla 'detalle'
+        $sql_insert_detalle = "INSERT INTO detalle (id_usuario, dias_trabajados, horas_extras, salario_total, total_deducciones, total_ingresos, valor_neto) 
+                               VALUES (:id_usuario, :dias_trabajados, :horas_extras, :salario_total, :total_deducciones, :total_ingresos, :valor_neto)";
+        $stmt_insert_detalle = $con->prepare($sql_insert_detalle);
+        $stmt_insert_detalle->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
+        $stmt_insert_detalle->bindParam(':dias_trabajados', $dias_trabajados, PDO::PARAM_INT);
+        $stmt_insert_detalle->bindParam(':horas_extras', $horas_extras, PDO::PARAM_INT);
+        $stmt_insert_detalle->bindParam(':salario_total', $salario_total, PDO::PARAM_INT);
+        $stmt_insert_detalle->bindParam(':total_deducciones', $total_deducciones, PDO::PARAM_INT);
+        $stmt_insert_detalle->bindParam(':total_ingresos', $total_ingresos, PDO::PARAM_INT);
+        $stmt_insert_detalle->bindParam(':valor_neto', $valor_neto, PDO::PARAM_INT);
+
+        if ($stmt_insert_detalle->execute()) {
+            echo "Detalles insertados correctamente.";
+        } else {
+            echo "Error al insertar detalles.";
+        }
 
         $show_success_message = true;
     } else {
@@ -193,10 +278,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         function calcularNomina() {
             var diasTrabajados = parseInt(document.getElementById('dias_trabajados').value);
 
-            if (diasTrabajados < 0 || diasTrabajados > 30) {
-                document.getElementById('error-dias-msg').innerHTML = '<div class="alert alert-danger" role="alert">Días trabajados debe ser entre 0 y 30.</div>';
-                document.getElementById('dias_trabajados').value = diasTrabajados < 0 ? 0 : 30;
-                diasTrabajados = diasTrabajados < 0 ? 0 : 30;
+            if (diasTrabajados < 5 || diasTrabajados > 30) {
+                document.getElementById('error-dias-msg').innerHTML = '<div class="alert alert-danger" role="alert">Días trabajados debe ser entre 5 y 30.</div>';
+                diasTrabajados = diasTrabajados < 5 ? 5 : 30;
             } else {
                 document.getElementById('error-dias-msg').innerHTML = '';
             }
@@ -228,8 +312,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             document.getElementById('valor_horas_extras').textContent = valorHorasExtras.toLocaleString('es-CO') + ' COP';
 
             var auxilioTransporte = parseFloat(<?php echo is_null($row['valor_aux_transporte']) ? '0' : $row['valor_aux_transporte']; ?>);
-            var totalIngresos = Math.floor(valorHorasExtras + auxilioTransporte);
-            var totalDeducciones = parseFloat(<?php echo $deduccion_salud + $deduccion_pension + $valorCuotas; ?>);
+            var montoSolicitado = parseFloat(<?php echo is_numeric($montoSolicitado) ? $montoSolicitado : 0; ?>);
+            var totalIngresos = Math.floor(valorHorasExtras + auxilioTransporte + montoSolicitado);
+            var totalDeducciones = parseFloat(<?php echo $deduccion_salud + $deduccion_pension + (is_numeric($valorCuotas) ? $valorCuotas : 0); ?>);
 
             document.getElementById('total_ingresos').textContent = totalIngresos.toLocaleString('es-CO') + ' COP';
             document.getElementById('total_deducciones').textContent = totalDeducciones.toLocaleString('es-CO') + ' COP';
@@ -268,7 +353,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <?php echo $error_message; ?>
             </div>
         <?php endif; ?>
-        <?php if (count($result) > 0) : ?>
+        <?php if (is_array($result) && count($result) > 0) : ?>
             <?php foreach ($result as $row) : ?>
                 <div class="card bg-dark text-white">
                     <div class="card-header">
@@ -295,7 +380,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         <div class="mb-4">
                             <p><strong>Salario Total: </strong><span id="salario_total"></span></p>
                             <label for="dias_trabajados" class="form-label"><strong>Días Trabajados</strong></label>
-                            <input type="number" id="dias_trabajados" name="dias_trabajados" class="form-control" min="0" max="30" required oninput="calcularNomina()">
+                            <input type="number" id="dias_trabajados" name="dias_trabajados" class="form-control" min="5" max="30" required oninput="calcularNomina()">
                             <div id="error-dias-msg" style="color: red;"></div>
                         </div>
                         <div class="mb-4">
@@ -318,7 +403,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     <p><strong>ARL: </strong><span><?php echo number_format($row['precio_arl'], 0, '.', ','); ?> COP</span></p>
                                     <p><strong>Salud: </strong><span><?php echo number_format($deduccion_salud, 0, '.', ','); ?> COP</span></p>
                                     <p><strong>Pensión: </strong><span><?php echo number_format($deduccion_pension, 0, '.', ','); ?> COP</span></p>
-                                    <p><strong>Cuotas Préstamo: </strong><span><?php echo number_format($valorCuotas, 0, '.', ','); ?> COP</span></p>
+                                    <p><strong>Cuotas Préstamo: </strong><span><?php echo is_numeric($valorCuotas) ? number_format($valorCuotas, 0, '.', ',') : $valorCuotas; ?></span></p>
                                     <p><strong>Total Deducciones: </strong><span id="total_deducciones"><?php echo number_format($total_deducciones, 0, '.', ','); ?> COP</span></p>
                                 </div>
                             </form>
@@ -332,6 +417,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     <h2>INGRESOS</h2>
                                     <p><strong>Auxilio de Transporte: </strong><span id="valor_aux_transporte"><?php echo is_null($row['valor_aux_transporte']) ? 'No aplica' : number_format($row['valor_aux_transporte'], 0, '.', ',') . ' COP'; ?></span></p>
                                     <p><strong>Valor Horas Extras: </strong><span id="valor_horas_extras"><?php echo number_format(0, 0, '.', ','); ?> COP</span></p>
+                                    <p><strong>Monto Solicitado: </strong><span id="monto_solicitado"><?php echo is_numeric($montoSolicitado) ? number_format($montoSolicitado, 0, '.', ',') : $montoSolicitado; ?> </span></p>
                                     <p><strong>Total Ingresos: </strong><span id="total_ingresos"><?php echo number_format($total_ingresos, 0, '.', ','); ?> COP</span></p>
                                 </div>
                             </form>

@@ -1,27 +1,27 @@
 <?php
 require_once("../../conexion/conexion.php");
 
-if (isset($_POST['id_prestamo']) && isset($_POST['nuevo_estado'])) {
-    $id_prestamo = $_POST['id_prestamo'];
-    $nuevo_estado = $_POST['nuevo_estado'];
+$db = new Database();
+$con = $db->conectar();
 
-    // Crear una instancia de la clase Database
-    $db = new Database();
-    // Conectar a la base de datos
-    $con = $db->conectar();
+$id_prestamo = $_POST['id_prestamo'];
+$nuevo_estado = $_POST['nuevo_estado'];
+$motivo_rechazo = isset($_POST['motivo_rechazo']) ? $_POST['motivo_rechazo'] : null;
 
-    if ($con) {
-        $sql = "UPDATE solic_prestamo SET id_estado = ? WHERE id_prestamo = ?";
-        $stmt = $con->prepare($sql);
-        if ($stmt->execute([$nuevo_estado, $id_prestamo])) {
-            echo "Estado actualizado correctamente";
-        } else {
-            echo "Error al actualizar el estado";
-        }
-    } else {
-        echo "Error de conexión: " . mysqli_connect_error();
-    }
+if ($nuevo_estado == 7 && !$motivo_rechazo) {
+    echo "Debe seleccionar un motivo de rechazo.";
+    exit();
+}
+
+$sql = "UPDATE solic_prestamo SET id_estado = :nuevo_estado, motivo_rechazo = :motivo_rechazo WHERE id_usuario = :id_prestamo";
+$stmt = $con->prepare($sql);
+$stmt->bindParam(':nuevo_estado', $nuevo_estado, PDO::PARAM_INT);
+$stmt->bindParam(':motivo_rechazo', $motivo_rechazo, PDO::PARAM_INT);
+$stmt->bindParam(':id_prestamo', $id_prestamo, PDO::PARAM_INT);
+
+if ($stmt->execute()) {
+    echo "Estado actualizado exitosamente.";
 } else {
-    echo "Datos insuficientes";
+    echo "Error al actualizar el estado.";
 }
 ?>
