@@ -7,12 +7,14 @@ if (!isset($_SESSION["id_usuario"])) {
     echo '<script>window.location.href = "../login.html";</script>';
     exit();
 }
+
 require_once("../../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
 
+$id_usuario = $_GET['id'];
 $sql = $con->prepare("SELECT * FROM usuario WHERE id_usuario = :id");
-$sql->execute([':id' => $_GET['id']]);
+$sql->execute([':id' => $id_usuario]);
 $usua = $sql->fetch();
 
 if (!$usua) {
@@ -21,8 +23,22 @@ if (!$usua) {
     exit();
 }
 
+// Cargar opciones de cargos excluyendo el id_tipo_cargo = 1
+$cargos_sql = $con->prepare("SELECT * FROM tipo_cargo WHERE id_tipo_cargo > 1");
+$cargos_sql->execute();
+$cargos = $cargos_sql->fetchAll(PDO::FETCH_ASSOC);
+
+// Cargar opciones de estados
+$estados_sql = $con->prepare("SELECT * FROM estado WHERE id_estado <= 2");
+$estados_sql->execute();
+$estados = $estados_sql->fetchAll(PDO::FETCH_ASSOC);
+
+// Cargar opciones de tipos de usuarios excluyendo el id_tipo_usuario = 1
+$tipos_usuarios_sql = $con->prepare("SELECT * FROM tipos_usuarios WHERE id_tipo_usuario > 1");
+$tipos_usuarios_sql->execute();
+$tipos_usuarios = $tipos_usuarios_sql->fetchAll(PDO::FETCH_ASSOC);
+
 if (isset($_POST["update"])) {
-    $id_usuario = $_POST['id_usuario'];
     $nombre = trim($_POST['nombre']);
     $id_tipo_cargo = $_POST['id_tipo_cargo'];
     $id_estado = $_POST['id_estado'];
@@ -50,7 +66,7 @@ if (isset($_POST["update"])) {
         ':id_estado' => $id_estado,
         ':correo' => $correo,
         ':id_tipo_usuario' => $id_tipo_usuario,
-        ':id' => $_GET['id']
+        ':id' => $id_usuario
     ]);
 
     echo '<script>alert("Actualización Exitosa");</script>';
@@ -134,15 +150,14 @@ if (isset($_POST["update"])) {
                         <label class="col-lg-3 col-form-label form-control-label">Cargo</label>
                         <div class="col-lg-9">
                             <select class="form-control" name="id_tipo_cargo" id="id_tipo_cargo" required>
-                                <option value="">Seleccione un Cargo</option>
-                                <?php
-                    $control = $con->prepare("SELECT * FROM tipo_cargo WHERE id_tipo_cargo >= 2");
-                    $control->execute();
-                    while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
-                        $selected = ($fila['id_tipo_cargo'] == $usua['id_tipo_cargo']) ? 'selected' : '';
-                        echo "<option value='" . $fila['id_tipo_cargo'] . "' $selected>" . $fila['cargo'] . "</option>";
-                    }
-                    ?>
+                                <?php if ($usua['id_tipo_cargo'] == 1): ?>
+                                    <option value="1" selected>Administrador</option>
+                                <?php endif; ?>
+                                <?php foreach ($cargos as $cargo): ?>
+                                    <option value="<?php echo $cargo['id_tipo_cargo'] ?>" <?php echo ($cargo['id_tipo_cargo'] == $usua['id_tipo_cargo']) ? 'selected' : ''; ?>>
+                                        <?php echo $cargo['cargo'] ?>
+                                    </option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
                     </div>
@@ -150,14 +165,11 @@ if (isset($_POST["update"])) {
                         <label class="col-lg-3 col-form-label form-control-label">Estado</label>
                         <div class="col-lg-9">
                             <select class="form-control" name="id_estado" id="id_estado" required>
-                                <?php
-                                $control = $con->prepare("select * from estado where id_estado <= 2");
-                                $control->execute();
-                                while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
-                                    $selected = ($fila['id_estado'] == $usua['id_estado']) ? 'selected' : '';
-                                    echo "<option value=" . $fila['id_estado'] . " $selected>" . $fila['estado'] . "</option>";
-                                }
-                                ?>
+                                <?php foreach ($estados as $estado): ?>
+                                    <option value="<?php echo $estado['id_estado'] ?>" <?php echo ($estado['id_estado'] == $usua['id_estado']) ? 'selected' : ''; ?>>
+                                        <?php echo $estado['estado'] ?>
+                                    </option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
                     </div>
@@ -171,18 +183,17 @@ if (isset($_POST["update"])) {
                         <label class="col-lg-3 col-form-label form-control-label">Tipo Usuario</label>
                         <div class="col-lg-9">
                             <select class="form-control" name="id_tipo_usuario" id="id_tipo_usuario" required>
-                                <?php
-                                $control = $con->prepare("select * from tipos_usuarios where id_tipo_usuario in (2, 3)");
-                                $control->execute();
-                                while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
-                                    $selected = ($fila['id_tipo_usuario'] == $usua['id_tipo_usuario']) ? 'selected' : '';
-                                    echo "<option value=" . $fila['id_tipo_usuario'] . " $selected>" . $fila['tipo_usuario'] . "</option>";
-                                }
-                                ?>
+                                <?php if ($usua['id_tipo_usuario'] == 1): ?>
+                                    <option value="1" selected>Administrador</option>
+                                <?php endif; ?>
+                                <?php foreach ($tipos_usuarios as $tipo_usuario): ?>
+                                    <option value="<?php echo $tipo_usuario['id_tipo_usuario'] ?>" <?php echo ($tipo_usuario['id_tipo_usuario'] == $usua['id_tipo_usuario']) ? 'selected' : ''; ?>>
+                                        <?php echo $tipo_usuario['tipo_usuario'] ?>
+                                    </option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
                     </div>
-
                     <div class="form-group row">
                         <div class="col-lg-12 text-center">
                             <input name="update" type="submit" class="btn btn-primary" value="Actualizar">
@@ -217,13 +228,6 @@ if (isset($_POST["update"])) {
         function confirmarEliminacion() {
             return confirm("¿Estás seguro de que deseas eliminar este usuario?");
         }
-
-        // Set the selected options based on the current user data
-        document.addEventListener('DOMContentLoaded', (event) => {
-            document.getElementById('id_tipo_cargo').value = "<?php echo $usua['id_tipo_cargo'] ?>";
-            document.getElementById('id_tipo_usuario').value = "<?php echo $usua['id_tipo_usuario'] ?>";
-            document.getElementById('id_estado').value = "<?php echo $usua['id_estado'] ?>";
-        });
     </script>
 </body>
 
