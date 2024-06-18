@@ -22,6 +22,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $tipo_permiso = $_POST['tipo_permiso'];
     $fecha_fin = $_POST['fecha_fin'];
 
+    // Verificar si las fechas del nuevo permiso no se solapan con los permisos existentes
+    $consultaFechas = $con->prepare("SELECT COUNT(*) as count FROM tram_permiso 
+                                     WHERE id_usuario = :id_usuario 
+                                     AND (:fecha_inicio <= fecha_fin AND :fecha_fin >= fecha_inicio)");
+    $consultaFechas->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
+    $consultaFechas->bindParam(':fecha_inicio', $fecha_inicio);
+    $consultaFechas->bindParam(':fecha_fin', $fecha_fin);
+    $consultaFechas->execute();
+    $resultado = $consultaFechas->fetch(PDO::FETCH_ASSOC);
+
+    if ($resultado['count'] > 0) {
+        echo '<script>alert("Ya tienes un permiso en las fechas seleccionadas. Por favor elige otras fechas.");</script>';
+        echo '<script>window.location.href = "tram_permiso.php";</script>';
+        exit();
+    }
+
     // Manejo de archivo subido
     $archivo = $_FILES['archivo'];
     $nombreArchivo = $archivo['name'];
