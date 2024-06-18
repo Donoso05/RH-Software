@@ -23,7 +23,7 @@ try {
                 $sql = "SELECT id_usuario, contrasena, id_tipo_usuario FROM usuario WHERE id_usuario = :id_usuario";
                 $stmt = $conexion->prepare($sql);
                 $stmt->bindParam(":id_usuario", $ID);
-                
+
                 $stmt->execute();
 
                 if ($stmt->rowCount() > 0) {
@@ -49,6 +49,9 @@ try {
                                 exit();
                             case 3:
                                 header("Location: ../model/empleado/index.php");
+                                exit();
+                            case 6:
+                                header("Location: ../licencia/index.php");
                                 exit();
                             default:
                                 // Manejar el caso en que el tipo de usuario no está definido
@@ -82,4 +85,3 @@ try {
 } catch (PDOException $e) {
     echo "Error de conexión a la base de datos: " . $e->getMessage();
 }
-?>
