@@ -36,6 +36,7 @@
             <li><a class="dropdown-item" href="arl.php">Arl</a></li>
             <li><a class="dropdown-item" href="salud.php">Salud</a></li>
             <li><a class="dropdown-item" href="pension.php">Pension</a></li>
+            <li><a class="dropdown-item" href="observaciones.php">Observaciones</a></li>
            
             
           </ul>
