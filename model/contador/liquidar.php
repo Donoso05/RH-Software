@@ -115,7 +115,15 @@ function actualizarEstadoAPagado($con) {
         $stmt_update_estado_nomina->bindParam(':mes', $current_mes, PDO::PARAM_INT);
         $stmt_update_estado_nomina->bindParam(':anio', $current_anio, PDO::PARAM_INT);
         $stmt_update_estado_nomina->execute();
-
+        
+        // Actualizar la tabla 'detalle'
+        $sql_update_estado_detalle = "UPDATE detalle 
+                                     SET id_estado = 8 
+                                     WHERE DATE_FORMAT(fecha_liquidacion, '%Y-%m') = :anio_mes";
+        $anio_mes = $current_anio . '-' . $current_mes;
+        $stmt_update_estado_detalle = $con->prepare($sql_update_estado_detalle);
+        $stmt_update_estado_detalle->bindParam(':anio_mes', $anio_mes, PDO::PARAM_STR);
+        $stmt_update_estado_detalle->execute();
     } else {
         echo '<script>console.log("No es el último día del mes.");</script>';
     }
@@ -126,6 +134,7 @@ if (isset($_GET['update'])) {
     actualizarEstadoAPagado($con);
     exit(); // Terminar la ejecución después de la actualización
 }
+
 // Continuar con la lógica de selección y renderizado de la vista HTML
 $sql = "SELECT usuario.id_usuario, usuario.nombre, tipo_cargo.cargo, tipo_cargo.salario_base, solic_prestamo.cant_cuotas,
                tipo_cargo.salario_base < 2600000 AS aplica_aux_transporte,
@@ -193,7 +202,7 @@ if (count($result) > 0) {
     $dias_trabajados = 0;
     $horas_extras = 0;
     $salario_total = 0;
-    $total_deducciones = $deduccion_salud + $deduccion_pension + (is_numeric($valorCuotas) ? $valorCuotas : 0);
+    $total_deducciones = $valorArl + $deduccion_salud + $deduccion_pension + (is_numeric($valorCuotas) ? $valorCuotas : 0);
     $total_ingresos = 0;
     $valor_neto = 0;
 } else {
@@ -237,15 +246,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $mes = date('m');  // Obtener el mes actual
         $anio = date('Y');  // Obtener el año actual
 
+        // Generar un id_nomina único aleatorio
+        do {
+            $id_nomina = rand(1, 1000000);
+            $sql_check_id_nomina = "SELECT COUNT(*) FROM nomina WHERE id_nomina = :id_nomina";
+            $stmt_check_id_nomina = $con->prepare($sql_check_id_nomina);
+            $stmt_check_id_nomina->bindParam(':id_nomina', $id_nomina, PDO::PARAM_INT);
+            $stmt_check_id_nomina->execute();
+            $id_nomina_exists = $stmt_check_id_nomina->fetchColumn();
+        } while ($id_nomina_exists > 0);
+
         // Actualizar la tabla 'nomina' con los valores calculados, la fecha de liquidación, mes y año
         $sql_update_nomina = "UPDATE nomina 
-                              SET dias_trabajados = :dias_trabajados, horas_extras = :horas_extras, salario_total = :salario_total, 
+                              SET id_nomina = :id_nomina, dias_trabajados = :dias_trabajados, horas_extras = :horas_extras, salario_total = :salario_total, 
                                   total_deducciones = :total_deducciones, total_ingresos = :total_ingresos, valor_neto = :valor_neto, 
                                   valor_horas_extras = :valor_horas_extras, fecha_li = :fecha_li, mes = :mes, anio = :anio, salario_base = :salario_base,
                                   deduccion_salud = :deduccion_salud, deduccion_pension = :deduccion_pension, precio_arl = :precio_arl,
                                   valor_cuotas = :valor_cuotas, monto_solicitado = :monto_solicitado, id_estado = 4
                               WHERE id_usuario = :id_usuario";
         $stmt_update_nomina = $con->prepare($sql_update_nomina);
+        $stmt_update_nomina->bindParam(':id_nomina', $id_nomina, PDO::PARAM_INT);
         $stmt_update_nomina->bindParam(':dias_trabajados', $dias_trabajados, PDO::PARAM_INT);
         $stmt_update_nomina->bindParam(':horas_extras', $horas_extras, PDO::PARAM_INT);
         $stmt_update_nomina->bindParam(':salario_total', $salario_total, PDO::PARAM_INT);
@@ -279,7 +299,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         include 'insertar_detalle.php';
 
         // Llamar a la función para insertar en detalle
-        if (!insertarDetalle($id_usuario, $id_nomina, $fecha_li, $salario_total, $dias_trabajados, $horas_extras, $valorHorasExtras, $total_deducciones, $total_ingresos, $valor_neto, $valorCuotas, $montoSolicitado, $con, $show_error_message, $error_message)) {
+        if (!insertarDetalle($id_usuario, $id_nomina, $fecha_li, $salario_total, $dias_trabajados, $horas_extras, $valorArl, $deduccion_salud, $deduccion_pension, $total_deducciones, $valorHorasExtras, $valorAuxTransporte, $total_ingresos, $valor_neto, $valorCuotas, $montoSolicitado, $con, $show_error_message, $error_message)) {
             // Si la inserción en detalle falla (ya se ha liquidado este mes), revertir los cambios en la tabla 'nomina'
             $sql_revert_nomina = "UPDATE nomina 
                                   SET dias_trabajados = 0, horas_extras = 0, salario_total = 0, 
@@ -350,7 +370,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             var auxilioTransporte = parseFloat(<?php echo is_null($row['valor_aux_transporte']) ? '0' : $row['valor_aux_transporte']; ?>);
             var montoSolicitado = parseFloat(<?php echo is_numeric($montoSolicitado) ? $montoSolicitado : 0; ?>);
             var totalIngresos = Math.floor(valorHorasExtras + auxilioTransporte + montoSolicitado);
-            var totalDeducciones = parseFloat(<?php echo $deduccion_salud + $deduccion_pension + (is_numeric($valorCuotas) ? $valorCuotas : 0); ?>);
+            var totalDeducciones = parseFloat(<?php echo $valorArl + $deduccion_salud + $deduccion_pension + (is_numeric($valorCuotas) ? $valorCuotas : 0); ?>);
 
             document.getElementById('total_ingresos').textContent = totalIngresos.toLocaleString('es-CO') + ' COP';
             document.getElementById('total_deducciones').textContent = totalDeducciones.toLocaleString('es-CO') + ' COP';
@@ -365,13 +385,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
 
         window.onload = function() {
-        // Llamar a la función para actualizar el estado a pagado al final del mes
-        fetch('liquidar.php?update=true')
-            .then(response => response.text())
-            .then(data => {
-                console.log(data);
-            });
-    }
+            // Llamar a la función para actualizar el estado a pagado al final del mes
+            fetch('liquidar.php?update=true')
+                .then(response => response.text())
+                .then(data => {
+                    console.log(data);
+                });
+        }
     </script>
 
 </head>
