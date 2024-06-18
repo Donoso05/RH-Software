@@ -8,6 +8,7 @@ if (!isset($_SESSION["id_usuario"])) {
     echo '<script>window.location.href = "../login.html";</script>';
     exit();
 }
+
 require_once("../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
@@ -19,11 +20,11 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
     $id_estado = $_POST['id_estado'];
     $correo = $_POST['correo'];
     $id_tipo_usuario = $_POST['id_tipo_usuario'];
-    $nit_empresa = $_POST['nit_empresa'];
+    $nit_empresa = $_SESSION['nit_empresa']; // Obtener el NIT de la empresa de la sesión
 
     // Validación de id_usuario para que solo tenga entre 9 y 10 dígitos y solo números
     if (!preg_match('/^\d{6,11}$/', $id_usuario)) {
-        echo '<script>alert("El Número de Documento debe contener entre 9 y 10 dígitos.");</script>';
+        echo '<script>alert("El Número de Documento debe contener entre 6 y 11 dígitos.");</script>';
         echo '<script>window.location="usuario.php"</script>';
         exit();
     }
@@ -47,12 +48,14 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
     $sql->execute();
     $fila = $sql->fetch(PDO::FETCH_ASSOC);
 
-    if ($id_usuario == "" || $nombre == "" || $id_tipo_cargo == "" || $id_estado == "" || $correo == "" || $nit_empresa == "") {
+    if ($id_usuario == "" || $nombre == "" || $id_tipo_cargo == "" || $id_estado == "" || $correo == "" || $id_tipo_usuario == "") {
         echo '<script>alert("EXISTEN CAMPOS VACIOS");</script>';
         echo '<script>window.location="usuario.php"</script>';
+        exit();
     } elseif ($fila) {
         echo '<script>alert("USUARIO YA REGISTRADO");</script>';
         echo '<script>window.location="usuario.php"</script>';
+        exit();
     } else {
         $contrasena_fija = "103403sena"; // Contraseña fija
         $password = password_hash($contrasena_fija, PASSWORD_DEFAULT, array("cost" => 12)); // Hash de la contraseña fija
@@ -73,13 +76,13 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
         }
 
         echo '<script>window.location="usuario.php"</script>';
+        exit();
     }
 }
 ?>
 
 <!doctype html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -144,10 +147,6 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
                     ?>
                 </select>
             </div>
-            <div class="mb-3">
-                <label for="nit" class="form-label">NIT Empresa</label>
-                <input type="number" name="nit_empresa" class="form-control" id="nit_empresa" required autocomplete="off">
-            </div>
             <input type="submit" class="btn btn-primary" name="validar" value="Registrar">
             <input type="hidden" name="MM_insert" value="formreg">
         </form>
@@ -174,7 +173,7 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
                              INNER JOIN tipos_usuarios ON usuario.id_tipo_usuario = tipos_usuarios.id_tipo_usuario 
                              INNER JOIN estado ON usuario.id_estado = estado.id_estado";
                 $resultado = $con->query($consulta);
-                while ($fila = $resultado->fetch()) {
+                while ($fila = $resultado->fetch(PDO::FETCH_ASSOC)) {
                 ?>
                         <tr>
                             <td><?php echo $fila["id_usuario"]; ?></td>

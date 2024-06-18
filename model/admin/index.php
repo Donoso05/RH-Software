@@ -45,6 +45,14 @@ if ($result) {
 }
 
 $stmt->closeCursor();
+
+// Verificar si el usuario ha cambiado su contraseña
+$sql = "SELECT COUNT(*) FROM triggers WHERE id_usuario = ?";
+$stmt = $con->prepare($sql);
+$stmt->bindParam(1, $id_usuario, PDO::PARAM_INT);
+$stmt->execute();
+$password_changed = $stmt->fetchColumn() > 0;
+$stmt->closeCursor();
 $con = null;
 ?>
 <!DOCTYPE html>
@@ -57,6 +65,8 @@ $con = null;
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/1057b0ffdd.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="css/nav.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <?php include("nav.php") ?>
@@ -86,7 +96,7 @@ $con = null;
                         <div class="col-md-8">
                             <h2><?php echo $nombre; ?></h2>
                             <p><strong>Documento:</strong> <?php echo $id_usuario; ?></p>
-                            <p><strong>Correo Electronico</strong> <?php echo $correo; ?></p>
+                            <p><strong>Correo Electronico:</strong> <?php echo $correo; ?></p>
                             <p><strong>NIT de la Empresa:</strong> <?php echo $nit_empresa; ?></p>
                             <p><strong>Estado:</strong> <?php echo $estado; ?></p>
                             <p><strong>Cargo:</strong> <?php echo $cargo; ?></p>
@@ -96,5 +106,70 @@ $con = null;
             </div>
         </div>
     </div>
+
+    <?php if (!$password_changed): ?>
+    <!-- Modal para cambiar la contraseña -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1" role="dialog" aria-labelledby="changePasswordModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h3 class="modal-title" id="changePasswordModalLabel">Cambiar contraseña</h3>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="changePasswordForm" action="cambiar_contrasena.php" method="POST">
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Nueva Contraseña</label>
+                            <input type="password" id="password" name="password" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirm_password" class="form-label">Confirmar Nueva Contraseña</label>
+                            <input type="password" id="confirm_password" name="confirm_password" class="form-control" required>
+                        </div>
+                        <input type="hidden" name="id_usuario" value="<?php echo $id_usuario; ?>">
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary">Cambiar Contraseña</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
+    <script>
+        $(document).ready(function() {
+            // Show the modal if password has not been changed
+            <?php if (!$password_changed): ?>
+                $('#changePasswordModal').modal({ backdrop: 'static', keyboard: false });
+                $('#changePasswordModal').modal('show');
+            <?php endif; ?>
+
+            // Validate the password before submitting the form
+            $('#changePasswordForm').on('submit', function(e) {
+                const password = $('#password').val();
+                const confirmPassword = $('#confirm_password').val();
+                const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{10,}$/;
+
+                if (!passwordPattern.test(password)) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'La contraseña debe ser alfanumérica y tener al menos 10 caracteres.'
+                    });
+                } else if (password !== confirmPassword) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Las contraseñas no coinciden.'
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 </html>
