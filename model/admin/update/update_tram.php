@@ -46,8 +46,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $rutaArchivo = $usua['incapacidad']; // Ruta del archivo actual
 
         if (!empty($archivo['tmp_name'])) {
-            $nombreArchivo = $archivo['name'];
-            $rutaArchivo = '../../uploads/' . $nombreArchivo;
+            $nombreArchivo = basename($archivo['name']); // Obtener el nombre del archivo sin la ruta
+            $rutaArchivo = '../../../uploads/' . $nombreArchivo;
 
             // Mover el archivo subido a la ubicación deseada
             if (!move_uploaded_file($archivo['tmp_name'], $rutaArchivo)) {
@@ -74,13 +74,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 <!doctype html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Editar Permiso</title>
     <link rel="stylesheet" href="../css/ingreso2.css">
-
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -92,7 +90,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.1/css/bootstrap.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">
 </head>
-
 <body>
     <main>
         <div class="container">
@@ -148,7 +145,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                             <div class="col-lg-9">
                                 <input type="file" id="incapacidad" name="incapacidad" class="form-control" accept="application/pdf">
                                 <small class="form-text text-muted">Dejar en blanco para mantener el archivo actual.</small>
-                                <a href="<?php echo htmlspecialchars($usua['incapacidad'], ENT_QUOTES, 'UTF-8'); ?>" target="_blank">Ver archivo actual</a>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -196,8 +192,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 document.getElementById('fecha_fin').value = fechaFin;
             }
         }
-    </script>
-    <script>
+
         function confirmarEliminacion() {
             return confirm('¿Estás seguro de que deseas eliminar este registro?');
         }
