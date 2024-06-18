@@ -37,6 +37,7 @@
           <ul class="dropdown-menu" aria-labelledby="navbarDropdownRoles">
             <li><a class="dropdown-item" href="ver_liquidacion.php">Liquidaciones</a></li>
             <li><a class="dropdown-item" href="ver_permisos.php">Permisos</a></li>
+            <li><a class="dropdown-item" href="ver_detalles.php">Permisos</a></li>
           </ul>
         </div>
       </div>

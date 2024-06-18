@@ -26,6 +26,29 @@ if ($user_exists == 0) {
     die("El usuario con id_usuario $id_usuario no existe en la tabla usuario.");
 }
 
+// Función para vaciar la tabla 'nomina' al inicio del mes
+function vaciarTablaNominaAlInicioDelMes($con) {
+    $current_date = date('Y-m-d');
+    $first_day_of_month = date('Y-m-01'); // Obtener el primer día del mes
+
+    echo '<script>console.log("Fecha actual: ' . $current_date . '");</script>';
+    echo '<script>console.log("Primer día del mes: ' . $first_day_of_month . '");</script>';
+
+    // Verificar si es el primer día del mes
+    if ($current_date === $first_day_of_month) {
+        echo '<script>console.log("Vaciando tabla nomina...");</script>';
+
+        // Vaciar la tabla 'nomina'
+        $sql_empty_nomina = "TRUNCATE TABLE nomina";
+        $con->exec($sql_empty_nomina);
+    } else {
+        echo '<script>console.log("No es el primer día del mes.");</script>';
+    }
+}
+
+// Llamar a la función para vaciar la tabla 'nomina' al inicio del mes
+vaciarTablaNominaAlInicioDelMes($con);
+
 // Obtener el id_arl y salario_base del usuario
 $sql_get_details = "SELECT tipo_cargo.id_arl, tipo_cargo.salario_base 
                     FROM usuario
@@ -63,23 +86,36 @@ if ($user_in_nomina == 0) {
     $stmt_insert_nomina->execute();
 }
 
-// Función para actualizar el estado a pagado al final del mes
+// Obtener el id_nomina para el usuario
+$sql_get_nomina = "SELECT id_nomina FROM nomina WHERE id_usuario = :id_usuario";
+$stmt_get_nomina = $con->prepare($sql_get_nomina);
+$stmt_get_nomina->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
+$stmt_get_nomina->execute();
+$id_nomina = $stmt_get_nomina->fetchColumn();
+
+
 function actualizarEstadoAPagado($con) {
     $current_date = date('Y-m-d');
     $last_day_of_month = date('Y-m-t'); // Obtener el último día del mes
 
+    echo '<script>console.log("Fecha actual: ' . $current_date . '");</script>';
+    echo '<script>console.log("Último día del mes: ' . $last_day_of_month . '");</script>';
+
     // Verificar si es el último día del mes
-    if ($current_date == $last_day_of_month) {
+    if ($current_date === $last_day_of_month) {
         echo '<script>console.log("Actualizando estado a pagado...");</script>';
         $current_mes = date('m');
         $current_anio = date('Y');
-        $sql_update_estado = "UPDATE nomina 
-                              SET id_estado = 8 
-                              WHERE mes = :mes AND anio = :anio";
-        $stmt_update_estado = $con->prepare($sql_update_estado);
-        $stmt_update_estado->bindParam(':mes', $current_mes, PDO::PARAM_INT);
-        $stmt_update_estado->bindParam(':anio', $current_anio, PDO::PARAM_INT);
-        $stmt_update_estado->execute();
+
+        // Actualizar la tabla 'nomina'
+        $sql_update_estado_nomina = "UPDATE nomina 
+                                     SET id_estado = 8 
+                                     WHERE mes = :mes AND anio = :anio";
+        $stmt_update_estado_nomina = $con->prepare($sql_update_estado_nomina);
+        $stmt_update_estado_nomina->bindParam(':mes', $current_mes, PDO::PARAM_INT);
+        $stmt_update_estado_nomina->bindParam(':anio', $current_anio, PDO::PARAM_INT);
+        $stmt_update_estado_nomina->execute();
+
     } else {
         echo '<script>console.log("No es el último día del mes.");</script>';
     }
@@ -90,7 +126,6 @@ if (isset($_GET['update'])) {
     actualizarEstadoAPagado($con);
     exit(); // Terminar la ejecución después de la actualización
 }
-
 // Continuar con la lógica de selección y renderizado de la vista HTML
 $sql = "SELECT usuario.id_usuario, usuario.nombre, tipo_cargo.cargo, tipo_cargo.salario_base, solic_prestamo.cant_cuotas,
                tipo_cargo.salario_base < 2600000 AS aplica_aux_transporte,
@@ -115,7 +150,7 @@ $stmt->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
 $stmt->execute();
 $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-if (is_array($result) && count($result) > 0) {
+if (count($result) > 0) {
     $row = $result[0];
     $salario_diario = $row['salario_base'] / 30;
     $deduccion_salud = $row['salario_base'] * $row['porcentaje_s'] / 100;
@@ -238,25 +273,26 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt_update_prestamo->execute();
         }
 
-        // Insertar detalles de la liquidación en la tabla 'detalle'
-        $sql_insert_detalle = "INSERT INTO detalle (id_usuario, dias_trabajados, horas_extras, salario_total, total_deducciones, total_ingresos, valor_neto) 
-                               VALUES (:id_usuario, :dias_trabajados, :horas_extras, :salario_total, :total_deducciones, :total_ingresos, :valor_neto)";
-        $stmt_insert_detalle = $con->prepare($sql_insert_detalle);
-        $stmt_insert_detalle->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
-        $stmt_insert_detalle->bindParam(':dias_trabajados', $dias_trabajados, PDO::PARAM_INT);
-        $stmt_insert_detalle->bindParam(':horas_extras', $horas_extras, PDO::PARAM_INT);
-        $stmt_insert_detalle->bindParam(':salario_total', $salario_total, PDO::PARAM_INT);
-        $stmt_insert_detalle->bindParam(':total_deducciones', $total_deducciones, PDO::PARAM_INT);
-        $stmt_insert_detalle->bindParam(':total_ingresos', $total_ingresos, PDO::PARAM_INT);
-        $stmt_insert_detalle->bindParam(':valor_neto', $valor_neto, PDO::PARAM_INT);
-
-        if ($stmt_insert_detalle->execute()) {
-            echo "Detalles insertados correctamente.";
-        } else {
-            echo "Error al insertar detalles.";
-        }
-
         $show_success_message = true;
+
+        // Incluir el archivo de inserción en detalle
+        include 'insertar_detalle.php';
+
+        // Llamar a la función para insertar en detalle
+        if (!insertarDetalle($id_usuario, $id_nomina, $fecha_li, $salario_total, $dias_trabajados, $horas_extras, $valorHorasExtras, $total_deducciones, $total_ingresos, $valor_neto, $valorCuotas, $montoSolicitado, $con, $show_error_message, $error_message)) {
+            // Si la inserción en detalle falla (ya se ha liquidado este mes), revertir los cambios en la tabla 'nomina'
+            $sql_revert_nomina = "UPDATE nomina 
+                                  SET dias_trabajados = 0, horas_extras = 0, salario_total = 0, 
+                                      total_deducciones = 0, total_ingresos = 0, valor_neto = 0, 
+                                      valor_horas_extras = 0, fecha_li = NULL, mes = NULL, anio = NULL, salario_base = :salario_base,
+                                      deduccion_salud = 0, deduccion_pension = 0, precio_arl = 0,
+                                      valor_cuotas = 0, monto_solicitado = 0, id_estado = 1
+                                  WHERE id_usuario = :id_usuario";
+            $stmt_revert_nomina = $con->prepare($sql_revert_nomina);
+            $stmt_revert_nomina->bindParam(':salario_base', $salario_base, PDO::PARAM_INT);
+            $stmt_revert_nomina->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
+            $stmt_revert_nomina->execute();
+        }
     } else {
         $show_error_message = true;
         $error_message = "Ya se ha realizado una liquidación para este mes.";
@@ -328,14 +364,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             document.getElementById('valor_neto').textContent = salarioNeto.toLocaleString('es-CO') + ' COP';
         }
 
-        // Función para llamar al script PHP que actualiza el estado a pagado
         window.onload = function() {
-            fetch('ruta_a_tu_script.php?update=true')
-                .then(response => response.text())
-                .then(data => {
-                    console.log(data);
-                });
-        }
+        // Llamar a la función para actualizar el estado a pagado al final del mes
+        fetch('liquidar.php?update=true')
+            .then(response => response.text())
+            .then(data => {
+                console.log(data);
+            });
+    }
     </script>
 
 </head>
@@ -353,7 +389,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <?php echo $error_message; ?>
             </div>
         <?php endif; ?>
-        <?php if (is_array($result) && count($result) > 0) : ?>
+        <?php if (count($result) > 0) : ?>
             <?php foreach ($result as $row) : ?>
                 <div class="card bg-dark text-white">
                     <div class="card-header">

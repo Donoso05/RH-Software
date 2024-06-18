@@ -33,11 +33,34 @@ function actualizarEstadoAPagado($con) {
     }
 }
 
+// Función para vaciar la tabla 'nomina' al inicio del mes
+function vaciarTablaNominaAlInicioDelMes($con) {
+    $current_date = date('Y-m-d');
+    $first_day_of_month = date('Y-m-01'); // Obtener el primer día del mes
+
+    echo '<script>console.log("Fecha actual: ' . $current_date . '");</script>';
+    echo '<script>console.log("Primer día del mes: ' . $first_day_of_month . '");</script>';
+
+    // Verificar si es el primer día del mes
+    if ($current_date === $first_day_of_month) {
+        echo '<script>console.log("Vaciando tabla nomina...");</script>';
+
+        // Vaciar la tabla 'nomina'
+        $sql_empty_nomina = "TRUNCATE TABLE nomina";
+        $con->exec($sql_empty_nomina);
+    } else {
+        echo '<script>console.log("No es el primer día del mes.");</script>';
+    }
+}
+
 // Verificar si la llamada es desde JavaScript
 if (isset($_GET['update'])) {
     actualizarEstadoAPagado($con);
     exit(); // Terminar la ejecución después de la actualización
 }
+
+// Llamar a la función para vaciar la tabla 'nomina' al inicio del mes
+vaciarTablaNominaAlInicioDelMes($con);
 
 // Consulta SQL para obtener los datos de la tabla nomina
 $sql = "SELECT n.*, u.nombre, e.estado AS estado_nombre
