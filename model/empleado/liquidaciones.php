@@ -66,11 +66,11 @@ $nominas = $query->fetchAll(PDO::FETCH_ASSOC);
                         <div>
                             <p>Año: <?php echo htmlspecialchars($nomina['anio']); ?></p>
                             <p>Estado: <?php echo htmlspecialchars($nomina['id_estado']); ?></p>
-                            <p>ARL: <?php echo htmlspecialchars($nomina['id_arl']); ?></p>
-                            <p>Salud: <?php echo htmlspecialchars($nomina['id_salud']); ?></p>
-                            <p>Pensión: <?php echo htmlspecialchars($nomina['id_pension']); ?></p>
+                            <p>ARL: <?php echo htmlspecialchars($nomina['precio_arl']); ?></p>
+                            <p>Salud: <?php echo htmlspecialchars($nomina['deduccion_salud']); ?></p>
+                            <p>Pensión: <?php echo htmlspecialchars($nomina['deduccion_pension']); ?></p>
                             <p>Total Deducciones: <?php echo htmlspecialchars($nomina['total_deducciones']); ?></p>
-                            <p>Auxilio Transporte: <?php echo htmlspecialchars($nomina['id_auxtransporte']); ?></p>
+                            <p>Auxilio Transporte: <?php echo htmlspecialchars($nomina['aux_transporte_valor']); ?></p>
                             <p>Horas Extras: <?php echo htmlspecialchars($nomina['horas_extras']); ?></p>
                             <p>Salario Base: <?php echo htmlspecialchars($nomina['salario_base']); ?></p>
                             <p>Días Trabajados: <?php echo htmlspecialchars($nomina['dias_trabajados']); ?></p>
