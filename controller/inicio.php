@@ -23,7 +23,7 @@ try {
                 $sql = "SELECT id_usuario, contrasena, id_tipo_usuario FROM usuario WHERE id_usuario = :id_usuario";
                 $stmt = $conexion->prepare($sql);
                 $stmt->bindParam(":id_usuario", $ID);
-                
+
                 $stmt->execute();
 
                 if ($stmt->rowCount() > 0) {
@@ -72,6 +72,25 @@ try {
                             echo '<script>alert("No se encontró el NIT de la empresa.");</script>';
                             echo '<script>window.location.href = "../login.html";</script>';
                             exit();
+                        // Redireccionar según el tipo de usuario
+                        switch ($ID_Roll) {
+                            case 1:
+                                header("Location: ../model/admin/index.php");
+                                exit();
+                            case 2:
+                                header("Location: ../model/contador/index.php");
+                                exit();
+                            case 3:
+                                header("Location: ../model/empleado/index.php");
+                                exit();
+                            case 6:
+                                header("Location: ../licencia/index.php");
+                                exit();
+                            default:
+                                // Manejar el caso en que el tipo de usuario no está definido
+                                echo '<script>alert("Tipo de usuario no definido.");</script>';
+                                echo '<script>window.location.href = "../login.html";</script>';
+                                exit();
                         }
                     } else {
                         // Manejar el caso en que la contraseña es incorrecta
@@ -99,4 +118,3 @@ try {
 } catch (PDOException $e) {
     echo "Error de conexión a la base de datos: " . $e->getMessage();
 }
-?>
