@@ -39,22 +39,39 @@ try {
                         $_SESSION["id_usuario"] = $ID;
                         $_SESSION["id_tipo_usuario"] = $ID_Roll;
 
-                        // Redireccionar según el tipo de usuario
-                        switch ($ID_Roll) {
-                            case 1:
-                                header("Location: ../model/admin/index.php");
-                                exit();
-                            case 2:
-                                header("Location: ../model/contador/index.php");
-                                exit();
-                            case 3:
-                                header("Location: ../model/empleado/index.php");
-                                exit();
-                            default:
-                                // Manejar el caso en que el tipo de usuario no está definido
-                                echo '<script>alert("Tipo de usuario no definido.");</script>';
-                                echo '<script>window.location.href = "../login.html";</script>';
-                                exit();
+                        // Consulta adicional para obtener el nit_empresa
+                        $sql_nit = "SELECT nit_empresa FROM usuario WHERE id_usuario = :id_usuario";
+                        $stmt_nit = $conexion->prepare($sql_nit);
+                        $stmt_nit->bindParam(":id_usuario", $ID);
+                        $stmt_nit->execute();
+
+                        if ($stmt_nit->rowCount() > 0) {
+                            $row_nit = $stmt_nit->fetch(PDO::FETCH_ASSOC);
+                            $nit_empresa = $row_nit["nit_empresa"];
+                            $_SESSION["nit_empresa"] = $nit_empresa; // Guardar el nit_empresa en una variable de sesión
+
+                            // Redireccionar según el tipo de usuario
+                            switch ($ID_Roll) {
+                                case 1:
+                                    header("Location: ../model/admin/index.php");
+                                    exit();
+                                case 2:
+                                    header("Location: ../model/contador/index.php");
+                                    exit();
+                                case 3:
+                                    header("Location: ../model/empleado/index.php");
+                                    exit();
+                                default:
+                                    // Manejar el caso en que el tipo de usuario no está definido
+                                    echo '<script>alert("Tipo de usuario no definido.");</script>';
+                                    echo '<script>window.location.href = "../login.html";</script>';
+                                    exit();
+                            }
+                        } else {
+                            // Manejar el caso en que no se encontró el nit_empresa
+                            echo '<script>alert("No se encontró el NIT de la empresa.");</script>';
+                            echo '<script>window.location.href = "../login.html";</script>';
+                            exit();
                         }
                     } else {
                         // Manejar el caso en que la contraseña es incorrecta
