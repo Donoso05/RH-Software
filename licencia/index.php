@@ -1,6 +1,10 @@
 <?php
 session_start();
 
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 // Verificar si la sesión no está iniciada
 if (!isset($_SESSION["id_usuario"])) {
     echo '<script>alert("Debes iniciar sesión antes de acceder a la interfaz de administrador.");</script>';
@@ -65,27 +69,17 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formemp")) {
     }
 }
 
-if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formemp")) {
-    $nit = $_POST['nit'];
-    $nombre = $_POST['nombre'];
-    $correo = $_POST['correo'];
+// Fetch all companies
+$empresas = $con->prepare("SELECT * FROM empresas");
+$empresas->execute();
+$empresas_data = $empresas->fetchAll(PDO::FETCH_ASSOC);
 
-    $sql = $con->prepare("SELECT * FROM empresas");
-    $sql->execute();
-    $fila = $sql->fetchAll(PDO::FETCH_ASSOC);
+// Fetch all administrators
+$administradores = $con->prepare("SELECT * FROM usuario WHERE id_tipo_usuario = 1");
+$administradores->execute();
+$administradores_data = $administradores->fetchAll(PDO::FETCH_ASSOC);
 
-    if ($nit == "" || $nombre == "" || $correo == "") {
-        echo '<script>alert ("EXISTEN DATOS VACIOS"); </script>';
-    } else {
-        $insertSQL = $con->prepare("INSERT INTO empresas(nit_empresa, nombre, correo) 
-        VALUES ('$nit','$nombre', '$correo')");
-        $insertSQL->execute();
-        echo '<script>alert ("Empresa creada con exito"); </script>';
-        echo '<script>window.location="index.php"</script>';
-    }
-}
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -147,11 +141,11 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formemp")) {
                 <button type="submit" class="btn">Crear</button>
                 <input type="hidden" name="MM_insert" value="formreg">
             </form>
-            <form class="form" method="post" action="camind.php">
+            <form class="form" method="post" action="cadmin.php">
                 <h2>Crear Administrador</h2>
                 <div class="form-group">
-                    <label for="docuemnto">Documento</label>
-                    <input type="text" name="nombre" id="documento" placeholder="Documento">
+                    <label for="documento">Documento</label>
+                    <input type="text" name="documento" id="documento" placeholder="Documento">
                 </div>
                 <div class="form-group">
                     <label for="nombre">Nombre</label>
@@ -174,8 +168,66 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formemp")) {
                     </select>
                 </div>
                 <input type="submit" name="validar" value="Registrar" class="btn">
-                <input type="hidden" name="MM_insert" value="formemp">
+                <input type="hidden" name="MM_insert" value="formreg">
             </form>
+        </div>
+
+        <div class="form-wrapper tables-wrapper">
+            <div class="form table-wrapper">
+                <h2>Tabla Empresa</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>NIT Empresa</th>
+                            <th>Nombre</th>
+                            <th>ID Licencia</th>
+                            <th>Correo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($empresas_data as $empresa): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($empresa['nit_empresa']); ?></td>
+                                <td><?php echo htmlspecialchars($empresa['nombre']); ?></td>
+                                <td><?php echo htmlspecialchars($empresa['id_licencia']); ?></td>
+                                <td><?php echo htmlspecialchars($empresa['correo']); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="form table-wrapper">
+                <h2>Tabla Administradores</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID Usuario</th>
+                            <th>Nombre</th>
+                            <th>ID Tipo Cargo</th>
+                            <th>ID Estado</th>
+                            <th>Correo</th>
+                            <th>ID Tipo Usuario</th>
+                            <th>NIT Empresa</th>
+                            <th>Foto</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($administradores_data as $admin): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($admin['id_usuario']); ?></td>
+                                <td><?php echo htmlspecialchars($admin['nombre']); ?></td>
+                                <td><?php echo htmlspecialchars($admin['id_tipo_cargo']); ?></td>
+                                <td><?php echo htmlspecialchars($admin['id_estado']); ?></td>
+                                <td><?php echo htmlspecialchars($admin['correo']); ?></td>
+                                <td><?php echo htmlspecialchars($admin['id_tipo_usuario']); ?></td>
+                                <td><?php echo htmlspecialchars($admin['nit_empresa']); ?></td>
+                                <td><?php echo htmlspecialchars($admin['foto']); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </body>

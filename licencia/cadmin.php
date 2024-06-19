@@ -1,6 +1,10 @@
 <?php
 session_start();
 
+// Enable error reporting for debugging
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 // Verificar si la sesión no está iniciada
 if (!isset($_SESSION["id_usuario"])) {
     // Mostrar un alert y redirigir utilizando JavaScript
@@ -8,22 +12,28 @@ if (!isset($_SESSION["id_usuario"])) {
     echo '<script>window.location.href = "../login.html";</script>';
     exit();
 }
-require_once("../../conexion/conexion.php");
+
+require_once("../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
 
 if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
-    $id_usuario = $_POST['id_usuario'];
+    $id_usuario = $_POST['documento'];
     $nombre = trim($_POST['nombre']);
-    $id_tipo_cargo = $_POST['id_tipo_cargo'];
-    $id_estado = $_POST['id_estado'];
     $correo = $_POST['correo'];
-    $id_tipo_usuario = $_POST['id_tipo_usuario'];
-    $empresa = $_POST['nit_empresa'];
+    $nit_empresa = $_POST['empresa'];
 
-    // Validación de id_usuario para que solo tenga entre 9 y 10 dígitos y solo números
+    // Default values for the other columns
+    $id_tipo_cargo = 1; // Default value
+    $id_estado = 1; // Default value
+    $id_tipo_usuario = 1; // Default value
+    $contrasena_fija = "103403sena"; // Contraseña fija
+    $password = password_hash($contrasena_fija, PASSWORD_DEFAULT, array("cost" => 12)); // Hash de la contraseña fija
+    $foto = "default.jpg"; // Default value
+
+    // Validación de id_usuario para que solo tenga entre 6 y 11 dígitos y solo números
     if (!preg_match('/^\d{6,11}$/', $id_usuario)) {
-        echo '<script>alert("El Número de Documento debe contener entre 9 y 10 dígitos.");</script>';
+        echo '<script>alert("El Número de Documento debe contener entre 6 y 11 dígitos.");</script>';
         echo '<script>window.location="usuario.php"</script>';
         exit();
     }
@@ -43,21 +53,26 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
     }
 
     // Resto de la validación
-    $sql = $con->prepare("SELECT * FROM usuario WHERE id_usuario='$id_usuario'");
+    $sql = $con->prepare("SELECT * FROM usuario WHERE id_usuario = :id_usuario");
+    $sql->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
     $sql->execute();
     $fila = $sql->fetch(PDO::FETCH_ASSOC);
 
-    if ($id_usuario == "" || $nombre == "" || $id_tipo_cargo == "" || $id_estado == "" || $correo == "" || $nit_empresa == "") {
-        echo '<script>alert("EXISTEN CAMPOS VACIOS");</script>';
-        echo '<script>window.location="usuario.php"</script>';
-    } elseif ($fila) {
+    if ($fila) {
         echo '<script>alert("USUARIO YA REGISTRADO");</script>';
         echo '<script>window.location="usuario.php"</script>';
     } else {
-        $contrasena_fija = "103403sena"; // Contraseña fija
-        $password = password_hash($contrasena_fija, PASSWORD_DEFAULT, array("cost" => 12)); // Hash de la contraseña fija
-        $insertSQL = $con->prepare("INSERT INTO usuario(id_usuario, nombre, id_tipo_cargo, id_estado, correo, id_tipo_usuario, contrasena, nit_empresa) 
-        VALUES ('$id_usuario', '$nombre', '$id_tipo_cargo', '$id_estado', '$correo', '$id_tipo_usuario', '$password', '$nit_empresa')");
+        $insertSQL = $con->prepare("INSERT INTO usuario (id_usuario, nombre, id_tipo_cargo, id_estado, correo, id_tipo_usuario, contrasena, nit_empresa, foto) 
+        VALUES (:id_usuario, :nombre, :id_tipo_cargo, :id_estado, :correo, :id_tipo_usuario, :contrasena, :nit_empresa, :foto)");
+        $insertSQL->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
+        $insertSQL->bindParam(':nombre', $nombre, PDO::PARAM_STR);
+        $insertSQL->bindParam(':id_tipo_cargo', $id_tipo_cargo, PDO::PARAM_INT);
+        $insertSQL->bindParam(':id_estado', $id_estado, PDO::PARAM_INT);
+        $insertSQL->bindParam(':correo', $correo, PDO::PARAM_STR);
+        $insertSQL->bindParam(':id_tipo_usuario', $id_tipo_usuario, PDO::PARAM_INT);
+        $insertSQL->bindParam(':contrasena', $password, PDO::PARAM_STR);
+        $insertSQL->bindParam(':nit_empresa', $nit_empresa, PDO::PARAM_INT);
+        $insertSQL->bindParam(':foto', $foto, PDO::PARAM_STR);
         $insertSQL->execute();
 
         // Enviar correo al empleado
@@ -72,7 +87,7 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
             echo '<script>alert("Usuario Creado con Exito, pero no se pudo enviar el correo");</script>';
         }
 
-        echo '<script>window.location="usuario.php"</script>';
+        echo '<script>window.location="index.php"</script>';
     }
 }
 ?>

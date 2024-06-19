@@ -93,3 +93,43 @@ body {
         margin: 10px 0;
     }
 }
+
+.tables-wrapper {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.table-wrapper table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table-wrapper th,
+.table-wrapper td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: left;
+}
+
+.table-wrapper th {
+    background-color: #f9f9f9;
+    color: #333;
+}
+
+.table-wrapper td {
+    background-color: #fff;
+    color: #333;
+}
+
+@media (max-width: 768px) {
+    .tables-wrapper {
+        flex-direction: column;
+    }
+
+    .table-wrapper {
+        margin: 10px 0;
+    }
+}
