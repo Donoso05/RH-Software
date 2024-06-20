@@ -112,16 +112,16 @@ $creditos = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <td><?php echo htmlspecialchars($credito['estado']); ?></td>
                                     <td><?php echo htmlspecialchars($credito['observacion']); ?></td>
                                     <td id="acciones-<?php echo $credito['id_usuario']; ?>">
-                                        <?php if ($credito['id_estado'] == 5 || $credito['id_estado'] == 7 || $credito['id_estado'] == 9) { ?>
+                                        <?php if ($credito['id_estado'] == 5 || $credito['id_estado'] == 7 || $credito['id_estado'] == 9 || $credito["id_estado"] == 8) { ?>
                                             <span class="text-success">Solicitud ya procesada</span>
                                         <?php } else { ?>
                                             <button id="btnAprobar-<?php echo $credito['id_usuario']; ?>" class="btn btn-success" onclick="actualizarEstado(<?php echo $credito['id_usuario']; ?>, 5)">Aprobar</button>
                                             <button id="btnNoAprobar-<?php echo $credito['id_usuario']; ?>" class="btn btn-danger" onclick="mostrarMotivoRechazo(<?php echo $credito['id_usuario']; ?>)">No Aprobar</button>
                                             <div id="motivoRechazoSelect-<?php echo $credito['id_usuario']; ?>" style="display: none;">
-                                                <select id="selectMotivoRechazo-<?php echo $credito['id_usuario']; ?>" class="form-select mt-2">
-                                                    <option value="">Seleccione un motivo</option>
+                                                <select id="selectMotivoRechazo-<?php echo $credito['id_usuario']; ?>" class="form-select mt-2" required>
+                                                    <option value="" disabled selected>Seleccione un motivo</option>
                                                     <?php
-                                                    $observaciones = $con->query("SELECT * FROM observaciones where id_observacion > 5 ");
+                                                    $observaciones = $con->query("SELECT * FROM observaciones WHERE id_observacion > 5");
                                                     while ($obs = $observaciones->fetch()) {
                                                         echo '<option value="'.$obs['id_observacion'].'">'.$obs['observacion'].'</option>';
                                                     }

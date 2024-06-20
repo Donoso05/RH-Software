@@ -15,17 +15,6 @@ date_default_timezone_set('America/Bogota');  // Establece la zona horaria a Bog
 
 $id_usuario = isset($_GET['id_usuario']) ? (int)$_GET['id_usuario'] : 0;
 
-// Verificar si el usuario existe en la tabla 'usuario'
-$sql_check_user = "SELECT COUNT(*) FROM usuario WHERE id_usuario = :id_usuario";
-$stmt_check_user = $con->prepare($sql_check_user);
-$stmt_check_user->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
-$stmt_check_user->execute();
-$user_exists = $stmt_check_user->fetchColumn();
-
-if ($user_exists == 0) {
-    die("El usuario con id_usuario $id_usuario no existe en la tabla usuario.");
-}
-
 // Función para vaciar la tabla 'nomina' al inicio del mes
 function vaciarTablaNominaAlInicioDelMes($con) {
     $current_date = date('Y-m-d');
@@ -76,10 +65,21 @@ $stmt_check_nomina->execute();
 $user_in_nomina = $stmt_check_nomina->fetchColumn();
 
 if ($user_in_nomina == 0) {
+    // Generar un id_nomina único aleatorio de 6 cifras
+    do {
+        $id_nomina = rand(100000, 999999);
+        $sql_check_id_nomina = "SELECT COUNT(*) FROM nomina WHERE id_nomina = :id_nomina";
+        $stmt_check_id_nomina = $con->prepare($sql_check_id_nomina);
+        $stmt_check_id_nomina->bindParam(':id_nomina', $id_nomina, PDO::PARAM_INT);
+        $stmt_check_id_nomina->execute();
+        $id_nomina_exists = $stmt_check_id_nomina->fetchColumn();
+    } while ($id_nomina_exists > 0);
+
     // Insertar un nuevo registro en la tabla 'nomina'
-    $sql_insert_nomina = "INSERT INTO nomina (id_usuario, deduccion_salud, deduccion_pension, precio_arl, aux_transporte_valor, salario_base) 
-                          VALUES (:id_usuario, 0, 0, 0, :aux_transporte_valor, :salario_base)";
+    $sql_insert_nomina = "INSERT INTO nomina (id_nomina, id_usuario, deduccion_salud, deduccion_pension, precio_arl, aux_transporte_valor, salario_base) 
+                          VALUES (:id_nomina, :id_usuario, 0, 0, 0, :aux_transporte_valor, :salario_base)";
     $stmt_insert_nomina = $con->prepare($sql_insert_nomina);
+    $stmt_insert_nomina->bindParam(':id_nomina', $id_nomina, PDO::PARAM_INT);
     $stmt_insert_nomina->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
     $stmt_insert_nomina->bindParam(':aux_transporte_valor', $aux_transporte_valor, PDO::PARAM_INT);
     $stmt_insert_nomina->bindParam(':salario_base', $salario_base, PDO::PARAM_INT);
@@ -93,7 +93,7 @@ $stmt_get_nomina->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
 $stmt_get_nomina->execute();
 $id_nomina = $stmt_get_nomina->fetchColumn();
 
-
+// Función para actualizar el estado a pagado al final del mes
 function actualizarEstadoAPagado($con) {
     $current_date = date('Y-m-d');
     $last_day_of_month = date('Y-m-t'); // Obtener el último día del mes
@@ -115,14 +115,14 @@ function actualizarEstadoAPagado($con) {
         $stmt_update_estado_nomina->bindParam(':mes', $current_mes, PDO::PARAM_INT);
         $stmt_update_estado_nomina->bindParam(':anio', $current_anio, PDO::PARAM_INT);
         $stmt_update_estado_nomina->execute();
-        
+
         // Actualizar la tabla 'detalle'
         $sql_update_estado_detalle = "UPDATE detalle 
                                      SET id_estado = 8 
-                                     WHERE DATE_FORMAT(fecha_liquidacion, '%Y-%m') = :anio_mes";
-        $anio_mes = $current_anio . '-' . $current_mes;
+                                     WHERE mes = :mes AND anio = :anio";
         $stmt_update_estado_detalle = $con->prepare($sql_update_estado_detalle);
-        $stmt_update_estado_detalle->bindParam(':anio_mes', $anio_mes, PDO::PARAM_STR);
+        $stmt_update_estado_detalle->bindParam(':mes', $current_mes, PDO::PARAM_INT);
+        $stmt_update_estado_detalle->bindParam(':anio', $current_anio, PDO::PARAM_INT);
         $stmt_update_estado_detalle->execute();
     } else {
         echo '<script>console.log("No es el último día del mes.");</script>';
@@ -163,7 +163,7 @@ if (count($result) > 0) {
     $row = $result[0];
     $salario_diario = $row['salario_base'] / 30;
     $deduccion_salud = $row['salario_base'] * $row['porcentaje_s'] / 100;
-    $deduccion_pension = $row['salario_base'] * $row['porcentaje_p'];
+    $deduccion_pension = $row['salario_base'] * $row['porcentaje_p'] / 100;
     $valorArl = $row['precio_arl'];
     $valorCuotas = 0;
     $montoSolicitado = 0;
@@ -174,23 +174,12 @@ if (count($result) > 0) {
     if ($estadoPrestamo == 3) { // Estado En espera
         $valorCuotas = "Préstamo en espera";
         $montoSolicitado = "Préstamo en espera";
-    } elseif ($estadoPrestamo == 5) { //Estado Aprobado
+    } elseif ($estadoPrestamo == 5) { // Estado Aprobado
         $valorCuotas = "Cuota en próxima liquidación";
         $montoSolicitado = $row['monto_solicitado'];
     } elseif ($estadoPrestamo == 8) { // Estado Pagado
         $valorCuotas = $row['valor_cuotas'];
         $montoSolicitado = "Ya ha sido cargado el monto";
-        $cantCuotas -= 1;
-        if ($cantCuotas == 0) {
-            $estadoPrestamo = 9;
-        }
-        // Actualizar el número de cuotas y el estado en la base de datos
-        $sql_update_prestamo = "UPDATE solic_prestamo SET cant_cuotas = :cant_cuotas, id_estado = :estado WHERE id_usuario = :id_usuario";
-        $stmt_update_prestamo = $con->prepare($sql_update_prestamo);
-        $stmt_update_prestamo->bindParam(':cant_cuotas', $cantCuotas, PDO::PARAM_INT);
-        $stmt_update_prestamo->bindParam(':estado', $estadoPrestamo, PDO::PARAM_INT);
-        $stmt_update_prestamo->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
-        $stmt_update_prestamo->execute();
     } elseif ($estadoPrestamo == 9) { // Estado Terminado
         $valorCuotas = 0;
         $montoSolicitado = 0;
@@ -246,24 +235,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $mes = date('m');  // Obtener el mes actual
         $anio = date('Y');  // Obtener el año actual
 
-        // Generar un id_nomina único aleatorio
-        do {
-            $id_nomina = rand(1, 1000000);
-            $sql_check_id_nomina = "SELECT COUNT(*) FROM nomina WHERE id_nomina = :id_nomina";
-            $stmt_check_id_nomina = $con->prepare($sql_check_id_nomina);
-            $stmt_check_id_nomina->bindParam(':id_nomina', $id_nomina, PDO::PARAM_INT);
-            $stmt_check_id_nomina->execute();
-            $id_nomina_exists = $stmt_check_id_nomina->fetchColumn();
-        } while ($id_nomina_exists > 0);
-
         // Actualizar la tabla 'nomina' con los valores calculados, la fecha de liquidación, mes y año
         $sql_update_nomina = "UPDATE nomina 
-                              SET id_nomina = :id_nomina, dias_trabajados = :dias_trabajados, horas_extras = :horas_extras, salario_total = :salario_total, 
+                              SET dias_trabajados = :dias_trabajados, horas_extras = :horas_extras, salario_total = :salario_total, 
                                   total_deducciones = :total_deducciones, total_ingresos = :total_ingresos, valor_neto = :valor_neto, 
                                   valor_horas_extras = :valor_horas_extras, fecha_li = :fecha_li, mes = :mes, anio = :anio, salario_base = :salario_base,
                                   deduccion_salud = :deduccion_salud, deduccion_pension = :deduccion_pension, precio_arl = :precio_arl,
                                   valor_cuotas = :valor_cuotas, monto_solicitado = :monto_solicitado, id_estado = 4
-                              WHERE id_usuario = :id_usuario";
+                              WHERE id_usuario = :id_usuario AND id_nomina = :id_nomina";
         $stmt_update_nomina = $con->prepare($sql_update_nomina);
         $stmt_update_nomina->bindParam(':id_nomina', $id_nomina, PDO::PARAM_INT);
         $stmt_update_nomina->bindParam(':dias_trabajados', $dias_trabajados, PDO::PARAM_INT);
@@ -293,6 +272,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt_update_prestamo->execute();
         }
 
+        // Restar una cuota del préstamo si el estado es pagado
+        if ($estadoPrestamo == 8 && $cantCuotas > 0) {
+            $cantCuotas -= 1;
+            if ($cantCuotas == 0) {
+                $estadoPrestamo = 9;
+            }
+            $sql_update_prestamo_cuotas = "UPDATE solic_prestamo SET cant_cuotas = :cant_cuotas, id_estado = :estado WHERE id_usuario = :id_usuario";
+            $stmt_update_prestamo_cuotas = $con->prepare($sql_update_prestamo_cuotas);
+            $stmt_update_prestamo_cuotas->bindParam(':cant_cuotas', $cantCuotas, PDO::PARAM_INT);
+            $stmt_update_prestamo_cuotas->bindParam(':estado', $estadoPrestamo, PDO::PARAM_INT);
+            $stmt_update_prestamo_cuotas->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
+            $stmt_update_prestamo_cuotas->execute();
+        }
+
         $show_success_message = true;
 
         // Incluir el archivo de inserción en detalle
@@ -307,10 +300,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                       valor_horas_extras = 0, fecha_li = NULL, mes = NULL, anio = NULL, salario_base = :salario_base,
                                       deduccion_salud = 0, deduccion_pension = 0, precio_arl = 0,
                                       valor_cuotas = 0, monto_solicitado = 0, id_estado = 1
-                                  WHERE id_usuario = :id_usuario";
+                                  WHERE id_usuario = :id_usuario AND id_nomina = :id_nomina";
             $stmt_revert_nomina = $con->prepare($sql_revert_nomina);
             $stmt_revert_nomina->bindParam(':salario_base', $salario_base, PDO::PARAM_INT);
             $stmt_revert_nomina->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
+            $stmt_revert_nomina->bindParam(':id_nomina', $id_nomina, PDO::PARAM_INT);
             $stmt_revert_nomina->execute();
         }
     } else {
