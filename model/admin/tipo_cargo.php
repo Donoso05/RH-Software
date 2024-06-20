@@ -3,7 +3,6 @@ session_start();
 
 // Verificar si la sesión no está iniciada
 if (!isset($_SESSION["id_usuario"])) {
-    // Mostrar un alert y redirigir utilizando JavaScript
     echo '<script>alert("Debes iniciar sesión antes de acceder a la interfaz de administrador.");</script>';
     echo '<script>window.location.href = "../login.html";</script>';
     exit();
@@ -11,6 +10,7 @@ if (!isset($_SESSION["id_usuario"])) {
 require_once("../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
+$nit_empresa_session = $_SESSION['nit_empresa']; // Obtener el NIT de la empresa de la sesión
 ?>
 
 <?php
@@ -26,8 +26,8 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
         echo '<script>alert("Datos inválidos. Verifique que el cargo contenga letras y que el salario y ARL sean números válidos.");</script>';
         echo '<script>window.location="tipo_cargo.php"</script>';
     } else {
-        $insertSQL = $con->prepare("INSERT INTO tipo_cargo (cargo, salario_base, id_arl) VALUES (?, ?, ?)");
-        $insertSQL->execute([$cargo, $salario_base, $id_arl]);
+        $insertSQL = $con->prepare("INSERT INTO tipo_cargo (cargo, salario_base, id_arl, nit_empresa) VALUES (?, ?, ?, ?)");
+        $insertSQL->execute([$cargo, $salario_base, $id_arl, $nit_empresa_session]);
         echo '<script>alert("Registro exitoso");</script>';
         echo '<script>window.location="tipo_cargo.php"</script>';
     }
@@ -96,11 +96,15 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
                 </thead>
                 <tbody>
                 <?php
-                // Consulta de cargos
-                $consulta = "SELECT * FROM tipo_cargo, arl WHERE tipo_cargo.id_arl=arl.id_arl";
-                $resultado = $con->query($consulta);
+                // Consulta de cargos filtrando por el mismo nit_empresa del usuario en sesión
+                $consulta = $con->prepare("SELECT tc.cargo, tc.salario_base, a.tipo, tc.id_tipo_cargo 
+                                           FROM tipo_cargo tc
+                                           JOIN arl a ON tc.id_arl = a.id_arl
+                                           WHERE tc.nit_empresa = ?");
+                $consulta->execute([$nit_empresa_session]);
+                $resultado = $consulta->fetchAll(PDO::FETCH_ASSOC);
 
-                while ($fila = $resultado->fetch()) {
+                foreach ($resultado as $fila) {
                 ?>
                     <tr>
                         <td><?php echo htmlspecialchars($fila["cargo"], ENT_QUOTES, 'UTF-8'); ?></td>

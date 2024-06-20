@@ -9,14 +9,13 @@ if (!isset($_SESSION["id_usuario"])) {
 
 require_once("../../conexion/conexion.php");
 
-// Crear una instancia de la clase Database
 $db = new Database();
-// Conectar a la base de datos
 $con = $db->conectar();
+$nit_empresa_session = $_SESSION['nit_empresa']; // Obtener el NIT de la empresa de la sesión
 
-// Consultar tipos de permiso  
-$consultaTipos = $con->prepare("SELECT id_tipo_permiso, tipo_permiso, dias FROM tipo_permiso");
-$consultaTipos->execute();
+// Consultar tipos de permiso
+$consultaTipos = $con->prepare("SELECT id_tipo_permiso, tipo_permiso, dias FROM tipo_permiso WHERE nit_empresa = ?");
+$consultaTipos->execute([$nit_empresa_session]);
 $tipos_permiso = $consultaTipos->fetchAll(PDO::FETCH_ASSOC);
 
 // Consultar todos los permisos con información del usuario
@@ -24,13 +23,14 @@ $consultaPermisos = $con->prepare("SELECT tp.id_permiso, tp.descripcion, tp.inca
                                    FROM tram_permiso tp 
                                    JOIN tipo_permiso tperm ON tp.id_tipo_permiso = tperm.id_tipo_permiso 
                                    JOIN estado e ON tp.id_estado = e.id_estado
-                                   JOIN usuario u ON tp.id_usuario = u.id_usuario");
-$consultaPermisos->execute();
+                                   JOIN usuario u ON tp.id_usuario = u.id_usuario
+                                   WHERE tp.nit_empresa = ?");
+$consultaPermisos->execute([$nit_empresa_session]);
 $permisos = $consultaPermisos->fetchAll(PDO::FETCH_ASSOC);
 
 // Consultar todos los usuarios
-$consultaUsuarios = $con->prepare("SELECT id_usuario, nombre FROM usuario");
-$consultaUsuarios->execute();
+$consultaUsuarios = $con->prepare("SELECT id_usuario, nombre FROM usuario WHERE nit_empresa = ?");
+$consultaUsuarios->execute([$nit_empresa_session]);
 $usuarios = $consultaUsuarios->fetchAll(PDO::FETCH_ASSOC);
 ?>
 

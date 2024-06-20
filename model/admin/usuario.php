@@ -22,7 +22,7 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
     $id_tipo_usuario = $_POST['id_tipo_usuario'];
     $nit_empresa = $_SESSION['nit_empresa']; // Obtener el NIT de la empresa de la sesión
 
-    // Validación de id_usuario para que solo tenga entre 9 y 10 dígitos y solo números
+    // Validación de id_usuario para que solo tenga entre 9 y 11 dígitos y solo números
     if (!preg_match('/^\d{6,11}$/', $id_usuario)) {
         echo '<script>alert("El Número de Documento debe contener entre 6 y 11 dígitos.");</script>';
         echo '<script>window.location="usuario.php"</script>';
@@ -166,13 +166,17 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
                 </thead>
                 <tbody>
                 <?php
-                // Consulta de usuarios
+                // Consulta de usuarios filtrando por el mismo nit_empresa del usuario en sesión
+                $nit_empresa_session = $_SESSION['nit_empresa'];
                 $consulta = "SELECT usuario.id_usuario, usuario.nombre, tipo_cargo.cargo AS tipo_cargo, estado.estado AS estado, usuario.correo, tipos_usuarios.tipo_usuario, usuario.nit_empresa 
                              FROM usuario 
                              INNER JOIN tipo_cargo ON usuario.id_tipo_cargo = tipo_cargo.id_tipo_cargo 
                              INNER JOIN tipos_usuarios ON usuario.id_tipo_usuario = tipos_usuarios.id_tipo_usuario 
-                             INNER JOIN estado ON usuario.id_estado = estado.id_estado";
-                $resultado = $con->query($consulta);
+                             INNER JOIN estado ON usuario.id_estado = estado.id_estado
+                             WHERE usuario.nit_empresa = :nit_empresa";
+                $resultado = $con->prepare($consulta);
+                $resultado->bindParam(':nit_empresa', $nit_empresa_session, PDO::PARAM_STR);
+                $resultado->execute();
                 while ($fila = $resultado->fetch(PDO::FETCH_ASSOC)) {
                 ?>
                         <tr>

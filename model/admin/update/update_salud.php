@@ -23,7 +23,7 @@ if (isset($_POST["update"])) {
     $id_salud = $_POST['id_salud'];
     $porcentaje_s = trim($_POST['porcentaje_s']);
 
-    if ($porcentaje_s == "" || !filter_var($porcentaje_s, FILTER_VALIDATE_INT)) {
+    if ($porcentaje_s == "" || !filter_var($porcentaje_s, FILTER_VALIDATE_FLOAT)) {
         echo '<script>alert("El campo \'Porcentaje Salud\' debe contener solo números y no estar vacío.");</script>';
     } else {
         $updateSQL = $con->prepare("UPDATE salud SET porcentaje_s = :porcentaje_s WHERE id_salud = :id_salud");
@@ -112,7 +112,7 @@ if (isset($_POST["update"])) {
         function validateForm() {
             const porcentaje_s = document.forms["frm_consulta"]["porcentaje_s"].value.trim();
 
-            if (porcentaje_s === "" || !/^\d+$/.test(porcentaje_s)) {
+            if (porcentaje_s === "" || !/^\d*\.?\d+$/.test(porcentaje_s)) {
                 alert("El campo 'Porcentaje Salud' debe contener solo números y no estar vacío.");
                 return false;
             }
@@ -125,7 +125,7 @@ if (isset($_POST["update"])) {
             let value = input.value;
 
             if (type === 'numeric') {
-                value = value.replace(/\D/g, ''); // Eliminar todo lo que no sea dígito
+                value = value.replace(/[^0-9.]/g, ''); // Eliminar todo lo que no sea dígito o punto decimal
             }
 
             input.value = value;

@@ -3,113 +3,150 @@ session_start();
 
 // Verificar si la sesión no está iniciada
 if (!isset($_SESSION["id_usuario"])) {
-    // Mostrar un alert y redirigir utilizando JavaScript
     echo '<script>alert("Debes iniciar sesión antes de acceder a la interfaz de administrador.");</script>';
-    echo '<script>window.location.href = "../login.html";</script>';
+    echo '<script>window.location.href = "../../login.html";</script>';
     exit();
 }
-require_once("../conexion/conexion.php");
+require_once("../../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
 
-$sql = $con->prepare("SELECT * FROM solic_prestamo WHERE id_usuario = '" . $_GET['id'] . "'");
-$sql->execute();
-$usua = $sql->fetch();
-?>
+$id_prestamo = $_GET['id'];
 
-<?php
+// Obtener los datos actuales del préstamo
+$stmt = $con->prepare("SELECT * FROM solic_prestamo WHERE id_prestamo = ?");
+$stmt->execute([$id_prestamo]);
+$prestamo = $stmt->fetch(PDO::FETCH_ASSOC);
+
 if (isset($_POST["update"])) {
-    $id_prestamo= $_POST['id_prestamo'];
-    $id_usuario= $_POST['id_usuario'];
-    $monto_solicitado= $_POST['monto_solicitado'];
-    $id_estado= $_POST['id_estado'];
-    $valor_cuotas= $_POST['valor_cuotas']; 
-    $cant_cuotas= $_POST['cant_cuotas'];
-    $updateSQL = $con->prepare("UPDATE solic_prestamo SET id_usuario ='$id_usuario', monto_solicitado = '$monto_solicitado', id_estado = '$id_estado', valor_cuotas = '$valor_cuotas', cant_cuotas = '$cant_cuotas' WHERE id_usuario = '" . $_GET['id'] . "'");
+    $monto_solicitado = $_POST['monto_solicitado'];
+    $cant_cuotas = $_POST['cant_cuotas'];
+    $valor_cuotas = $_POST['valor_cuotas'];
+    $id_estado = $_POST['id_estado'];
 
-    $updateSQL->execute();
-    echo '<script>alert("Actualización Exitosa");</script>';
+    // Obtener el mes y año actuales
+    $mes = date('m');
+    $anio = date('Y');
+
+    // Convertir el número del mes al nombre del mes en español
+    $meses = [
+        1 => 'Enero', 2 => 'Febrero', 3 => 'Marzo', 4 => 'Abril',
+        5 => 'Mayo', 6 => 'Junio', 7 => 'Julio', 8 => 'Agosto',
+        9 => 'Septiembre', 10 => 'Octubre', 11 => 'Noviembre', 12 => 'Diciembre'
+    ];
+    $nombre_mes = $meses[intval($mes)];
+
+    $stmtUpdate = $con->prepare("
+        UPDATE solic_prestamo 
+        SET monto_solicitado = ?, cant_cuotas = ?, valor_cuotas = ?, mes = ?, anio = ?, id_estado = ?
+        WHERE id_prestamo = ?
+    ");
+    $stmtUpdate->execute([$monto_solicitado, $cant_cuotas, $valor_cuotas, $nombre_mes, $anio, $id_estado, $id_prestamo]);
+    echo '<script>alert("Préstamo actualizado correctamente.");</script>';
     echo '<script>window.close();</script>';
+    exit();
 } elseif (isset($_POST["delete"])) {
-    $id_prestamo = $_POST['id_prestamo'];
-
-    $deleteSQL = $con->prepare("DELETE FROM solic_prestamo WHERE id_prestamo = ?");
-    $deleteSQL->execute([$id_prestamo]);
-    echo '<script>alert("Registro Eliminado Exitosamente");</script>';
-    header('Location: tabla_prestamos.php');
-    exit;
+    $stmtDelete = $con->prepare("DELETE FROM solic_prestamo WHERE id_prestamo = ?");
+    $stmtDelete->execute([$id_prestamo]);
+    echo '<script>alert("Préstamo eliminado correctamente.");</script>';
+    echo '<script>window.close();</script>';
+    exit();
 }
+
+// Obtener los estados disponibles (solo id_estado 3 y 5)
+$stmtEstados = $con->prepare("SELECT id_estado, estado FROM estado WHERE id_estado IN (3, 5)");
+$stmtEstados->execute();
+$estados = $stmtEstados->fetchAll(PDO::FETCH_ASSOC);
+
+$id_usuario = $prestamo['id_usuario'];
+
+// Obtener el salario del usuario
+$stmtSalario = $con->prepare("SELECT tc.salario_base 
+                              FROM usuario u 
+                              INNER JOIN tipo_cargo tc ON u.id_tipo_cargo = tc.id_tipo_cargo 
+                              WHERE u.id_usuario = :idUsuario");
+$stmtSalario->bindParam(':idUsuario', $id_usuario, PDO::PARAM_INT);
+$stmtSalario->execute();
+$salarioUsuario = $stmtSalario->fetch(PDO::FETCH_ASSOC)['salario_base'];
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
-<script>
-    function centrar() {
-        iz = (screen.width - document.body.clientwidth) / 2;
-        de = (screen.height - document.body.clientHeight) / 2;
-        moveTo(iz, de);
-    }
-</script>
-
+<html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="css/util.css">
-    <title>Actualizar datos</title>
+    <title>Actualizar Préstamo</title>
+    <link rel="stylesheet" href="../../css/presta.css">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script>
 </head>
+<body>
+    <main>
+        <div class="card">
+            <div class="card-header">
+                <h4>Actualizar Préstamo</h4>
+            </div>
+            <div class="card-body">
+                <form action="" class="form" name="frm_actualizar" method="POST" autocomplete="off" id="actualizarForm">
+                    <div class="form-group row">
+                        <label class="col-lg-3 col-form-label form-control-label">ID Préstamo</label>
+                        <div class="col-lg-9">
+                            <input class="form-control" name="id_prestamo" value="<?php echo $prestamo['id_prestamo']; ?>" readonly>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-lg-3 col-form-label form-control-label">Monto Solicitado</label>
+                        <div class="col-lg-9">
+                            <input class="form-control" id="monto" name="monto_solicitado" value="<?php echo $prestamo['monto_solicitado']; ?>" required>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-lg-3 col-form-label form-control-label">Cantidad de Cuotas</label>
+                        <div class="col-lg-9">
+                            <input class="form-control" id="cuotas" name="cant_cuotas" value="<?php echo $prestamo['cant_cuotas']; ?>" required>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-lg-3 col-form-label form-control-label">Valor de Cuotas</label>
+                        <div class="col-lg-9">
+                            <span id="valorCuotas" class="form-control"><?php echo number_format($prestamo['valor_cuotas'], 2, ',', '.'); ?></span>
+                            <input type="hidden" id="valor_cuotas" name="valor_cuotas" value="<?php echo $prestamo['valor_cuotas']; ?>">
+                        </div>
+                    </div>
+                    <input type="hidden" name="mes" value="<?php echo $nombre_mes; ?>">
+                    <input type="hidden" name="anio" value="<?php echo $anio; ?>">
+                    <div class="form-group row">
+                        <label class="col-lg-3 col-form-label form-control-label">Estado</label>
+                        <div class="col-lg-9">
+                            <select class="form-control" name="id_estado" required>
+                                <?php foreach ($estados as $estado): ?>
+                                    <option value="<?php echo $estado['id_estado']; ?>" <?php echo ($estado['id_estado'] == $prestamo['id_estado']) ? 'selected' : ''; ?>>
+                                        <?php echo $estado['estado']; ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <div class="col-lg-12 text-center">
+                            <input name="update" type="submit" class="btn btn-primary" value="Actualizar">
+                            <button class="btn btn-danger" name="delete" onclick="return confirmarEliminacion()">Eliminar</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+    <script>
+        function confirmarEliminacion() {
+            return confirm("¿Estás seguro de que deseas eliminar este préstamo?");
+        }
 
-<body onload="centrar();">
-    <table class="center">
-        <form autocomplete="off" name="frm_consulta" method="POST">
-            <tr>
-                <td>ID</td>
-                <td><input name="id_prestamo" value="<?php echo $usua['id_prestamo'] ?>" readonly></td>
-            </tr>
-
-            <tr>
-                <td>Docuemnto</td>
-                <td><input name="id_usuario" value="<?php echo $usua['id_usuario'] ?>" readonly></td>
-            </tr>
-
-            <tr>
-                <td>Monto Solicitado</td>
-                <td><input name="monto_solicitado" value="<?php echo $usua['monto_solicitado'] ?>"></td>
-            </tr>
-
-            <tr>
-                <td>Estado</td>
-                <td>
-                    <select class="form-control" name="id_estado">
-                        <?php
-                        $control = $con->prepare("SELECT * FROM estado WHERE id_estado BETWEEN 6 AND 10");
-                        $control->execute();
-                        while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
-                            echo "<option value='" . $fila['id_estado'] . "'>" . $fila['estado'] . "</option>";
-                        }
-                        ?>
-                    </select>
-                </td>
-            </tr>
-
-            <tr>
-                <td>Valor Cuota</td>
-                <td><input name="valor_cuotas" value="<?php echo $usua['valor_cuotas'] ?>" ></td>
-            </tr>
-
-            <tr>
-                <td>Cantidad Cuota</td>
-                <td><input name="cant_cuotas" value="<?php echo $usua['cant_cuotas'] ?>"></td>
-            </tr>
-
-            <tr>
-                <td colspan="2">&nbsp;</td>
-            </tr>
-            <tr>
-                <td><input type="submit" name="update" value="Actualizar"></td>
-                <td><input type="submit" name="delete" value="Eliminar"></td>
-            </tr>
-        </form>
-    </table>
+        const salarioUsuario = <?php echo json_encode($salarioUsuario); ?>;
+    </script>
+    <script src="update_credito.js"></script>
 </body>
 </html>

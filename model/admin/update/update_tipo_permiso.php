@@ -12,25 +12,29 @@ require_once("../../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
 
-$sql = $con -> prepare ("SELECT * FROM tipo_permiso WHERE id_tipo_permiso = '".$_GET['id']."'");
-$sql -> execute();
-$usua = $sql -> fetch();
+$sql = $con->prepare("SELECT * FROM tipo_permiso WHERE id_tipo_permiso = ?");
+$sql->execute([$_GET['id']]);
+$usua = $sql->fetch();
 ?>
 
 <?php
 if (isset($_POST["update"])) {
     $id_tipo_permiso = $_POST['id_tipo_permiso'];
     $tipo_permiso = $_POST['tipo_permiso'];
-    $updateSQL = $con->prepare("UPDATE tipo_permiso SET tipo_permiso = '$tipo_permiso' WHERE id_tipo_permiso = '".$_GET['id']."'");
+    $dias = $_POST['dias'];
 
-    $updateSQL->execute();
-    echo '<script>alert ("Actualización Exitosa");</script>';
+    // Modificar la consulta para incluir el campo 'dias'
+    $updateSQL = $con->prepare("UPDATE tipo_permiso SET tipo_permiso = ?, dias = ? WHERE id_tipo_permiso = ?");
+    $updateSQL->execute([$tipo_permiso, $dias, $_GET['id']]);
+    
+    echo '<script>alert("Actualización Exitosa");</script>';
     echo '<script>window.close();</script>';
-} elseif (isset($_POST["delete"])) { 
+} elseif (isset($_POST["delete"])) {
     $id_tipo_permiso = $_POST['id_tipo_permiso'];
     
     $deleteSQL = $con->prepare("DELETE FROM tipo_permiso WHERE id_tipo_permiso = ?");
     $deleteSQL->execute([$id_tipo_permiso]);
+    
     echo '<script>alert("Registro Eliminado Exitosamente");</script>';
     echo '<script>window.close();</script>';
     exit;
@@ -87,6 +91,12 @@ if (isset($_POST["update"])) {
                         </div>
                     </div>
                     <div class="form-group row">
+                        <label class="col-lg-3 col-form-label form-control-label">Dias</label>
+                        <div class="col-lg-9">
+                            <input class="form-control" name="dias" value="<?php echo $usua['dias']; ?>">
+                        </div>
+                    </div>
+                    <div class="form-group row">
                         <div class="col-lg-12 text-center">
                             <input name="update" type="submit" class="btn btn-primary" value="Actualizar">
                             <button class="btn btn-danger" name="delete" onclick="return confirmarEliminacion()">Eliminar</button>
@@ -102,14 +112,14 @@ if (isset($_POST["update"])) {
         }
 
         function validarFormulario() {
-        var tipoPermiso = document.getElementById('tipo_permiso').value.trim();
-        if (!/^[a-zA-Z\s]+$/.test(tipoPermiso)) {
-            alert("El campo 'Tipo Permiso' solo puede contener letras.");
-            return false;
+            var tipoPermiso = document.getElementById('tipo_permiso').value.trim();
+            if (!/^[a-zA-Z\s]+$/.test(tipoPermiso)) {
+                alert("El campo 'Tipo Permiso' solo puede contener letras.");
+                return false;
+            }
+            return true;
         }
-        return true;
-    }
-</script>
+    </script>
 </body>
 
 </html>

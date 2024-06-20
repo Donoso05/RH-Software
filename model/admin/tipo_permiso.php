@@ -16,22 +16,24 @@ $con = $db->conectar();
 <?php
 if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
     $tipo_permiso = trim($_POST['tipo_permiso']);
+    $dias = trim($_POST['dias']); // Capturar el valor de días
+    $nit_empresa = $_SESSION['nit_empresa']; // Obtener el NIT de la empresa de la sesión
 
     // Validación en el servidor para evitar solo espacios
-    if (empty($tipo_permiso) || !preg_match("/[A-Za-z]/", $tipo_permiso)) {
+    if (empty($tipo_permiso) || !preg_match("/[A-Za-záéíóúÁÉÍÓÚñÑ\s]/", $tipo_permiso)) {
         echo '<script>alert("El tipo de permiso no puede estar vacío y debe contener al menos una letra.");</script>';
         echo '<script>window.location="tipo_permiso.php"</script>';
     } else {
-        $sql = $con->prepare("SELECT * FROM tipo_permiso WHERE tipo_permiso = ?");
-        $sql->execute([$tipo_permiso]);
+        $sql = $con->prepare("SELECT * FROM tipo_permiso WHERE tipo_permiso = ? AND nit_empresa = ?");
+        $sql->execute([$tipo_permiso, $nit_empresa]);
         $fila = $sql->fetchAll(PDO::FETCH_ASSOC);
 
         if ($fila) {
             echo '<script>alert("TIPO DE PERMISO YA CREADO");</script>';
             echo '<script>window.location="tipo_permiso.php"</script>';
         } else {
-            $insertSQL = $con->prepare("INSERT INTO tipo_permiso (tipo_permiso) VALUES (?)");
-            $insertSQL->execute([$tipo_permiso]);
+            $insertSQL = $con->prepare("INSERT INTO tipo_permiso (tipo_permiso, dias, nit_empresa) VALUES (?, ?, ?)");
+            $insertSQL->execute([$tipo_permiso, $dias, $nit_empresa]); // Añadir el valor de días en la consulta
             echo '<script>alert("Permiso Creado con Exito");</script>';
             echo '<script>window.location="tipo_permiso.php"</script>';
         }
@@ -57,8 +59,14 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
             <h3 class="text-center text-secondary">Registrar Permisos</h3>
             <div class="mb-3">
                 <label for="tipo_permiso" class="form-label">Tipo Permiso:</label>
-                <input type="text" class="form-control" name="tipo_permiso" required pattern="[A-Za-z\s]+" title="Solo se permiten letras y espacios">
+                <input type="text" class="form-control" name="tipo_permiso" required pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]+" title="Solo se permiten letras, espacios y tildes">
             </div>
+
+            <div class="mb-3">
+                <label for="dias" class="form-label">Dias:</label>
+                <input type="number" class="form-control" name="dias" required>
+            </div>
+
             <input type="submit" class="btn btn-primary" name="validar" value="Registrar">
             <input type="hidden" name="MM_insert" value="formreg">
         </form>
@@ -68,19 +76,23 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
                 <thead class="bg-info">
                     <tr>
                         <th scope="col">Tipo Permiso</th>
+                        <th scope="col">Dias</th>
                         <th scope="col">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                 <?php
-                // Consulta de permisos
-                $consulta = "SELECT * FROM tipo_permiso";
-                $resultado = $con->query($consulta);
+                // Consulta de permisos filtrando por el mismo nit_empresa del usuario en sesión
+                $nit_empresa_session = $_SESSION['nit_empresa'];
+                $consulta = "SELECT * FROM tipo_permiso WHERE nit_empresa = ?";
+                $resultado = $con->prepare($consulta);
+                $resultado->execute([$nit_empresa_session]);
 
-                while ($fila = $resultado->fetch()) {
+                while ($fila = $resultado->fetch(PDO::FETCH_ASSOC)) {
                 ?>
                     <tr>
                         <td><?php echo htmlspecialchars($fila["tipo_permiso"]); ?></td>
+                        <td><?php echo htmlspecialchars($fila["dias"]); ?></td>
                         <td>
                             <div class="text-center">
                                 <div class="d-flex justify-content-start">
@@ -100,10 +112,10 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
     <script>
         function validarFormulario() {
             const tipoPermiso = document.querySelector('input[name="tipo_permiso"]').value.trim();
-            const tipoPermisoRegex = /^[A-Za-z\s]+$/;
+            const tipoPermisoRegex = /^[A-Za-záéíóúÁÉÍÓÚñÑ\s]+$/;
 
-            if (!tipoPermiso || !tipoPermisoRegex.test(tipoPermiso) || !/[A-Za-z]/.test(tipoPermiso)) {
-                alert('El tipo de permiso no puede estar vacío, debe contener solo letras y espacios');
+            if (!tipoPermiso || !tipoPermisoRegex.test(tipoPermiso) || !/[A-Za-záéíóúÁÉÍÓÚñÑ]/.test(tipoPermiso)) {
+                alert('El tipo de permiso no puede estar vacío, debe contener solo letras, espacios y tildes');
                 return false;
             }
 
