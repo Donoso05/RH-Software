@@ -7,62 +7,68 @@ if (!isset($_SESSION["id_usuario"])) {
     echo '<script>window.location.href = "../login.html";</script>';
     exit();
 }
+
 require_once("../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
 
+$id_usuario = isset($_GET['id_usuario']) ? (int)$_GET['id_usuario'] : 0;
+date_default_timezone_set('America/Bogota');
+
+// Verificar si el usuario existe
+$sql_check_user = "SELECT COUNT(*) FROM usuario WHERE id_usuario = :id_usuario";
+$stmt_check_user = $con->prepare($sql_check_user);
+$stmt_check_user->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
+$stmt_check_user->execute();
+$user_exists = $stmt_check_user->fetchColumn();
+
+if ($user_exists == 0) {
+    die("El usuario con id_usuario $id_usuario no existe en la tabla usuario.");
+}
+
+$sql = "SELECT d.*, u.nombre, e.estado AS estado_nombre
+        FROM detalle d 
+        INNER JOIN usuario u ON d.id_usuario = u.id_usuario
+        INNER JOIN estado e ON d.id_estado = e.id_estado
+        WHERE d.id_usuario = :id_usuario";
+$stmt = $con->prepare($sql);
+$stmt->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
+$stmt->execute();
+
+$nominas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Función para actualizar el estado en la tabla detalle al final de cada mes
 function actualizarEstadoAPagado($con) {
     $current_date = date('Y-m-d');
     $last_day_of_month = date('Y-m-t'); // Obtener el último día del mes
 
-    if ($current_date == $last_day_of_month) {
+    echo '<script>console.log("Fecha actual: ' . $current_date . '");</script>';
+    echo '<script>console.log("Último día del mes: ' . $last_day_of_month . '");</script>';
+
+    // Verificar si es el último día del mes
+    if ($current_date === $last_day_of_month) {
         echo '<script>console.log("Actualizando estado a pagado...");</script>';
         $current_mes = date('m');
         $current_anio = date('Y');
-        $sql_update_estado = "UPDATE nomina 
-                              SET id_estado = 8 
-                              WHERE mes = :mes AND anio = :anio";
-        $stmt_update_estado = $con->prepare($sql_update_estado);
-        $stmt_update_estado->bindParam(':mes', $current_mes, PDO::PARAM_INT);
-        $stmt_update_estado->bindParam(':anio', $current_anio, PDO::PARAM_INT);
-        $stmt_update_estado->execute();
+
+        // Actualizar la tabla 'detalle'
+        $sql_update_estado_detalle = "UPDATE detalle 
+                                     SET id_estado = 8 
+                                     WHERE mes = :mes AND anio = :anio";
+        $anio_mes = $current_anio . '-' . $current_mes;
+        $stmt_update_estado_detalle = $con->prepare($sql_update_estado_detalle);
+        $stmt_update_estado_detalle->bindParam(':anio_mes', $anio_mes, PDO::PARAM_STR);
+        $stmt_update_estado_detalle->execute();
     } else {
         echo '<script>console.log("No es el último día del mes.");</script>';
     }
 }
 
-function vaciarTablaNominaAlInicioDelMes($con) {
-    $current_date = date('Y-m-d');
-    $first_day_of_month = date('Y-m-01'); // Obtener el primer día del mes
-
-    echo '<script>console.log("Fecha actual: ' . $current_date . '");</script>';
-    echo '<script>console.log("Primer día del mes: ' . $first_day_of_month . '");</script>';
-
-    if ($current_date === $first_day_of_month) {
-        echo '<script>console.log("Vaciando tabla nomina...");</script>';
-
-        $sql_empty_nomina = "TRUNCATE TABLE nomina";
-        $con->exec($sql_empty_nomina);
-    } else {
-        echo '<script>console.log("No es el primer día del mes.");</script>';
-    }
-}
-
+// Verificar si la llamada es desde JavaScript
 if (isset($_GET['update'])) {
     actualizarEstadoAPagado($con);
-    exit();
+    exit(); // Terminar la ejecución después de la actualización
 }
-
-vaciarTablaNominaAlInicioDelMes($con);
-
-$sql = "SELECT n.*, u.nombre, e.estado AS estado_nombre
-        FROM nomina n
-        INNER JOIN usuario u ON n.id_usuario = u.id_usuario
-        INNER JOIN estado e ON n.id_estado = e.id_estado";
-$stmt = $con->prepare($sql);
-$stmt->execute();
-
-$nominas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!doctype html>
@@ -105,12 +111,13 @@ $nominas = $stmt->fetchAll(PDO::FETCH_ASSOC);
             max-width: 1200px;
         }
     </style>
+
 </head>
 
 <body>
     <?php include("nav.php") ?>
     <div class="container">
-        <h3 class="text-center text-secondary my-4">Gestión de Nómina Mensual</h3>
+        <h3 class="text-center text-secondary my-4">Historial de Nominas</h3>
         <div class="table-responsive">
             <table class="table table-hover">
                 <thead>
@@ -125,14 +132,14 @@ $nominas = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <tbody>
                     <?php if (empty($nominas)): ?>
                         <tr>
-                            <td colspan="5" class="text-center">No hay registros de nómina.</td>
+                            <td colspan="5" class="text-center">No hay registros de nómina para este usuario.</td>
                         </tr>
                     <?php else: ?>
                         <?php foreach ($nominas as $nomina): ?>
                             <tr>
                                 <td><?php echo $nomina["nombre"]; ?></td>
                                 <td><?php echo $nomina["estado_nombre"]; ?></td>
-                                <td><?php echo number_format($nomina["salario_base"], 0, ',', '.'); ?></td> 
+                                <td><?php echo number_format($nomina["salario_total"], 0, ',', '.'); ?></td> 
                                 <td><?php echo $nomina["fecha_li"]; ?></td>
                                 <td>
                                     <a href="ver_detalles_nomina_mensual.php?id_nomina=<?php echo $nomina['id_nomina']; ?>" class="btn btn-primary btn-sm">Ver Detalles</a>
@@ -146,7 +153,7 @@ $nominas = $stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
     <script>
         window.onload = function() {
-            fetch('ver_liquidacion.php?update=true')
+            fetch('detalles.php?update=true')
                 .then(response => response.text())
                 .then(data => {
                     console.log(data);

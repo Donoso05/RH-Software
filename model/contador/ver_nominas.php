@@ -79,8 +79,8 @@ $fila = $sql->fetch(PDO::FETCH_ASSOC);
                                 <td>
                                     <div class="text-center">
                                         <div class="d-flex justify-content-start">
-                                            <a href="liquidar.php?id_usuario=<?php echo $fila['id_usuario']; ?>" class="ms-2">
-                                                <i class="btn btn-danger">Liquidar</i>
+                                            <a href="detalles.php?id_usuario=<?php echo $fila['id_usuario']; ?>" class="ms-2">
+                                                <i class="btn btn-primary">Nóminas</i>
                                             </a>
 
                                         </div>
