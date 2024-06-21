@@ -44,48 +44,9 @@ if (!$detalle) {
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/detalles_nomina.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
-        .card {
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            border: none;
-            border-radius: 10px;
-        }
-        .card-title {
-            color: #007bff;
-            font-weight: bold;
-        }
-        .card-text {
-            font-size: 1.1rem;
-        }
-        .container {
-            max-width: 1200px;
-        }
-        .section-title {
-            margin-top: 1rem;
-            font-size: 1.25rem;
-            color: #343a40;
-            font-weight: bold;
-        }
-        .section-ingresos {
-            background-color: #d4edda;
-            padding: 10px;
-            border-radius: 5px;
-        }
-        .section-deducciones {
-            background-color: #f8d7da;
-            padding: 10px;
-            border-radius: 5px;
-        }
-        .section-total {
-            background-color: #cce5ff;
-            padding: 10px;
-            border-radius: 5px;
-        }
-    </style>
+
 </head>
 <body>
     <?php include("nav.php"); ?>

@@ -3,10 +3,12 @@ session_start();
 
 // Verificar si la sesión no está iniciada
 if (!isset($_SESSION["id_usuario"])) {
+    // Mostrar un alert y redirigir utilizando JavaScript
     echo '<script>alert("Debes iniciar sesión antes de acceder a la interfaz de administrador.");</script>';
     echo '<script>window.location.href = "../login.html";</script>';
     exit();
 }
+
 require_once("../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
@@ -15,14 +17,13 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
     $id_usuario = $_POST['id_usuario'];
     $nombre = trim($_POST['nombre']);
     $id_tipo_cargo = $_POST['id_tipo_cargo'];
-    $id_estado = $_POST['id_estado'];
     $correo = $_POST['correo'];
     $id_tipo_usuario = $_POST['id_tipo_usuario'];
-    $nit_empresa = $_POST['nit_empresa'];
+    $nit_empresa = $_SESSION['nit_empresa']; // Obtener el NIT de la empresa de la sesión
 
-    // Validación de id_usuario para que solo tenga entre 9 y 10 dígitos y solo números
+    // Validación de id_usuario para que solo tenga entre 6 y 11 dígitos y solo números
     if (!preg_match('/^\d{6,11}$/', $id_usuario)) {
-        echo '<script>alert("El Número de Documento debe contener entre 9 y 10 dígitos.");</script>';
+        echo '<script>alert("El Número de Documento debe contener entre 6 y 11 dígitos.");</script>';
         echo '<script>window.location="usuario.php"</script>';
         exit();
     }
@@ -46,17 +47,19 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
     $sql->execute();
     $fila = $sql->fetch(PDO::FETCH_ASSOC);
 
-    if ($id_usuario == "" || $nombre == "" || $id_tipo_cargo == "" || $id_estado == "" || $correo == "" || $nit_empresa == "") {
+    if ($id_usuario == "" || $nombre == "" || $id_tipo_cargo == "" || $correo == "" || $id_tipo_usuario == "") {
         echo '<script>alert("EXISTEN CAMPOS VACIOS");</script>';
         echo '<script>window.location="usuario.php"</script>';
+        exit();
     } elseif ($fila) {
         echo '<script>alert("USUARIO YA REGISTRADO");</script>';
         echo '<script>window.location="usuario.php"</script>';
+        exit();
     } else {
         $contrasena_fija = "103403sena"; // Contraseña fija
         $password = password_hash($contrasena_fija, PASSWORD_DEFAULT, array("cost" => 12)); // Hash de la contraseña fija
-        $insertSQL = $con->prepare("INSERT INTO usuario(id_usuario, nombre, id_tipo_cargo, id_estado, correo, id_tipo_usuario, contrasena, nit_empresa) 
-        VALUES ('$id_usuario', '$nombre', '$id_tipo_cargo', '$id_estado', '$correo', '$id_tipo_usuario', '$password', '$nit_empresa')");
+        $insertSQL = $con->prepare("INSERT INTO usuario(id_usuario, nombre, id_tipo_cargo, correo, id_tipo_usuario, contrasena, nit_empresa) 
+        VALUES ('$id_usuario', '$nombre', '$id_tipo_cargo', '$correo', '$id_tipo_usuario', '$password', '$nit_empresa')");
         $insertSQL->execute();
 
         // Enviar correo al empleado
@@ -70,8 +73,6 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
         } else {
             echo '<script>alert("Usuario Creado con Exito, pero no se pudo enviar el correo");</script>';
         }
-
-        echo '<script>window.location="usuario.php"</script>';
     }
 }
 ?>
@@ -86,6 +87,45 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
     <script src="https://kit.fontawesome.com/1057b0ffdd.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="css/nav.css">
     <link rel="stylesheet" href="css/usuario.css">
+    <script>
+        function validarFormulario() {
+            const tipoUsuarioSelect = document.getElementById('id_tipo_usuario');
+            const tipoCargoSelect = document.getElementById('id_tipo_cargo');
+
+            if (tipoUsuarioSelect.value == '2' && tipoCargoSelect.value != '4') {
+                alert('Si selecciona Tipo Usuario 2, debe seleccionar Tipo Cargo 4.');
+                return false;
+            }
+
+            if (tipoUsuarioSelect.value == '3' && !['2', '3', '7'].includes(tipoCargoSelect.value)) {
+                alert('Si selecciona Tipo Usuario 3, debe seleccionar Tipo Cargo 2, 3 o 7.');
+                return false;
+            }
+
+            return true;
+        }
+
+        function actualizarTipoCargo() {
+            const tipoUsuarioSelect = document.getElementById('id_tipo_usuario');
+            const tipoCargoSelect = document.getElementById('id_tipo_cargo');
+
+            // Resetear las opciones del select de tipo cargo
+            tipoCargoSelect.innerHTML = '';
+
+            fetch('obtener_cargos.php?tipo_usuario=' + tipoUsuarioSelect.value)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        data.forEach(cargo => {
+                            tipoCargoSelect.innerHTML += `<option value="${cargo.id_tipo_cargo}">${cargo.cargo}</option>`;
+                        });
+                        tipoCargoSelect.value = data[0].id_tipo_cargo; // Seleccionar la primera opción por defecto
+                    } else {
+                        tipoCargoSelect.innerHTML = '<option value="">No hay cargos disponibles</option>';
+                    }
+                });
+        }
+    </script>
 </head>
 
 <body>
@@ -102,37 +142,8 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
                 <input type="text" class="form-control" name="nombre" id="nombre" required pattern="[a-zA-Z\s]+" title="Solo se permiten letras" autocomplete="off">
             </div>
             <div class="mb-3">
-                <label for="id_tipo_cargo" class="form-label">Tipo Cargo</label>
-                <select class="form-control" name="id_tipo_cargo" required autocomplete="off">
-                    <option value="">Selecciona el Tipo de Cargo</option>
-                    <?php
-                    $control = $con->prepare("SELECT * FROM tipo_cargo WHERE id_tipo_cargo >= 2");
-                    $control->execute();
-                    while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
-                        echo "<option value='" . $fila['id_tipo_cargo'] . "'>" . $fila['cargo'] . "</option>";
-                    }
-                    ?>
-                </select>
-            </div>
-            <div class="mb-3">
-                <label for="id_estado" class="form-label">Estado</label>
-                <select class="form-control" name="id_estado" required autocomplete="off">
-                    <?php
-                    $control = $con->prepare("SELECT * FROM estado WHERE id_estado <= 1");
-                    $control->execute();
-                    while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
-                        echo "<option value='" . $fila['id_estado'] . "'>" . $fila['estado'] . "</option>";
-                    }
-                    ?>
-                </select>
-            </div>
-            <div class="mb-3">
-                <label for="correo" class="form-label">Correo</label>
-                <input type="email" class="form-control" name="correo" id="correo" required autocomplete="off">
-            </div>
-            <div class="mb-3">
                 <label for="id_tipo_usuario" class="form-label">Tipo Usuario</label>
-                <select class="form-control" name="id_tipo_usuario" required autocomplete="off">
+                <select class="form-control" name="id_tipo_usuario" id="id_tipo_usuario" onchange="actualizarTipoCargo()" required autocomplete="off">
                     <option value="">Selecciona el Tipo Usuario</option>
                     <?php
                     // Solo mostrar tipos de usuario con id 2 y 3
@@ -145,8 +156,14 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
                 </select>
             </div>
             <div class="mb-3">
-                <label for="nit_empresa" class="form-label">NIT Empresa</label>
-                <input type="number" name="nit_empresa" class="form-control" id="nit_empresa" required autocomplete="off">
+                <label for="id_tipo_cargo" class="form-label">Tipo Cargo</label>
+                <select class="form-control" name="id_tipo_cargo" id="id_tipo_cargo" required autocomplete="off">
+                    <option value="">Selecciona el Tipo de Cargo</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="correo" class="form-label">Correo</label>
+                <input type="email" class="form-control" name="correo" id="correo" required autocomplete="off">
             </div>
             <input type="submit" class="btn btn-primary" name="validar" value="Registrar">
             <input type="hidden" name="MM_insert" value="formreg">

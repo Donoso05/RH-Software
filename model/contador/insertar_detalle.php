@@ -1,5 +1,5 @@
 <?php
-function insertarDetalle($id_usuario, $id_nomina, $fecha_li, $salario_total, $dias_trabajados, $horas_extras,  $valorarl, $deduccion_salud, $deduccion_pension, $total_deducciones, $valorHorasExtras, $valorAuxTransporte, $total_ingresos, $valor_neto, $valor_cuotas, $monto_solicitado, $con, &$show_error_message, &$error_message) {
+function insertarDetalle($id_usuario, $id_nomina, $fecha_li, $salario_total, $dias_trabajados, $horas_extras,  $valorarl, $deduccion_salud, $deduccion_pension, $total_deducciones, $valorHorasExtras, $valorAuxTransporte, $total_ingresos, $valor_neto, $valor_cuotas, $nit_empresa, $mes, $anio, $monto_solicitado, $con, &$show_error_message, &$error_message) {
     // Obtener el mes y el año de la fecha de liquidación
     $mes = date('m', strtotime($fecha_li));
     $anio = date('Y', strtotime($fecha_li));
@@ -13,17 +13,10 @@ function insertarDetalle($id_usuario, $id_nomina, $fecha_li, $salario_total, $di
     $stmt_check->execute();
     $exists = $stmt_check->fetchColumn();
 
-    if ($exists > 0) {
-        // Ya existe una liquidación para este usuario en el mes y año especificados
-        $show_error_message = true;
-        $error_message = "Ya se ha realizado una liquidación para este mes.";
-        return false; // Indicar que no se debe proceder con la inserción
-    }
-
     $id_estado = 4; // Suponiendo que el estado inicial es 4
 
-    $sql_insert_detalle = "INSERT INTO detalle (id_usuario, id_nomina, fecha_li, salario_total, dias_trabajados, horas_extras,  precio_arl, deduccion_salud, deduccion_pension, total_deducciones, valor_horas_extras, aux_transporte_valor, total_ingresos, valor_neto, valor_cuotas, monto_solicitado, id_estado) 
-                           VALUES (:id_usuario, :id_nomina, :fecha_li, :salario_total, :dias_trabajados, :horas_extras, :precio_arl, :deduccion_salud, :deduccion_pension, :total_deducciones, :valor_horas_extras, :aux_transporte_valor, :total_ingresos, :valor_neto, :valor_cuotas, :monto_solicitado, :id_estado)";
+    $sql_insert_detalle = "INSERT INTO detalle (id_usuario, id_nomina, fecha_li, salario_total, dias_trabajados, horas_extras,  precio_arl, deduccion_salud, deduccion_pension, total_deducciones, valor_horas_extras, aux_transporte_valor, total_ingresos, valor_neto, valor_cuotas, nit_empresa, mes, anio, monto_solicitado) 
+                           VALUES (:id_usuario, :id_nomina, :fecha_li, :salario_total, :dias_trabajados, :horas_extras, :precio_arl, :deduccion_salud, :deduccion_pension, :total_deducciones, :valor_horas_extras, :aux_transporte_valor, :total_ingresos, :valor_neto, :valor_cuotas,:nit_empresa, :mes, :anio, :monto_solicitado)";
 
     $stmt_insert_detalle = $con->prepare($sql_insert_detalle);
     $stmt_insert_detalle->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
@@ -41,8 +34,10 @@ function insertarDetalle($id_usuario, $id_nomina, $fecha_li, $salario_total, $di
     $stmt_insert_detalle->bindParam(':aux_transporte_valor', $valorAuxTransporte, PDO::PARAM_STR);
     $stmt_insert_detalle->bindParam(':total_ingresos', $total_ingresos, PDO::PARAM_STR);
     $stmt_insert_detalle->bindParam(':valor_neto', $valor_neto, PDO::PARAM_STR);
+    $stmt_insert_detalle->bindParam('nit_empresa',$nit_empresa, PDO::PARAM_STR);
+    $stmt_insert_detalle->bindParam('mes',$mes, PDO::PARAM_STR);
+    $stmt_insert_detalle->bindParam('anio',$anio, PDO::PARAM_STR);
     $stmt_insert_detalle->bindParam(':monto_solicitado', $monto_solicitado, PDO::PARAM_STR);
-    $stmt_insert_detalle->bindParam(':id_estado', $id_estado, PDO::PARAM_INT);
     $stmt_insert_detalle->execute();
     return true; // Indicar que la inserción se realizó correctamente
 }

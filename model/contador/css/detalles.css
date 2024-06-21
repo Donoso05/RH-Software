@@ -1,0 +1,29 @@
+body {
+    background-color: #f8f9fa;
+}
+
+.table-responsive {
+    margin-top: 20px;
+}
+
+.table thead {
+    background-color: #343a40;
+    color: white;
+}
+
+.table td, .table th {
+    vertical-align: middle;
+}
+
+.btn {
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+}
+
+.card {
+    margin-bottom: 20px;
+}
+
+.container {
+    max-width: 1200px;
+}

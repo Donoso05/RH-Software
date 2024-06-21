@@ -1,0 +1,39 @@
+body {
+    background-color: #f8f9fa;
+}
+.card {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border: none;
+    border-radius: 10px;
+}
+.card-title {
+    color: #007bff;
+    font-weight: bold;
+}
+.card-text {
+    font-size: 1.1rem;
+}
+.container {
+    max-width: 1200px;
+}
+.section-title {
+    margin-top: 1rem;
+    font-size: 1.25rem;
+    color: #343a40;
+    font-weight: bold;
+}
+.section-ingresos {
+    background-color: #d4edda;
+    padding: 10px;
+    border-radius: 5px;
+}
+.section-deducciones {
+    background-color: #f8d7da;
+    padding: 10px;
+    border-radius: 5px;
+}
+.section-total {
+    background-color: #cce5ff;
+    padding: 10px;
+    border-radius: 5px;
+}

@@ -25,7 +25,7 @@ if (isset($_POST['id_permiso']) && isset($_POST['accion'])) {
     $updateSQL->bindParam(':motivo_rechazo', $motivo_rechazo, PDO::PARAM_STR);
     $updateSQL->bindParam(':id_permiso', $id_permiso, PDO::PARAM_INT);
     if ($updateSQL->execute()) {
-        echo json_encode(['success' => true]);
+        echo json_encode(['success' => true, 'nuevoEstado' => $nuevoEstado, 'estadoTexto' => ($nuevoEstado == 5 ? 'Aprobado' : 'Rechazado')]);
     } else {
         echo json_encode(['success' => false]);
     }
@@ -46,14 +46,6 @@ if (isset($_POST['id_permiso']) && isset($_POST['accion'])) {
     <link rel="stylesheet" href="css/tram.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
-    <style>
-        .table-container {
-            overflow-x: auto;
-        }
-        .table th, .table td {
-            white-space: nowrap;
-        }
-    </style>
     <script>
         function abrirModalAprobar(id_permiso) {
             $('#aprobarModal').modal('show');
@@ -83,7 +75,8 @@ if (isset($_POST['id_permiso']) && isset($_POST['accion'])) {
                     const result = JSON.parse(response);
                     if (result.success) {
                         Swal.fire('Actualizado!', 'El estado del permiso ha sido actualizado.', 'success');
-                        document.getElementById('acciones-' + id_permiso).innerHTML = '<span class="text-success">Permiso ya procesado</span>';
+                        document.querySelector(`#estado-${id_permiso}`).innerText = result.estadoTexto;
+                        document.querySelector(`#acciones-${id_permiso}`).innerHTML = '<span class="text-success">Permiso ya procesado</span>';
                         $('#aprobarModal').modal('hide');
                         $('#rechazoModal').modal('hide');
                     } else {
@@ -101,7 +94,6 @@ if (isset($_POST['id_permiso']) && isset($_POST['accion'])) {
         <h3 class="text-center text-secondary my-4">Trámite Permiso</h3>
         <div class="col-12 p-4">
             <div class="card">
-                
                 </div>
                 <div class="card-body table-container">
                     <table class="table table-hover">
@@ -138,7 +130,7 @@ if (isset($_POST['id_permiso']) && isset($_POST['accion'])) {
                                         <td><?php echo $fila["tipo_permiso"]; ?></td>
                                         <td><?php echo $fila["fecha_inicio"]; ?></td>
                                         <td><?php echo $fila["fecha_fin"]; ?></td>
-                                        <td><?php echo $fila["estado"]; ?></td>
+                                        <td id="estado-<?php echo $fila['id_permiso']; ?>"><?php echo $fila["estado"]; ?></td>
                                         <td id="acciones-<?php echo $fila['id_permiso']; ?>">
                                             <?php if ($fila["id_estado"] == 5 || $fila["id_estado"] == 7 ) { ?>
                                                 <span class="text-success">Permiso ya procesado</span>
@@ -206,7 +198,7 @@ if (isset($_POST['id_permiso']) && isset($_POST['accion'])) {
                     <select id="selectMotivoRechazo" class="form-select" required>
                         <option value="" disabled selected>Seleccione un motivo</option>
                         <?php
-                        $observaciones = $con->query("SELECT * FROM observaciones");
+                        $observaciones = $con->query("SELECT * FROM observaciones WHERE id_observacion <= 5");
                         while ($obs = $observaciones->fetch()) {
                             echo '<option value="'.$obs['id_observacion'].'">'.$obs['observacion'].'</option>';
                         }

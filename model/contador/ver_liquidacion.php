@@ -7,13 +7,21 @@ if (!isset($_SESSION["id_usuario"])) {
     echo '<script>window.location.href = "../login.html";</script>';
     exit();
 }
+
 require_once("../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
+date_default_timezone_set('America/Bogota'); 
 
 function actualizarEstadoAPagado($con) {
-    $current_date = date('Y-m-d');
+    // Forzar la fecha actual para pruebas
+    //$current_date = '2024-06-30'; // Forzar la fecha actual
+    $current_date = date('Y-m-d'); // Usar la fecha real del servidor
     $last_day_of_month = date('Y-m-t'); // Obtener el último día del mes
+
+    // Añadir depuración
+    echo '<script>console.log("Fecha actual: ' . $current_date . '");</script>';
+    echo '<script>console.log("Último día del mes: ' . $last_day_of_month . '");</script>';
 
     if ($current_date == $last_day_of_month) {
         echo '<script>console.log("Actualizando estado a pagado...");</script>';
@@ -26,25 +34,15 @@ function actualizarEstadoAPagado($con) {
         $stmt_update_estado->bindParam(':mes', $current_mes, PDO::PARAM_INT);
         $stmt_update_estado->bindParam(':anio', $current_anio, PDO::PARAM_INT);
         $stmt_update_estado->execute();
+
+        // Confirmar que la actualización se ejecutó
+        if ($stmt_update_estado->rowCount() > 0) {
+            echo '<script>console.log("Estado actualizado correctamente.");</script>';
+        } else {
+            echo '<script>console.log("No se actualizó ningún registro.");</script>';
+        }
     } else {
         echo '<script>console.log("No es el último día del mes.");</script>';
-    }
-}
-
-function vaciarTablaNominaAlInicioDelMes($con) {
-    $current_date = date('Y-m-d');
-    $first_day_of_month = date('Y-m-01'); // Obtener el primer día del mes
-
-    echo '<script>console.log("Fecha actual: ' . $current_date . '");</script>';
-    echo '<script>console.log("Primer día del mes: ' . $first_day_of_month . '");</script>';
-
-    if ($current_date === $first_day_of_month) {
-        echo '<script>console.log("Vaciando tabla nomina...");</script>';
-
-        $sql_empty_nomina = "TRUNCATE TABLE nomina";
-        $con->exec($sql_empty_nomina);
-    } else {
-        echo '<script>console.log("No es el primer día del mes.");</script>';
     }
 }
 
@@ -53,8 +51,30 @@ if (isset($_GET['update'])) {
     exit();
 }
 
+function vaciarTablaNominaAlInicioDelMes($con)
+{
+    $current_date = date('Y-m-d');
+    $first_day_of_month = date('Y-m-01'); // Obtener el primer día del mes
+
+    echo '<script>console.log("Fecha actual: ' . $current_date . '");</script>';
+    echo '<script>console.log("Primer día del mes: ' . $first_day_of_month . '");</script>';
+
+    // Verificar si es el primer día del mes
+    if ($current_date === $first_day_of_month) {
+        echo '<script>console.log("Vaciando tabla nomina...");</script>';
+
+        // Vaciar la tabla 'nomina'
+        $sql_empty_nomina = "TRUNCATE TABLE nomina";
+        $con->exec($sql_empty_nomina);
+    } else {
+        echo '<script>console.log("No es el primer día del mes.");</script>';
+    }
+}
+
+// Llamar a la función para vaciar la tabla 'nomina' al inicio del mes
 vaciarTablaNominaAlInicioDelMes($con);
 
+// Continuar con la lógica de selección y renderizado de la vista HTML
 $sql = "SELECT n.*, u.nombre, e.estado AS estado_nombre
         FROM nomina n
         INNER JOIN usuario u ON n.id_usuario = u.id_usuario
@@ -74,37 +94,7 @@ $nominas = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/1057b0ffdd.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="css/nav.css">
-    <style>
-        body {
-            background-color: #f8f9fa;
-        }
-
-        .table-responsive {
-            margin-top: 20px;
-        }
-
-        .table thead {
-            background-color: #343a40;
-            color: white;
-        }
-
-        .table td, .table th {
-            vertical-align: middle;
-        }
-
-        .btn {
-            font-size: 0.875rem;
-            padding: 0.5rem 1rem;
-        }
-
-        .card {
-            margin-bottom: 20px;
-        }
-
-        .container {
-            max-width: 1200px;
-        }
-    </style>
+    <link rel="stylesheet" href="css/ver_liquidacion.css">
 </head>
 
 <body>

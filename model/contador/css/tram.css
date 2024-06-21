@@ -2,3 +2,12 @@
     background-color: #343a40;
     color: white;
 }
+
+.table-container {
+    overflow-x: auto;
+}
+
+.table th,
+.table td {
+    white-space: nowrap;
+}

@@ -13,7 +13,7 @@ if ($nuevo_estado == 7 && !$motivo_rechazo) {
     exit();
 }
 
-$sql = "UPDATE solic_prestamo SET id_estado = :nuevo_estado, motivo_rechazo = :motivo_rechazo WHERE id_usuario = :id_prestamo";
+$sql = "UPDATE solic_prestamo SET id_estado = :nuevo_estado, motivo_rechazo = :motivo_rechazo WHERE id_prestamo = :id_prestamo";
 $stmt = $con->prepare($sql);
 $stmt->bindParam(':nuevo_estado', $nuevo_estado, PDO::PARAM_INT);
 $stmt->bindParam(':motivo_rechazo', $motivo_rechazo, PDO::PARAM_INT);

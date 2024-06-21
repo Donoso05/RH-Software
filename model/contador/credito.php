@@ -19,7 +19,7 @@ if (!$con) {
 }
 
 // Consulta SQL para obtener los datos de la tabla solic_prestamo
-$sql = "SELECT sp.id_usuario, sp.monto_solicitado, sp.cant_cuotas, sp.valor_cuotas, sp.mes, sp.anio, e.estado, sp.id_estado, o.observacion AS observacion
+$sql = "SELECT sp.id_prestamo, sp.id_usuario, sp.monto_solicitado, sp.cant_cuotas, sp.valor_cuotas, sp.mes, sp.anio, e.estado, sp.id_estado, o.observacion AS observacion
         FROM solic_prestamo sp
         LEFT JOIN observaciones o ON sp.motivo_rechazo = o.id_observacion
         JOIN estado e ON sp.id_estado = e.id_estado";
@@ -46,35 +46,48 @@ $creditos = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
     </style>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
     <script>
         function mostrarMotivoRechazo(id_prestamo) {
-            document.getElementById('motivoRechazoSelect-' + id_prestamo).style.display = 'block';
-            document.getElementById('btnAprobar-' + id_prestamo).disabled = true;
-            document.getElementById('btnNoAprobar-' + id_prestamo).style.display = 'none';
+            $('#rechazoModal').modal('show');
+            $('#id_prestamo_rechazo').val(id_prestamo);
+        }
+
+        function abrirModalAprobar(id_prestamo) {
+            $('#aprobarModal').modal('show');
+            $('#id_prestamo_aprobar').val(id_prestamo);
         }
 
         function actualizarEstado(id_prestamo, nuevo_estado) {
             let motivo_rechazo = null;
             if (nuevo_estado == 7) { // Estado 7 corresponde a "No Aprobar"
-                const selectElement = document.getElementById('selectMotivoRechazo-' + id_prestamo);
-                motivo_rechazo = selectElement.value;
+                motivo_rechazo = $('#selectMotivoRechazo').val();
                 if (!motivo_rechazo) {
-                    alert("Debe seleccionar un motivo de rechazo.");
+                    Swal.fire('Error!', 'Debes seleccionar un motivo de rechazo.', 'error');
                     return;
                 }
             }
 
-            if (confirm('¿Estás seguro de que deseas cambiar el estado de este préstamo?')) {
-                $.ajax({
-                    type: 'POST',
-                    url: 'actualizar_estado.php',
-                    data: { id_prestamo: id_prestamo, nuevo_estado: nuevo_estado, motivo_rechazo: motivo_rechazo },
-                    success: function(response) {
-                        alert(response);
+            $.ajax({
+                type: 'POST',
+                url: 'actualizar_estado.php',
+                data: { id_prestamo: id_prestamo, nuevo_estado: nuevo_estado, motivo_rechazo: motivo_rechazo },
+                success: function(response) {
+                    Swal.fire('Actualizado!', 'El estado del préstamo ha sido actualizado.', 'success').then(() => {
                         location.reload();
-                    }
-                });
-            }
+                    });
+                }
+            });
+        }
+
+        function aprobarPrestamo() {
+            const id_prestamo = $('#id_prestamo_aprobar').val();
+            actualizarEstado(id_prestamo, 5);
+        }
+
+        function rechazarPrestamo() {
+            const id_prestamo = $('#id_prestamo_rechazo').val();
+            actualizarEstado(id_prestamo, 7);
         }
     </script>
 </head>
@@ -88,10 +101,10 @@ $creditos = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <table class="table table-hover">
                     <thead>
                         <tr>
-                            <th scope="col">ID Usuario</th>
+                            <th scope="col">Documento</th>
                             <th scope="col">Monto Solicitado</th>
-                            <th scope="col">Cantidad de Cuotas</th>
-                            <th scope="col">Valor de Cuotas</th>
+                            <th scope="col">Cant. Cuotas</th>
+                            <th scope="col">Valor Cuotas</th>
                             <th scope="col">Mes</th>
                             <th scope="col">Año</th>
                             <th scope="col">Estado</th>
@@ -111,24 +124,12 @@ $creditos = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <td><?php echo htmlspecialchars($credito['anio']); ?></td>
                                     <td><?php echo htmlspecialchars($credito['estado']); ?></td>
                                     <td><?php echo htmlspecialchars($credito['observacion']); ?></td>
-                                    <td id="acciones-<?php echo $credito['id_usuario']; ?>">
-                                        <?php if ($credito['id_estado'] == 5 || $credito['id_estado'] == 7 || $credito['id_estado'] == 9 || $credito["id_estado"] == 8) { ?>
+                                    <td id="acciones-<?php echo $credito['id_prestamo']; ?>">
+                                        <?php if ($credito['id_estado'] == 5 || $credito['id_estado'] == 7 || $credito['id_estado'] == 9) { ?>
                                             <span class="text-success">Solicitud ya procesada</span>
                                         <?php } else { ?>
-                                            <button id="btnAprobar-<?php echo $credito['id_usuario']; ?>" class="btn btn-success" onclick="actualizarEstado(<?php echo $credito['id_usuario']; ?>, 5)">Aprobar</button>
-                                            <button id="btnNoAprobar-<?php echo $credito['id_usuario']; ?>" class="btn btn-danger" onclick="mostrarMotivoRechazo(<?php echo $credito['id_usuario']; ?>)">No Aprobar</button>
-                                            <div id="motivoRechazoSelect-<?php echo $credito['id_usuario']; ?>" style="display: none;">
-                                                <select id="selectMotivoRechazo-<?php echo $credito['id_usuario']; ?>" class="form-select mt-2" required>
-                                                    <option value="" disabled selected>Seleccione un motivo</option>
-                                                    <?php
-                                                    $observaciones = $con->query("SELECT * FROM observaciones WHERE id_observacion > 5");
-                                                    while ($obs = $observaciones->fetch()) {
-                                                        echo '<option value="'.$obs['id_observacion'].'">'.$obs['observacion'].'</option>';
-                                                    }
-                                                    ?>
-                                                </select>
-                                                <button class="btn btn-primary mt-2" onclick="actualizarEstado(<?php echo $credito['id_usuario']; ?>, 7)">Enviar</button>
-                                            </div>
+                                            <button id="btnAprobar-<?php echo $credito['id_prestamo']; ?>" class="btn btn-success" onclick="abrirModalAprobar(<?php echo $credito['id_prestamo']; ?>)">Aprobar</button>
+                                            <button id="btnNoAprobar-<?php echo $credito['id_prestamo']; ?>" class="btn btn-danger" onclick="mostrarMotivoRechazo(<?php echo $credito['id_prestamo']; ?>)">No Aprobar</button>
                                         <?php } ?>
                                     </td>
                                 </tr>
@@ -143,6 +144,57 @@ $creditos = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
         </div>
     </div>
+
+    <!-- Modal para aprobar -->
+    <div class="modal fade" id="aprobarModal" tabindex="-1" aria-labelledby="aprobarModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="aprobarModalLabel">Aprobar Préstamo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Estás seguro de que deseas aprobar este préstamo?</p>
+                    <input type="hidden" id="id_prestamo_aprobar">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="aprobarPrestamo()">Aprobar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para rechazo -->
+    <div class="modal fade" id="rechazoModal" tabindex="-1" aria-labelledby="rechazoModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="rechazoModalLabel">Motivo de Rechazo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="id_prestamo_rechazo">
+                    <select id="selectMotivoRechazo" class="form-select" required>
+                        <option value="" disabled selected>Seleccione un motivo</option>
+                        <?php
+                        $observaciones = $con->query("SELECT * FROM observaciones WHERE id_observacion > 5");
+                        while ($obs = $observaciones->fetch()) {
+                            echo '<option value="'.$obs['id_observacion'].'">'.$obs['observacion'].'</option>';
+                        }
+                        ?>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" onclick="rechazarPrestamo()">Enviar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.2.3/js/bootstrap.min.js"></script>
 </body>
 
 </html>
