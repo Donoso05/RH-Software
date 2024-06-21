@@ -13,6 +13,9 @@ require_once("../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
 
+require '../../vendor/autoload.php';
+use Picqer\Barcode\BarcodeGeneratorPNG;
+
 if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
     $id_usuario = $_POST['id_usuario'];
     $nombre = trim($_POST['nombre']);
@@ -21,6 +24,19 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
     $correo = $_POST['correo'];
     $id_tipo_usuario = $_POST['id_tipo_usuario'];
     $nit_empresa = $_SESSION['nit_empresa']; // Obtener el NIT de la empresa de la sesión
+
+    // Concatenar los datos del usuario en un formato JSON
+    $datos_usuario = json_encode([
+        'id_usuario' => $id_usuario       
+    ]);
+
+    // Generar código de barras con los datos del usuario
+    $generator = new BarcodeGeneratorPNG();
+    $codigo_barras_imagen = $generator->getBarcode($datos_usuario, $generator::TYPE_CODE_128);
+
+    // Guardar la imagen del código de barras
+    $codigo_barras_filename = uniqid() . '.png';
+    file_put_contents(__DIR__ . '/../bar_code/' . $codigo_barras_filename, $codigo_barras_imagen);
 
     // Validación de id_usuario para que solo tenga entre 9 y 11 dígitos y solo números
     if (!preg_match('/^\d{6,11}$/', $id_usuario)) {
@@ -59,8 +75,8 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
     } else {
         $contrasena_fija = "103403sena"; // Contraseña fija
         $password = password_hash($contrasena_fija, PASSWORD_DEFAULT, array("cost" => 12)); // Hash de la contraseña fija
-        $insertSQL = $con->prepare("INSERT INTO usuario(id_usuario, nombre, id_tipo_cargo, id_estado, correo, id_tipo_usuario, contrasena, nit_empresa) 
-        VALUES ('$id_usuario', '$nombre', '$id_tipo_cargo', '$id_estado', '$correo', '$id_tipo_usuario', '$password', '$nit_empresa')");
+        $insertSQL = $con->prepare("INSERT INTO usuario(id_usuario, nombre, id_tipo_cargo, id_estado, correo, id_tipo_usuario, contrasena, nit_empresa, codigo_barras) 
+        VALUES ('$id_usuario', '$nombre', '$id_tipo_cargo', '$id_estado', '$correo', '$id_tipo_usuario', '$password', '$nit_empresa', '$codigo_barras_filename')");
         $insertSQL->execute();
 
         // Enviar correo al empleado
@@ -161,6 +177,7 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
                         <th scope="col">Correo</th>
                         <th scope="col">Cargo</th>
                         <th scope="col">NIT empresa</th>
+                        <th scope="col">Cod_barras</th>
                         <th scope="col">Acciones</th>
                     </tr>
                 </thead>
@@ -168,7 +185,7 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
                 <?php
                 // Consulta de usuarios filtrando por el mismo nit_empresa del usuario en sesión
                 $nit_empresa_session = $_SESSION['nit_empresa'];
-                $consulta = "SELECT usuario.id_usuario, usuario.nombre, tipo_cargo.cargo AS tipo_cargo, estado.estado AS estado, usuario.correo, tipos_usuarios.tipo_usuario, usuario.nit_empresa 
+                $consulta = "SELECT usuario.id_usuario, usuario.nombre, tipo_cargo.cargo AS tipo_cargo, estado.estado AS estado, usuario.correo, tipos_usuarios.tipo_usuario, usuario.nit_empresa, usuario.codigo_barras 
                              FROM usuario 
                              INNER JOIN tipo_cargo ON usuario.id_tipo_cargo = tipo_cargo.id_tipo_cargo 
                              INNER JOIN tipos_usuarios ON usuario.id_tipo_usuario = tipos_usuarios.id_tipo_usuario 
@@ -187,6 +204,7 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
                             <td><?php echo $fila["correo"]; ?></td>
                             <td><?php echo $fila["tipo_cargo"]; ?></td>
                             <td><?php echo $fila["nit_empresa"]; ?></td>
+                            <td><img src="../bar_code/<?php echo $fila["codigo_barras"]; ?>" style="max-width: 400px;"></td>
                             <td>
                                 <div class="text-center">
                                     <div class="d-flex justify-content-start">

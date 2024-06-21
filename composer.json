@@ -1,0 +1,16 @@
+{
+    "name": "vendor/creacion_barcode",
+    "autoload": {
+        "psr-4": {
+            "Vendor\\CreacionBarcode\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "kenner rojas"
+        }
+    ],
+    "require": {
+        "picqer/php-barcode-generator": "^2.4"
+    }
+}
