@@ -52,7 +52,7 @@ try {
 
                             // Validar la licencia activa para los tipos de usuario 1, 2 y 3
                             if (in_array($ID_Roll, [1, 2, 3])) {
-                                $sql_licencia = "SELECT * FROM licencia WHERE nit_empresa = :nit_empresa AND CURDATE() BETWEEN fecha_inicio AND fecha_fin";
+                                $sql_licencia = "SELECT * FROM licencia WHERE nit_empresa = :nit_empresa AND CURDATE() BETWEEN fecha_inicio AND fecha_final";
                                 $stmt_licencia = $conexion->prepare($sql_licencia);
                                 $stmt_licencia->bindParam(":nit_empresa", $nit_empresa);
                                 $stmt_licencia->execute();
