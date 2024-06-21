@@ -15,6 +15,7 @@ $db = new Database();
 $con = $db->conectar();
 
 $idUsuario = $_SESSION["id_usuario"];
+$nitEmpresa = $_SESSION["nit_empresa"];
 $monto = filter_var($_POST["monto"], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
 
 // Verificación de que el monto no sea menor a 500,000
@@ -107,8 +108,8 @@ $valorCuotasFormateado = number_format($valorCuotas, 0, ',', '.');
 
 // Insertar el préstamo en la base de datos
 try {
-    $stmt = $con->prepare("INSERT INTO solic_prestamo (id_prestamo, id_usuario, monto_solicitado, id_estado, valor_cuotas, cant_cuotas, mes, anio) 
-                           VALUES (:idPrestamo, :idUsuario, :monto, :idEstado, :valorCuotas, :cuotas, :mes, :anio)");
+    $stmt = $con->prepare("INSERT INTO solic_prestamo (id_prestamo, id_usuario, monto_solicitado, id_estado, valor_cuotas, cant_cuotas, mes, anio, nit_empresa) 
+                           VALUES (:idPrestamo, :idUsuario, :monto, :idEstado, :valorCuotas, :cuotas, :mes, :anio, :nitEmpresa)");
     $stmt->bindParam(':idPrestamo', $idPrestamo, PDO::PARAM_STR); // Usamos PDO::PARAM_STR para id_prestamo
     $stmt->bindParam(':idUsuario', $idUsuario, PDO::PARAM_INT);
     $stmt->bindParam(':monto', $monto, PDO::PARAM_STR); // PDO::PARAM_STR es adecuado para decimal
@@ -117,6 +118,7 @@ try {
     $stmt->bindParam(':cuotas', $cuotas, PDO::PARAM_INT);
     $stmt->bindParam(':mes', $mes, PDO::PARAM_STR);
     $stmt->bindParam(':anio', $anio, PDO::PARAM_STR);
+    $stmt->bindParam(':nitEmpresa', $nitEmpresa, PDO::PARAM_STR);
 
     if ($stmt->execute()) {
         echo '<script>alert("Solicitud de préstamo enviada con éxito.");</script>';
