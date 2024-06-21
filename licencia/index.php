@@ -69,13 +69,23 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formemp")) {
     }
 }
 
-// Fetch all companies
-$empresas = $con->prepare("SELECT * FROM empresas");
+// Fetch all companies with license
+$empresas = $con->prepare("
+    SELECT e.nit_empresa, e.nombre, l.licencia, e.correo
+    FROM empresas e
+    LEFT JOIN licencia l ON e.nit_empresa = l.nit_empresa
+");
 $empresas->execute();
 $empresas_data = $empresas->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch all administrators
-$administradores = $con->prepare("SELECT * FROM usuario WHERE id_tipo_usuario = 1");
+// Fetch all administrators with state and user type
+$administradores = $con->prepare("
+    SELECT u.id_usuario, u.nombre, e.estado, u.correo, tu.tipo_usuario, u.nit_empresa
+    FROM usuario u
+    LEFT JOIN estado e ON u.id_estado = e.id_estado
+    LEFT JOIN tipos_usuarios tu ON u.id_tipo_usuario = tu.id_tipo_usuario
+    WHERE u.id_tipo_usuario = 1
+");
 $administradores->execute();
 $administradores_data = $administradores->fetchAll(PDO::FETCH_ASSOC);
 
@@ -93,6 +103,11 @@ $administradores_data = $administradores->fetchAll(PDO::FETCH_ASSOC);
 
 <body>
     <div class="container">
+        <nav>
+            <ul>
+                <li><a class="nav-link" href="../controller/cerrarcesion.php">Cerrar sesión</a></li>
+            </ul>
+        </nav>
         <div class="form-wrapper">
             <form class="form" method="post">
                 <h2>Crear Empresas</h2>
@@ -107,7 +122,7 @@ $administradores_data = $administradores->fetchAll(PDO::FETCH_ASSOC);
                 <div class="form-group">
                     <label for="correo">Correo Electrónico</label>
                     <input type="email" name="correo" id="correo" placeholder="Correo Electrónico">
-                </div>
+                </div>              
                 <input type="submit" name="validar" value="Registrar" class="btn">
                 <input type="hidden" name="MM_insert" value="formemp">
             </form>
@@ -174,13 +189,13 @@ $administradores_data = $administradores->fetchAll(PDO::FETCH_ASSOC);
 
         <div class="form-wrapper tables-wrapper">
             <div class="form table-wrapper">
-                <h2>Tabla Empresa</h2>
+                <h2>Empresas</h2>
                 <table>
-                    <thead>
+                    <thead class="bg-primary">
                         <tr>
                             <th>NIT Empresa</th>
                             <th>Nombre</th>
-                            <th>ID Licencia</th>
+                            <th>Licencia</th>
                             <th>Correo</th>
                         </tr>
                     </thead>
@@ -189,27 +204,26 @@ $administradores_data = $administradores->fetchAll(PDO::FETCH_ASSOC);
                             <tr>
                                 <td><?php echo htmlspecialchars($empresa['nit_empresa']); ?></td>
                                 <td><?php echo htmlspecialchars($empresa['nombre']); ?></td>
-                                <td><?php echo htmlspecialchars($empresa['id_licencia']); ?></td>
+                                <td><?php echo htmlspecialchars($empresa['licencia']); ?></td>
                                 <td><?php echo htmlspecialchars($empresa['correo']); ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
             </div>
-
+        </div>
+        <div class="form-wrapper tables-wrapper">                        
             <div class="form table-wrapper">
-                <h2>Tabla Administradores</h2>
+                <h2>Administradores</h2>
                 <table>
                     <thead>
                         <tr>
                             <th>ID Usuario</th>
                             <th>Nombre</th>
-                            <th>ID Tipo Cargo</th>
-                            <th>ID Estado</th>
+                            <th>Estado</th>
                             <th>Correo</th>
-                            <th>ID Tipo Usuario</th>
+                            <th>Tipo Usuario</th>
                             <th>NIT Empresa</th>
-                            <th>Foto</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -217,12 +231,10 @@ $administradores_data = $administradores->fetchAll(PDO::FETCH_ASSOC);
                             <tr>
                                 <td><?php echo htmlspecialchars($admin['id_usuario']); ?></td>
                                 <td><?php echo htmlspecialchars($admin['nombre']); ?></td>
-                                <td><?php echo htmlspecialchars($admin['id_tipo_cargo']); ?></td>
-                                <td><?php echo htmlspecialchars($admin['id_estado']); ?></td>
+                                <td><?php echo htmlspecialchars($admin['estado']); ?></td>
                                 <td><?php echo htmlspecialchars($admin['correo']); ?></td>
-                                <td><?php echo htmlspecialchars($admin['id_tipo_usuario']); ?></td>
+                                <td><?php echo htmlspecialchars($admin['tipo_usuario']); ?></td>
                                 <td><?php echo htmlspecialchars($admin['nit_empresa']); ?></td>
-                                <td><?php echo htmlspecialchars($admin['foto']); ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>

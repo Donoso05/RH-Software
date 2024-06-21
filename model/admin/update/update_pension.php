@@ -3,7 +3,6 @@ session_start();
 
 // Verificar si la sesión no está iniciada
 if (!isset($_SESSION["id_usuario"])) {
-    // Mostrar un alert y redirigir utilizando JavaScript
     echo '<script>alert("Debes iniciar sesión antes de acceder a la interfaz de administrador.");</script>';
     echo '<script>window.location.href = "../login.html";</script>';
     exit();
@@ -23,8 +22,8 @@ if (isset($_POST["update"])) {
     $id_pension = $_POST['id_pension'];
     $porcentaje_p = trim($_POST['porcentaje_p']);
 
-    if ($porcentaje_p == "" || !filter_var($porcentaje_p, FILTER_VALIDATE_INT)) {
-        echo '<script>alert("El campo \'Porcentaje Pension\' debe contener solo números y no estar vacío.");</script>';
+    if ($porcentaje_p == "" || !filter_var($porcentaje_p, FILTER_VALIDATE_FLOAT)) {
+        echo '<script>alert("El campo \'Porcentaje Pension\' debe contener un número válido y no estar vacío.");</script>';
     } else {
         $updateSQL = $con->prepare("UPDATE pension SET porcentaje_p = :porcentaje_p WHERE id_pension = :id_pension");
         $updateSQL->bindParam(':porcentaje_p', $porcentaje_p);
@@ -91,7 +90,7 @@ if (isset($_POST["update"])) {
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label form-control-label">Porcentaje Pension</label>
                         <div class="col-lg-9">
-                            <input class="form-control" name="porcentaje_p" value="<?php echo $usua['porcentaje_p']; ?>" required oninput="sanitizeInput(event, 'numeric')">
+                            <input class="form-control" name="porcentaje_p" type="number" step="0.01" value="<?php echo $usua['porcentaje_p']; ?>" required>
                         </div>
                     </div>
                     <div class="form-group row">
@@ -109,22 +108,11 @@ if (isset($_POST["update"])) {
             return confirm("¿Estás seguro de que deseas eliminar Pension?");
         }
 
-        function sanitizeInput(event, type) {
-            const input = event.target;
-            let value = input.value;
-
-            if (type === 'numeric') {
-                value = value.replace(/\D/g, ''); // Eliminar todo lo que no sea dígito
-            }
-
-            input.value = value;
-        }
-
         function validateForm() {
             const porcentaje_p = document.forms["frm_consulta"]["porcentaje_p"].value.trim();
 
-            if (porcentaje_p === "" || !/^\d+$/.test(porcentaje_p)) {
-                alert("El campo 'Porcentaje Pension' debe contener solo números y no estar vacío.");
+            if (porcentaje_p === "" || isNaN(porcentaje_p)) {
+                alert("El campo 'Porcentaje Pension' debe contener un número válido y no estar vacío.");
                 return false;
             }
 

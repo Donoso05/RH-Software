@@ -17,15 +17,17 @@ $db = new Database();
 $con = $db->conectar();
 
 $id_usuario = $_SESSION["id_usuario"];
+$nit_empresa = $_SESSION["nit_empresa"]; // Obtener el nit_empresa de la sesión
 
-// Consultar los créditos del usuario
+// Consultar los créditos del usuario que coincidan con el id_usuario y el nit_empresa
 $stmtCreditos = $con->prepare("
     SELECT sp.id_prestamo, sp.monto_solicitado, sp.cant_cuotas, sp.valor_cuotas, sp.mes, sp.anio, e.estado AS nombre_estado 
     FROM solic_prestamo sp
     JOIN estado e ON sp.id_estado = e.id_estado
-    WHERE sp.id_usuario = :id_usuario
+    WHERE sp.id_usuario = :id_usuario AND sp.nit_empresa = :nit_empresa
 ");
 $stmtCreditos->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
+$stmtCreditos->bindParam(':nit_empresa', $nit_empresa, PDO::PARAM_STR);
 $stmtCreditos->execute();
 $creditos = $stmtCreditos->fetchAll(PDO::FETCH_ASSOC);
 ?>
@@ -95,5 +97,3 @@ $creditos = $stmtCreditos->fetchAll(PDO::FETCH_ASSOC);
 </body>
 
 </html>
-
-

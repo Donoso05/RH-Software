@@ -50,6 +50,21 @@ try {
                             $nit_empresa = $row_nit["nit_empresa"];
                             $_SESSION["nit_empresa"] = $nit_empresa; // Guardar el nit_empresa en una variable de sesión
 
+                            // Validar la licencia activa para los tipos de usuario 1, 2 y 3
+                            if (in_array($ID_Roll, [1, 2, 3])) {
+                                $sql_licencia = "SELECT * FROM licencia WHERE nit_empresa = :nit_empresa AND CURDATE() BETWEEN fecha_inicio AND fecha_final";
+                                $stmt_licencia = $conexion->prepare($sql_licencia);
+                                $stmt_licencia->bindParam(":nit_empresa", $nit_empresa);
+                                $stmt_licencia->execute();
+
+                                if ($stmt_licencia->rowCount() == 0) {
+                                    // Manejar el caso en que la licencia está vencida o no existe
+                                    echo '<script>alert("La licencia de la empresa está vencida o no existe.");</script>';
+                                    echo '<script>window.location.href = "../login.html";</script>';
+                                    exit();
+                                }
+                            }
+
                             // Redireccionar según el tipo de usuario
                             switch ($ID_Roll) {
                                 case 1:
@@ -61,9 +76,9 @@ try {
                                 case 3:
                                     header("Location: ../model/empleado/index.php");
                                     exit();
-                                    case 6:
-                                        header("Location: ../licencia/index.php");
-                                        exit();
+                                case 6:
+                                    header("Location: ../licencia/index.php");
+                                    exit();
                                 default:
                                     // Manejar el caso en que el tipo de usuario no está definido
                                     echo '<script>alert("Tipo de usuario no definido.");</script>';

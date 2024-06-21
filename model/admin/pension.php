@@ -3,26 +3,28 @@ session_start();
 
 // Verificar si la sesión no está iniciada
 if (!isset($_SESSION["id_usuario"])) {
-    // Mostrar un alert y redirigir utilizando JavaScript
     echo '<script>alert("Debes iniciar sesión antes de acceder a la interfaz de administrador.");</script>';
     echo '<script>window.location.href = "../login.html";</script>';
     exit();
 }
+
 require_once("../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
+$nit_empresa = $_SESSION['nit_empresa'];
 ?>
 
 <?php
 if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
     $porcentaje_p = trim($_POST['porcentaje_p']);
 
-    if ($porcentaje_p == "" || !filter_var($porcentaje_p, FILTER_VALIDATE_INT)) {
-        echo '<script>alert("El campo \'Pensión\' debe contener solo números y no estar vacío.");</script>';
+    if ($porcentaje_p == "" || !filter_var($porcentaje_p, FILTER_VALIDATE_FLOAT)) {
+        echo '<script>alert("El campo \'Pensión\' debe contener un número válido y no estar vacío.");</script>';
         echo '<script>window.location="pension.php"</script>';
     } else {
-        $insertSQL = $con->prepare("INSERT INTO pension(porcentaje_p) VALUES (:porcentaje_p)");
+        $insertSQL = $con->prepare("INSERT INTO pension(porcentaje_p, nit_empresa) VALUES (:porcentaje_p, :nit_empresa)");
         $insertSQL->bindParam(':porcentaje_p', $porcentaje_p);
+        $insertSQL->bindParam(':nit_empresa', $nit_empresa);
         $insertSQL->execute();
         echo '<script>alert("Registro exitoso");</script>';
         echo '<script>window.location="pension.php"</script>';
@@ -40,28 +42,16 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/1057b0ffdd.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="css/nav.css">
-    <script>
-        function sanitizeInput(event, type) {
-            const input = event.target;
-            let value = input.value;
-
-            if (type === 'numeric') {
-                value = value.replace(/\D/g, ''); // Eliminar todo lo que no sea dígito
-            }
-
-            input.value = value;
-        }
-    </script>
 </head>
 
 <body>
     <?php include("nav.php") ?>
     <div class="container-fluid row">
-        <form class="col-4 p-3" method="post" onsubmit="return validateForm()">
+        <form class="col-4 p-3" method="post" name="formreg" onsubmit="return validateForm()">
             <h3 class="text-center text-secondary">Pension</h3>
             <div class="mb-3">
                 <label for="porcentaje_p" class="form-label">Pension:</label>
-                <input type="number" class="form-control" name="porcentaje_p" required oninput="sanitizeInput(event, 'numeric')">
+                <input type="number" class="form-control" name="porcentaje_p" step="0.01" required>
             </div>
             <input type="submit" class="btn btn-primary" name="validar" value="Registrar">
             <input type="hidden" name="MM_insert" value="formreg" required>
@@ -78,10 +68,13 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
                 </thead>
                 <tbody>
                 <?php
-                    $consulta = "SELECT * FROM pension";
-                    $resultado = $con->query($consulta);
+                    $nit_empresa = $_SESSION['nit_empresa'];
+                    $consulta = "SELECT * FROM pension WHERE nit_empresa = :nit_empresa";
+                    $stmt = $con->prepare($consulta);
+                    $stmt->bindParam(':nit_empresa', $nit_empresa);
+                    $stmt->execute();
 
-                    while ($fila = $resultado->fetch()) {
+                    while ($fila = $stmt->fetch()) {
                     ?>
                         <tr>
                             <td><?php echo "Pension"; ?></td> 
@@ -106,8 +99,8 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
         function validateForm() {
             const porcentaje_p = document.forms["formreg"]["porcentaje_p"].value.trim();
 
-            if (porcentaje_p === "" || !/^\d+$/.test(porcentaje_p)) {
-                alert("El campo 'Pensión' debe contener solo números y no estar vacío.");
+            if (porcentaje_p === "" || isNaN(porcentaje_p)) {
+                alert("El campo 'Pensión' debe contener un número válido y no estar vacío.");
                 return false;
             }
 

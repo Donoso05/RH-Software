@@ -16,19 +16,21 @@ $db = new Database();
 $con = $db->conectar();
 
 $id_usuario = $_SESSION["id_usuario"];
+$nit_empresa = $_SESSION["nit_empresa"]; // Obtener el nit_empresa de la sesión
 
 // Consultar tipos de permiso  
 $consultaTipos = $con->prepare("SELECT id_tipo_permiso, tipo_permiso, dias FROM tipo_permiso");
 $consultaTipos->execute();
 $tipos_permiso = $consultaTipos->fetchAll(PDO::FETCH_ASSOC);
 
-// Consultar permisos solicitados por el usuario
+// Consultar permisos solicitados por el usuario que coincidan con el id_usuario y el nit_empresa
 $consultaPermisos = $con->prepare("SELECT tp.descripcion, tp.incapacidad, tp.fecha_inicio, tp.fecha_fin, e.estado, tperm.tipo_permiso 
                                    FROM tram_permiso tp 
                                    JOIN tipo_permiso tperm ON tp.id_tipo_permiso = tperm.id_tipo_permiso 
                                    JOIN estado e ON tp.id_estado = e.id_estado
-                                   WHERE tp.id_usuario = :id_usuario");
+                                   WHERE tp.id_usuario = :id_usuario AND tp.nit_empresa = :nit_empresa");
 $consultaPermisos->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
+$consultaPermisos->bindParam(':nit_empresa', $nit_empresa, PDO::PARAM_STR);
 $consultaPermisos->execute();
 $permisos = $consultaPermisos->fetchAll(PDO::FETCH_ASSOC);
 ?>

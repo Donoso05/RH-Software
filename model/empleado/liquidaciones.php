@@ -16,12 +16,14 @@ $db = new Database();
 // Conectar a la base de datos
 $con = $db->conectar();
 
-// Obtener el id de usuario de la sesión
+// Obtener el id de usuario y el nit_empresa de la sesión
 $id_usuario = $_SESSION["id_usuario"];
+$nit_empresa = $_SESSION["nit_empresa"]; // Obtener el nit_empresa de la sesión
 
-// Consultar los registros de nómina del usuario logueado
-$query = $con->prepare("SELECT * FROM nomina WHERE id_usuario = :id_usuario");
+// Consultar los registros de nómina del usuario logueado que coincidan con el id_usuario y el nit_empresa
+$query = $con->prepare("SELECT * FROM nomina WHERE id_usuario = :id_usuario AND nit_empresa = :nit_empresa");
 $query->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
+$query->bindParam(':nit_empresa', $nit_empresa, PDO::PARAM_STR);
 $query->execute();
 $nominas = $query->fetchAll(PDO::FETCH_ASSOC);
 ?>

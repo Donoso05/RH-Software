@@ -8,9 +8,11 @@ if (!isset($_SESSION["id_usuario"])) {
     echo '<script>window.location.href = "../login.html";</script>';
     exit();
 }
+
 require_once("../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
+$nit_empresa = $_SESSION['nit_empresa'];  // Asumiendo que el NIT de la empresa está almacenado en la sesión
 ?>
 
 <?php
@@ -22,16 +24,16 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
         echo '<script>alert("La observación no puede estar vacía y debe contener al menos una letra.");</script>';
         echo '<script>window.location="observaciones.php"</script>';
     } else {
-        $sql = $con->prepare("SELECT * FROM observaciones WHERE observacion = ?");
-        $sql->execute([$observacion]);
+        $sql = $con->prepare("SELECT * FROM observaciones WHERE observacion = ? AND nit_empresa = ?");
+        $sql->execute([$observacion, $nit_empresa]);
         $fila = $sql->fetchAll(PDO::FETCH_ASSOC);
 
         if ($fila) {
             echo '<script>alert("OBSERVACIÓN YA REGISTRADA");</script>';
             echo '<script>window.location="observaciones.php"</script>';
         } else {
-            $insertSQL = $con->prepare("INSERT INTO observaciones (observacion) VALUES (?)");
-            $insertSQL->execute([$observacion]);
+            $insertSQL = $con->prepare("INSERT INTO observaciones (observacion, nit_empresa) VALUES (?, ?)");
+            $insertSQL->execute([$observacion, $nit_empresa]);
             echo '<script>alert("Observación Registrada con Éxito");</script>';
             echo '<script>window.location="observaciones.php"</script>';
         }
@@ -74,10 +76,11 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
                 <tbody>
                 <?php
                 // Consulta de observaciones
-                $consulta = "SELECT * FROM observaciones";
-                $resultado = $con->query($consulta);
+                $consulta = "SELECT * FROM observaciones WHERE nit_empresa = ?";
+                $stmt = $con->prepare($consulta);
+                $stmt->execute([$nit_empresa]);
 
-                while ($fila = $resultado->fetch()) {
+                while ($fila = $stmt->fetch()) {
                 ?>
                     <tr>
                         <td><?php echo htmlspecialchars($fila["observacion"]); ?></td>

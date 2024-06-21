@@ -3,14 +3,15 @@ session_start();
 
 // Verificar si la sesión no está iniciada
 if (!isset($_SESSION["id_usuario"])) {
-    // Mostrar un alert y redirigir utilizando JavaScript
     echo '<script>alert("Debes iniciar sesión antes de acceder a la interfaz de administrador.");</script>';
     echo '<script>window.location.href = "../login.html";</script>';
     exit();
 }
+
 require_once("../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
+$nit_empresa_session = $_SESSION['nit_empresa']; // Obtener el NIT de la empresa de la sesión
 ?>
 
 <?php
@@ -18,12 +19,12 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
     $valor = $_POST['valor'];
 
     if ($valor == "") {
-        echo '<script>alert ("EXISTEN DATOS VACIOS"); </script>';
+        echo '<script>alert("EXISTEN DATOS VACIOS");</script>';
         echo '<script>window.location="auxtransporte.php"</script>';
     } else {
-        $insertSQL = $con->prepare("INSERT INTO auxtransporte(valor) VALUES ('$valor')");
-        $insertSQL->execute();
-        echo '<script>alert ("Registro exitoso");</script>';
+        $insertSQL = $con->prepare("INSERT INTO auxtransporte (valor, nit_empresa) VALUES (?, ?)");
+        $insertSQL->execute([$valor, $nit_empresa_session]);
+        echo '<script>alert("Registro exitoso");</script>';
         echo '<script>window.location="auxtransporte.php"</script>';
     }
 }
@@ -90,27 +91,27 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
                 </thead>
                 <tbody>
                 <?php
-                    // Consulta de armas
-                    $consulta = "SELECT * FROM auxtransporte";
-                    $resultado = $con->query($consulta);
+                    // Consulta de auxilios filtrando por el mismo nit_empresa del usuario en sesión
+                    $consulta = $con->prepare("SELECT * FROM auxtransporte WHERE nit_empresa = ?");
+                    $consulta->execute([$nit_empresa_session]);
+                    $resultado = $consulta->fetchAll(PDO::FETCH_ASSOC);
 
-                    while ($fila = $resultado->fetch()) {
-                    ?>
+                    foreach ($resultado as $fila) {
+                ?>
                         <tr>
                             <td><?php echo "Auxilio de Transporte"; ?></td> 
-                            <td><?php echo $fila["valor"]; ?></td>
+                            <td><?php echo htmlspecialchars($fila["valor"], ENT_QUOTES, 'UTF-8'); ?></td>
                             <td>
-                            <div class="text-center">
+                                <div class="text-center">
                                     <div class="d-flex justify-content-start">
-                                    <a href="update_aux.php?id=<?php echo $fila['id_auxtransporte']; ?>" onclick="window.open('./update/update_aux.php?id=<?php echo $fila['id_auxtransporte']; ?>','','width=500,height=500,toolbar=NO'); return false;"><i class="btn btn-primary">Editar</i></a>
+                                        <a href="update_aux.php?id=<?php echo $fila['id_auxtransporte']; ?>" onclick="window.open('./update/update_aux.php?id=<?php echo $fila['id_auxtransporte']; ?>','','width=500,height=500,toolbar=NO'); return false;"><i class="btn btn-primary">Editar</i></a>
                                     </div>
                                 </div>
                             </td>
                         </tr>
                 <?php   
-                        }
-                    ?>
-
+                    }
+                ?>
                 </tbody>
             </table>
         </div>

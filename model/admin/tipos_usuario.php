@@ -16,22 +16,23 @@ $con = $db->conectar();
 <?php
 if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
     $tipo_usuario = trim($_POST['tipo_usuario']);
+    $nit_empresa = $_SESSION['nit_empresa']; // Obtener el NIT de la empresa de la sesión
 
     // Validación en el servidor para evitar solo espacios
     if (empty($tipo_usuario) || !preg_match("/[A-Za-z]/", $tipo_usuario)) {
         echo '<script>alert("El tipo de usuario no puede estar vacío y debe contener al menos una letra.");</script>';
         echo '<script>window.location="tipos_usuario.php"</script>';
     } else {
-        $sql = $con->prepare("SELECT * FROM tipos_usuarios WHERE tipo_usuario = ?");
-        $sql->execute([$tipo_usuario]);
+        $sql = $con->prepare("SELECT * FROM tipos_usuarios WHERE tipo_usuario = ? AND nit_empresa = ?");
+        $sql->execute([$tipo_usuario, $nit_empresa]);
         $fila = $sql->fetchAll(PDO::FETCH_ASSOC);
 
         if ($fila) {
             echo '<script>alert("TIPO DE USUARIO YA REGISTRADO");</script>';
             echo '<script>window.location="tipos_usuario.php"</script>';
         } else {
-            $insertSQL = $con->prepare("INSERT INTO tipos_usuarios (tipo_usuario) VALUES (?)");
-            $insertSQL->execute([$tipo_usuario]);
+            $insertSQL = $con->prepare("INSERT INTO tipos_usuarios (tipo_usuario, nit_empresa) VALUES (?, ?)");
+            $insertSQL->execute([$tipo_usuario, $nit_empresa]);
             echo '<script>alert("Tipo de Usuario Registrado con Exito");</script>';
             echo '<script>window.location="tipos_usuario.php"</script>';
         }
@@ -73,9 +74,11 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
                 </thead>
                 <tbody>
                 <?php
-                // Consulta de tipos de usuarios
-                $consulta = "SELECT * FROM tipos_usuarios";
-                $resultado = $con->query($consulta);
+                // Consulta de tipos de usuarios filtrando por el mismo nit_empresa del usuario en sesión
+                $nit_empresa_session = $_SESSION['nit_empresa'];
+                $consulta = "SELECT * FROM tipos_usuarios WHERE nit_empresa = ?";
+                $resultado = $con->prepare($consulta);
+                $resultado->execute([$nit_empresa_session]);
 
                 while ($fila = $resultado->fetch()) {
                 ?>

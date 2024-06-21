@@ -110,7 +110,7 @@ if (isset($_POST["delete"])) {
         }
 
         function allowOnlyNumbers(input) {
-            input.value = input.value.replace(/[^\d]/g, '');
+            input.value = input.value.replace(/[^0-9.]/g, '');
         }
 
         function confirmarEliminacion() {

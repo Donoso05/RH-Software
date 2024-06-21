@@ -1,200 +1,139 @@
 <?php
-    session_start();
+session_start();
 
-	// Verificar si la sesión no está iniciada
-	if (!isset($_SESSION["id_usuario"])) {
-		// Mostrar un alert y redirigir utilizando JavaScript
-		echo '<script>alert("Debes iniciar sesión antes de acceder a la interfaz de administrador.");</script>';
-		echo '<script>window.location.href = "../login.html";</script>';
-		exit();
-	}
-    require_once("../../conexion/conexion.php");
-    $db = new Database();
-    $con =$db->conectar();
-?>
-<?php
-    if ((isset($_POST["MM_insert"]))&&($_POST["MM_insert"]=="formreg"))
-    {
-      $id_prestamo= $_POST['id_prestamo'];
-      $id_usuario= $_POST['id_usuario'];
-      $monto_solicitado= $_POST['monto_solicitado'];
-	  $id_estado= $_POST['id_estado'];
-      $valor_cuotas= $_POST['valor_cuotas'];
-	  $cant_cuotas= $_POST['cant_cuotas'];
-	  $mes= $_POST['mes'];
-	  $anio= $_POST['anio'];
+// Verificar si la sesión no está iniciada
+if (!isset($_SESSION["id_usuario"])) {
+    echo '<script>alert("Debes iniciar sesión antes de acceder a la interfaz de administrador.");</script>';
+    echo '<script>window.location.href = "../../login.html";</script>';
+    exit();
+}
 
-      $sql = $con -> prepare ("SELECT * FROM solic_prestamo where id_prestamo='$id_prestamo'");
-      $sql -> execute();
-      $fila = $sql -> fetchAll(PDO::FETCH_ASSOC);
-      
-    
-    
-      if($id_usuario=="" || $monto_solicitado=="" || $id_estado=="" || $valor_cuotas=="" || $cant_cuotas=="" || $mes=="" || $anio=="")
-      {
-        echo '<script>alert ("EXISTEN DATOS VACIOS"); </script>';
-        echo '<script>window.location="solic_prestamo.php"</script>';
-      }
-      else if($fila){
-        echo '<script>alert ("USUARIO YA REGISTRADO"); </script>';
-        echo '<script>window.location="solic_prestamo.php"</script>';
-      }
+require_once("../../conexion/conexion.php");
 
-            
-      else
-      {
-        $insertSQL = $con->prepare ("INSERT INTO solic_prestamo(id_prestamo,id_usuario, monto_solicitado,id_estado,valor_cuotas,cant_cuotas,mes,anio) 
-        VALUES ('$id_prestamo','$id_usuario', '$monto_solicitado', '$id_estado', '$valor_cuotas','$cant_cuotas','$mes','$anio')");
-        $insertSQL->execute();
-        echo '<script>alert ("Solicitud Prestamo Registrada con Exito"); </script>';
-        echo '<script>window.location="solic_prestamo.php"</script>';
-      }
-    }
+// Crear una instancia de la clase Database
+$db = new Database();
+$con = $db->conectar();
 
+$id_usuario = $_SESSION["id_usuario"];
+
+// Obtener el nit_empresa del usuario con la sesión iniciada
+$stmtNit = $con->prepare("SELECT nit_empresa FROM usuario WHERE id_usuario = :id_usuario");
+$stmtNit->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
+$stmtNit->execute();
+$nit_empresa = $stmtNit->fetch(PDO::FETCH_ASSOC)['nit_empresa'];
+
+// Consultar los créditos del usuario con el mismo nit_empresa
+$stmtCreditos = $con->prepare("
+    SELECT sp.id_prestamo, sp.monto_solicitado, sp.cant_cuotas, sp.valor_cuotas, sp.mes, sp.anio, e.estado AS nombre_estado, u.id_usuario, u.nombre 
+    FROM solic_prestamo sp
+    JOIN estado e ON sp.id_estado = e.id_estado
+    JOIN usuario u ON sp.id_usuario = u.id_usuario
+    WHERE u.nit_empresa = :nit_empresa
+");
+$stmtCreditos->bindParam(':nit_empresa', $nit_empresa, PDO::PARAM_STR);
+$stmtCreditos->execute();
+$creditos = $stmtCreditos->fetchAll(PDO::FETCH_ASSOC);
+
+// Consultar todos los usuarios de la misma empresa
+$stmtUsuarios = $con->prepare("SELECT id_usuario, nombre FROM usuario WHERE nit_empresa = :nit_empresa");
+$stmtUsuarios->bindParam(':nit_empresa', $nit_empresa, PDO::PARAM_STR);
+$stmtUsuarios->execute();
+$usuarios = $stmtUsuarios->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trámite Permisos</title>
+    <title>Solicitud de Préstamo</title>
+    <link rel="stylesheet" href="css/presta.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/1057b0ffdd.js" crossorigin="anonymous"></script>
 </head>
-
 <body>
-    <?php include("nav.php"); ?>
+    <?php include("nav.php") ?>
     <div class="container-fluid row">
-        <form class="col-4 p-3" method="post">
-            <h3 class="text-center text-secondary">Solicitud Préstamo</h3>
-
-            <div class="mb-3">
-                <label for="usuario" class="form-label">Cédula:</label>
-                <select class="form-control" name="id_usuario">
-                    <option value="">Seleccione el Empleado</option>
-                    <?php
-                    $control = $con->prepare("SELECT id_usuario FROM usuario");
-                    $control->execute();
-                    while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
-                        echo "<option value='" . $fila['id_usuario'] . "'>" . $fila['id_usuario'] . "</option>";
-                    }
-                    ?>
-                </select>
+        <div class="col-md-4 p-3">
+            <div class="form-container">
+                <h2>Solicitud de Préstamo</h2>
+                <form id="creditoForm" method="post" action="procesar_credito.php">
+                    <div class="form-group mb-3">
+                        <label for="id_usuario">Documento:</label>
+                        <select id="id_usuario" name="id_usuario" class="form-control" required>
+                            <option value="">Seleccione un usuario</option>
+                            <?php foreach ($usuarios as $usuario): ?>
+                                <option value="<?php echo htmlspecialchars($usuario['id_usuario']); ?>" data-nombre="<?php echo htmlspecialchars($usuario['nombre']); ?>">
+                                    <?php echo htmlspecialchars($usuario['id_usuario']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="nombre_usuario">Nombre del Usuario:</label>
+                        <input type="text" id="nombre_usuario" name="nombre_usuario" class="form-control" readonly>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="monto">Monto Solicitado:</label>
+                        <input type="number" id="monto" name="monto" class="form-control" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="cuotas">Cantidad de Cuotas:</label>
+                        <input type="number" id="cuotas" name="cuotas" class="form-control" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="valorCuotas">Valor de cada Cuota:</label>
+                        <span id="valorCuotas" class="form-control"></span>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Enviar Solicitud</button>
+                    <input type="hidden" name="nit_empresa" value="<?php echo htmlspecialchars($nit_empresa); ?>">
+                </form>
             </div>
-
-            <div class="mb-3">
-                <label for="estado" class="form-label">Estado:</label>
-                <select class="form-control" name="id_estado">
-                    <option value="">Seleccione el Estado</option>
-                    <?php
-                    $control = $con->prepare("SELECT * FROM estado");
-                    $control->execute();
-                    while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
-                        echo "<option value='" . $fila['id_estado'] . "'>" . $fila['estado'] . "</option>";
-                    }
-                    ?>
-                </select>
-            </div>
-
-            <div class="mb-3">
-                <label for="monto_solicitado" class="form-label">Monto Solicitado:</label>
-                <input type="number" class="form-control" name="monto_solicitado" oninput="calcular()">
-            </div>
-
-            <div class="mb-3">
-                <label for="valor_cuotas" class="form-label">Valor Cuotas:</label>
-                <input type="number" class="form-control" name="valor_cuotas" readonly>
-            </div>
-
-            <div class="mb-3">
-                <label for="cant_cuotas" class="form-label">Cantidad Cuotas:</label>
-                <input type="number" class="form-control" name="cant_cuotas" oninput="calcular()">
-            </div>
-
-            <div class="mb-3">
-                <label for="mes" class="form-label">Mes:</label>
-                <input type="date" class="form-control" name="mes">
-            </div>
-
-            <div class="mb-3">
-                <label for="anio" class="form-label">Año:</label>
-                <input type="date" class="form-control" name="anio">
-            </div>
-
-            <input type="submit" class="btn btn-primary" name="validar" value="Registrar">
-            <input type="hidden" name="MM_insert" value="formreg">
-        </form>
-
-        <div class="col-8 p-4">
+        </div>
+        <div class="col-md-8 p-4">
             <table class="table">
                 <thead class="bg-info">
                     <tr>
-                        <th scope="col">Documento</th>
-                        <th scope="col">Nombre</th>
+                        <th scope="col">ID Usuario</th>
+                        <th scope="col">Nombre Usuario</th>
                         <th scope="col">Monto Solicitado</th>
-                        <th scope="col">Estado</th>
-                        <th scope="col">Valor Cuotas</th>
-                        <th scope="col">Cantidad Cuotas</th>
+                        <th scope="col">Cantidad de Cuotas</th>
+                        <th scope="col">Valor de Cuotas</th>
                         <th scope="col">Mes</th>
                         <th scope="col">Año</th>
+                        <th scope="col">Estado</th>
                         <th scope="col">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                <?php
-                $consulta = "SELECT sp.id_usuario, u.nombre, sp.monto_solicitado, e.estado, sp.valor_cuotas, sp.cant_cuotas, sp.mes, sp.anio 
-				FROM solic_prestamo sp 
-				JOIN usuario u ON sp.id_usuario = u.id_usuario 
-				JOIN estado e ON sp.id_estado = e.id_estado";
-                $resultado = $con->query($consulta);
-
-                while ($fila = $resultado->fetch()) {
-                ?>
-                    <tr>
-                        <td><?php echo $fila["id_usuario"]; ?></td>
-                        <td><?php echo $fila["nombre"]; ?></td>
-                        <td><?php echo $fila["monto_solicitado"]; ?></td>
-                        <td><?php echo $fila["estado"]; ?></td>
-                        <td><?php echo $fila["valor_cuotas"]; ?></td>
-                        <td><?php echo $fila["cant_cuotas"]; ?></td>
-                        <td><?php echo $fila["mes"]; ?></td>
-                        <td><?php echo $fila["anio"]; ?></td>
-                        <td>
+                    <?php foreach ($creditos as $credito): ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($credito['id_usuario']); ?></td>
+                            <td><?php echo htmlspecialchars($credito['nombre']); ?></td>
+                            <td><?php echo number_format($credito['monto_solicitado'], 0, ',', '.'); ?></td>
+                            <td><?php echo htmlspecialchars($credito['cant_cuotas']); ?></td>
+                            <td><?php echo number_format($credito['valor_cuotas'], 0, ',', '.'); ?></td>
+                            <td><?php echo htmlspecialchars($credito['mes']); ?></td>
+                            <td><?php echo htmlspecialchars($credito['anio']); ?></td>
+                            <td><?php echo htmlspecialchars($credito['nombre_estado']); ?></td>
+                            <td>
                             <div class="text-center">
                                 <div class="d-flex justify-content-start">
-                                    <a href="edit_rol.php?id_rol=<?php echo $fila["id_prestamo"]; ?>" class="btn btn-primary btn-sm me-2"><i class="fa-solid fa-pen-to-square"></i></a>
-                                    <a href="elim_rol.php?id_rol=<?php echo $fila["id_prestamo"]; ?>" class="btn btn-danger btn-sm"><i class="fa-solid fa-user-xmark"></i></a>
+                                    <a href="update_prestamo.php?id=<?php echo $credito['id_prestamo']; ?>" onclick="window.open('./update/update_prestamo.php?id=<?php echo $credito['id_prestamo']; ?>','','width=500,height=500,toolbar=NO'); return false;"><i class="btn btn-primary">Editar</i></a>
                                 </div>
                             </div>
-                        </td>
-                    </tr>
-                <?php
-                }
-                ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
     </div>
-
-    <script type="text/javascript">
-        function calcular() {
-            var montoSolicitado = parseFloat(document.querySelector("input[name='monto_solicitado']").value) || 0;
-            var cantCuotas = parseFloat(document.querySelector("input[name='cant_cuotas']").value) || 0;
-            
-            if (cantCuotas > 0) {
-                var valorCuotas = montoSolicitado / cantCuotas;
-                document.querySelector("input[name='valor_cuotas']").value = numberWithCommas(valorCuotas.toFixed(2));
-            } else {
-                document.querySelector("input[name='valor_cuotas']").value = '';
-            }
-        }
-
-        function numberWithCommas(x) {
-            return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-        }
+    <script src="js/credito.js"></script>
+    <script>
+        document.getElementById('id_usuario').addEventListener('change', function() {
+            var nombreUsuario = this.options[this.selectedIndex].getAttribute('data-nombre');
+            document.getElementById('nombre_usuario').value = nombreUsuario;
+        });
     </script>
 </body>
-
 </html>
-		

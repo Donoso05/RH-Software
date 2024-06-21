@@ -8,9 +8,11 @@ if (!isset($_SESSION["id_usuario"])) {
     echo '<script>window.location.href = "../login.html";</script>';
     exit();
 }
+
 require_once("../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
+$nit_empresa_session = $_SESSION['nit_empresa']; // Obtener el NIT de la empresa de la sesión
 ?>
 
 <?php
@@ -20,18 +22,20 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
     if ($porcentaje_s == "") {
         echo '<script>alert("EXISTEN DATOS VACIOS");</script>';
         echo '<script>window.location="salud.php"</script>';
-    } elseif (!filter_var($porcentaje_s, FILTER_VALIDATE_INT)) {
-        echo '<script>alert("El campo \'Porcentaje\' debe contener solo números.");</script>';
+    } elseif (!is_numeric($porcentaje_s)) {
+        echo '<script>alert("El campo \'Porcentaje\' debe contener solo números y decimales.");</script>';
         echo '<script>window.location="salud.php"</script>';
     } else {
-        $insertSQL = $con->prepare("INSERT INTO salud(porcentaje_s) VALUES (:porcentaje_s)");
+        $insertSQL = $con->prepare("INSERT INTO salud (porcentaje_s, nit_empresa) VALUES (:porcentaje_s, :nit_empresa)");
         $insertSQL->bindParam(':porcentaje_s', $porcentaje_s);
+        $insertSQL->bindParam(':nit_empresa', $nit_empresa_session);
         $insertSQL->execute();
         echo '<script>alert("Registro exitoso");</script>';
         echo '<script>window.location="salud.php"</script>';
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -45,7 +49,7 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
         function validateForm() {
             const porcentaje_s = document.forms["formreg"]["porcentaje_s"].value.trim();
 
-            if (!/^\d+$/.test(porcentaje_s)) {
+            if (!/^\d*\.?\d+$/.test(porcentaje_s)) {
                 alert("El campo 'Porcentaje' debe contener solo números y no estar vacío.");
                 return false;
             }
@@ -58,7 +62,7 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
             let value = input.value;
 
             if (type === 'numeric') {
-                value = value.replace(/\D/g, ''); // Eliminar todo lo que no sea dígito
+                value = value.replace(/[^0-9.]/g, ''); // Eliminar todo lo que no sea dígito o punto decimal
             }
 
             input.value = value;
@@ -90,26 +94,27 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
                 </thead>
                 <tbody>
                 <?php
-                    // Consulta de datos
-                    $consulta = "SELECT * FROM salud";
-                    $resultado = $con->query($consulta);
+                    // Consulta de datos filtrando por el mismo nit_empresa del usuario en sesión
+                    $consulta = $con->prepare("SELECT * FROM salud WHERE nit_empresa = ?");
+                    $consulta->execute([$nit_empresa_session]);
+                    $resultado = $consulta->fetchAll(PDO::FETCH_ASSOC);
 
-                    while ($fila = $resultado->fetch()) {
-                    ?>
+                    foreach ($resultado as $fila) {
+                ?>
                         <tr>
                             <td><?php echo "Salud"; ?></td> 
-                            <td><?php echo $fila["porcentaje_s"]; ?></td>
+                            <td><?php echo htmlspecialchars($fila["porcentaje_s"], ENT_QUOTES, 'UTF-8'); ?></td>
                             <td>
                                 <div class="text-center">
                                     <div class="d-flex justify-content-start">
-                                    <a href="update_salud.php?id=<?php echo $fila['id_salud']; ?>" onclick="window.open('./update/update_salud.php?id=<?php echo $fila['id_salud']; ?>','','width=500,height=500,toolbar=NO'); return false;"><i class="btn btn-primary">Editar</i></a>
+                                        <a href="update_salud.php?id=<?php echo $fila['id_salud']; ?>" onclick="window.open('./update/update_salud.php?id=<?php echo $fila['id_salud']; ?>','','width=500,height=500,toolbar=NO'); return false;"><i class="btn btn-primary">Editar</i></a>
                                     </div>
                                 </div>
                             </td>
                         </tr>
                 <?php   
-                        }
-                    ?>
+                    }
+                ?>
                 </tbody>
             </table>
         </div>
