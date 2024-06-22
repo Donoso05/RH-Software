@@ -80,7 +80,7 @@ if (isset($_POST["update"])) {
     // Verificar si el usuario que intenta eliminar es el mismo que el usuario en sesión
     if ($id_usuario == $_SESSION["id_usuario"]) {
         echo '<script>alert("No puedes eliminar tu propio registro.");</script>';
-        echo '<script>window.location.href = "../usuarios.html";</script>';
+        echo '<script>window.close();</script>';
         exit();
     }
 

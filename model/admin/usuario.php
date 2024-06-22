@@ -39,8 +39,8 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
     file_put_contents(__DIR__ . '/../bar_code/' . $codigo_barras_filename, $codigo_barras_imagen);
 
     // Validación de id_usuario para que solo tenga entre 6 y 10 dígitos y solo números
-    if (!preg_match('/^\d{6,10}$/', $id_usuario)) {
-        echo '<script>alert("El Número de Documento debe contener entre 6 y 10 dígitos.");</script>';
+    if (!preg_match('/^\d{6,11}$/', $id_usuario)) {
+        echo '<script>alert("El Número de Documento debe contener entre 6 y 11 dígitos.");</script>';
         echo '<script>window.location="usuario.php"</script>';
         exit();
     }
@@ -122,9 +122,9 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
             }
 
             const idUsuario = document.getElementById('id_usuario').value.trim();
-            const idUsuarioRegex = /^\d{6,10}$/;
+            const idUsuarioRegex = /^\d{6,11}$/;
             if (!idUsuarioRegex.test(idUsuario)) {
-                alert('El Número de Documento debe contener entre 6 y 10 dígitos y solo números.');
+                alert('El Número de Documento debe contener entre 6 y 11 dígitos y solo números.');
                 return false;
             }
 
@@ -194,7 +194,7 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
             <h3 class="text-center text-primary">Registrar Usuarios</h3>
             <div class="mb-3">
                 <label for="id_usuario" class="form-label">Numero de Documento</label>
-                <input type="text" class="form-control" name="id_usuario" id="id_usuario" required minlength="6" maxlength="10" onkeypress="soloNumeros(event)" autocomplete="off">
+                <input type="text" class="form-control" name="id_usuario" id="id_usuario" required minlength="6" maxlength="11" onkeypress="soloNumeros(event)" autocomplete="off">
             </div>
             <div class="mb-3">
                 <label for="nombre" class="form-label">Nombre</label>
