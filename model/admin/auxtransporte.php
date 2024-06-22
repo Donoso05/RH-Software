@@ -37,6 +37,7 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Auxilio de Transporte</title>
+    <link rel="stylesheet" href="css/estilos.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/1057b0ffdd.js" crossorigin="anonymous"></script>
     <script>
@@ -70,50 +71,52 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
 <body>
     <?php include("nav.php") ?>
     <div class="container-fluid row">
-        <form class="col-4 p-3" method="post">
-            <h3 class="text-center text-secondary">Auxilio</h3>
+        <form class="col-12 col-md-3 p-3" method="post">
+            <h3 class="text-center text-secondary">Auxilio de Transporte</h3>
             <div class="mb-3">
-                <label for="valor" class="form-label">Auxilio de Transporte:</label>
+                <label for="valor" class="form-label">Valor:</label>
                 <input type="number" class="form-control" id="valor" name="valor" required>
             </div>
             <input type="submit" class="btn btn-primary" name="validar" value="Registrar">
             <input type="hidden" name="MM_insert" value="formreg" required>
         </form>
 
-        <div class="col-8 p-4">
-            <table class="table">
-                <thead class="bg-info">
-                    <tr>
-                        <th scope="col">Auxilio </th>
-                        <th scope="col">Valor</th>
-                        <th scope="col">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                <?php
-                    // Consulta de auxilios filtrando por el mismo nit_empresa del usuario en sesión
-                    $consulta = $con->prepare("SELECT * FROM auxtransporte WHERE nit_empresa = ?");
-                    $consulta->execute([$nit_empresa_session]);
-                    $resultado = $consulta->fetchAll(PDO::FETCH_ASSOC);
-
-                    foreach ($resultado as $fila) {
-                ?>
+        <div class="col-12 col-md-9 p-4">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead class="bg-info">
                         <tr>
-                            <td><?php echo "Auxilio de Transporte"; ?></td> 
-                            <td><?php echo htmlspecialchars($fila["valor"], ENT_QUOTES, 'UTF-8'); ?></td>
-                            <td>
-                                <div class="text-center">
-                                    <div class="d-flex justify-content-start">
-                                        <a href="update_aux.php?id=<?php echo $fila['id_auxtransporte']; ?>" onclick="window.open('./update/update_aux.php?id=<?php echo $fila['id_auxtransporte']; ?>','','width=500,height=500,toolbar=NO'); return false;"><i class="btn btn-primary">Editar</i></a>
-                                    </div>
-                                </div>
-                            </td>
+                            <th scope="col">Auxilio</th>
+                            <th scope="col">Valor</th>
+                            <th scope="col">Acciones</th>
                         </tr>
-                <?php   
-                    }
-                ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                    <?php
+                        // Consulta de auxilios filtrando por el mismo nit_empresa del usuario en sesión
+                        $consulta = $con->prepare("SELECT * FROM auxtransporte WHERE nit_empresa = ?");
+                        $consulta->execute([$nit_empresa_session]);
+                        $resultado = $consulta->fetchAll(PDO::FETCH_ASSOC);
+
+                        foreach ($resultado as $fila) {
+                    ?>
+                            <tr>
+                                <td><?php echo "Auxilio de Transporte"; ?></td> 
+                                <td><?php echo htmlspecialchars($fila["valor"], ENT_QUOTES, 'UTF-8'); ?></td>
+                                <td>
+                                    <div class="text-center">
+                                        <div class="d-flex justify-content-start">
+                                            <a href="update_aux.php?id=<?php echo $fila['id_auxtransporte']; ?>" onclick="window.open('./update/update_aux.php?id=<?php echo $fila['id_auxtransporte']; ?>','','width=500,height=500,toolbar=NO'); return false;" class="btn btn-primary">Editar</a>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                    <?php   
+                        }
+                    ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </body>

@@ -1,0 +1,37 @@
+
+/* Responsive navbar */
+.navbar-brand img {
+    max-width: 100%;
+    height: auto;
+}
+
+.table-responsive {
+    margin-top: 20px;
+}
+
+/* Custom scrollbar styles */
+.table-responsive::-webkit-scrollbar {
+    width: 8px; /* Ancho de la scrollbar */
+    height: 8px; /* Alto de la scrollbar */
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1; /* Color de fondo de la scrollbar */
+    border-radius: 10px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #888; /* Color de la scrollbar */
+    border-radius: 10px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #555; /* Color de la scrollbar al pasar el ratón */
+}
+
+/* Adjust the table on smaller screens */
+@media (max-width: 768px) {
+    .table-responsive {
+        overflow-x: auto;
+    }
+}

@@ -13,7 +13,7 @@
 
 <nav class="navbar navbar-expand-lg bg-dark">
   <div class="container-fluid">
-    <a class="navbar-brand" href="#"><img src="images/rh.png" alt=""></a>
+    <a class="navbar-brand" href="#"><img src="images/rh.png" alt="" class="img-fluid"></a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -26,7 +26,6 @@
           </a>
           <ul class="dropdown-menu" aria-labelledby="navbarDropdownUsuarios">
             <li><a class="dropdown-item" href="usuario.php">Usuarios</a></li>
-            <li><a class="dropdown-item" href="tipos_usuario.php">Roles</a></li>
             <li><a class="dropdown-item" href="tipo_permiso.php">Tipo Permiso</a></li>
             <li><a class="dropdown-item" href="tram_permiso.php">Tram. Permiso</a></li>
             <li><a class="dropdown-item" href="solic_prestamo.php">Solicitud Prestamo</a></li>
@@ -36,10 +35,8 @@
             <li><a class="dropdown-item" href="salud.php">Salud</a></li>
             <li><a class="dropdown-item" href="pension.php">Pension</a></li>
             <li><a class="dropdown-item" href="observaciones.php">Observaciones</a></li>
-           
-            
           </ul>
-        </div>iupo 
+        </div> 
       </div>
       <div class="navbar-nav ms-auto">
         <a class="nav-link" href="../../controller/cerrarcesion.php">Cerrar sesión</a>

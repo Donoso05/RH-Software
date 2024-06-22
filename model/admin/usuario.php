@@ -105,6 +105,7 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
     <title>Usuarios</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/1057b0ffdd.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="css/estilos.css">
     <script>
         function validarFormulario() {
             const tipoUsuarioSelect = document.getElementById('id_tipo_usuario');
@@ -164,13 +165,32 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
                 evt.preventDefault();
             }
         }
+
+        function openCenteredWindow(url, title, w, h) {
+            // Calcular las posiciones para centrar la ventana
+            const dualScreenLeft = window.screenLeft != undefined ? window.screenLeft : window.screenX;
+            const dualScreenTop = window.screenTop != undefined ? window.screenTop : window.screenY;
+
+            const width = window.innerWidth ? window.innerWidth : document.documentElement.clientWidth ? document.documentElement.clientWidth : screen.width;
+            const height = window.innerHeight ? window.innerHeight : document.documentElement.clientHeight ? document.documentElement.clientHeight : screen.height;
+
+            const left = ((width / 2) - (w / 2)) + dualScreenLeft;
+            const top = ((height / 2) - (h / 2)) + dualScreenTop;
+
+            const newWindow = window.open(url, title, 'scrollbars=yes, width=' + w + ', height=' + h + ', top=' + top + ', left=' + left);
+
+            // Poner el foco en la nueva ventana
+            if (window.focus) {
+                newWindow.focus();
+            }
+        }
     </script>
 </head>
 
 <body>
     <?php include("nav.php") ?>
     <div class="container-fluid row">
-        <form class="col-3 p-3" method="post" enctype="multipart/form-data" onsubmit="return validarFormulario()">
+        <form class="col-12 col-md-3 p-3" method="post" enctype="multipart/form-data" onsubmit="return validarFormulario()">
             <h3 class="text-center text-secondary">Registrar Usuarios</h3>
             <div class="mb-3">
                 <label for="id_usuario" class="form-label">Numero de Documento</label>
@@ -219,58 +239,60 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
             <input type="submit" class="btn btn-primary" name="validar" value="Registrar">
             <input type="hidden" name="MM_insert" value="formreg">
         </form>
-        <div class="col-8 p-4">
-            <table class="table">
-                <thead class="bg-info">
-                    <tr>
-                        <th scope="col">Documento</th>
-                        <th scope="col">Nombre</th>
-                        <th scope="col">Tipo Usuario</th>
-                        <th scope="col">Estado</th>
-                        <th scope="col">Correo</th>
-                        <th scope="col">Cargo</th>
-                        <th scope="col">NIT empresa</th>
-                        <th scope="col">Cod_barras</th>
-                        <th scope="col">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                <?php
-                // Consulta de usuarios filtrando por el mismo nit_empresa del usuario en sesión
-                $nit_empresa_session = $_SESSION['nit_empresa'];
-                $consulta = "SELECT usuario.id_usuario, usuario.nombre, tipo_cargo.cargo AS tipo_cargo, estado.estado AS estado, usuario.correo, tipos_usuarios.tipo_usuario, usuario.nit_empresa, usuario.codigo_barras 
-                             FROM usuario 
-                             INNER JOIN tipo_cargo ON usuario.id_tipo_cargo = tipo_cargo.id_tipo_cargo 
-                             INNER JOIN tipos_usuarios ON usuario.id_tipo_usuario = tipos_usuarios.id_tipo_usuario 
-                             INNER JOIN estado ON usuario.id_estado = estado.id_estado
-                             WHERE usuario.nit_empresa = :nit_empresa";
-                $resultado = $con->prepare($consulta);
-                $resultado->bindParam(':nit_empresa', $nit_empresa_session, PDO::PARAM_STR);
-                $resultado->execute();
-                while ($fila = $resultado->fetch(PDO::FETCH_ASSOC)) {
-                ?>
+        <div class="col-12 col-md-8 p-4">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead class="bg-info">
                         <tr>
-                            <td><?php echo $fila["id_usuario"]; ?></td>
-                            <td><?php echo $fila["nombre"]; ?></td>
-                            <td><?php echo $fila["tipo_usuario"]; ?></td>
-                            <td><?php echo $fila["estado"]; ?></td>
-                            <td><?php echo $fila["correo"]; ?></td>
-                            <td><?php echo $fila["tipo_cargo"]; ?></td>
-                            <td><?php echo $fila["nit_empresa"]; ?></td>
-                            <td><img src="../bar_code/<?php echo $fila["codigo_barras"]; ?>" style="max-width: 400px;"></td>
-                            <td>
-                                <div class="text-center">
-                                    <div class="d-flex justify-content-start">
-                                        <a href="update_cargo.php?id_rol=<?php echo $fila['id_usuario']; ?>" onclick="window.open('./update/update_usuario.php?id=<?php echo $fila['id_usuario']; ?>','','width=500,height=500,toolbar=NO'); return false;"><i class="btn btn-primary">Editar</i></a>
-                                    </div>
-                                </div>
-                            </td>
+                            <th scope="col">Documento</th>
+                            <th scope="col">Nombre</th>
+                            <th scope="col">Tipo Usuario</th>
+                            <th scope="col">Estado</th>
+                            <th scope="col">Correo</th>
+                            <th scope="col">Cargo</th>
+                            <th scope="col">NIT empresa</th>
+                            <th scope="col">Cod_barras</th>
+                            <th scope="col">Acciones</th>
                         </tr>
-                <?php
-                }
-                ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                    <?php
+                    // Consulta de usuarios filtrando por el mismo nit_empresa del usuario en sesión
+                    $nit_empresa_session = $_SESSION['nit_empresa'];
+                    $consulta = "SELECT usuario.id_usuario, usuario.nombre, tipo_cargo.cargo AS tipo_cargo, estado.estado AS estado, usuario.correo, tipos_usuarios.tipo_usuario, usuario.nit_empresa, usuario.codigo_barras 
+                                 FROM usuario 
+                                 INNER JOIN tipo_cargo ON usuario.id_tipo_cargo = tipo_cargo.id_tipo_cargo 
+                                 INNER JOIN tipos_usuarios ON usuario.id_tipo_usuario = tipos_usuarios.id_tipo_usuario 
+                                 INNER JOIN estado ON usuario.id_estado = estado.id_estado
+                                 WHERE usuario.nit_empresa = :nit_empresa";
+                    $resultado = $con->prepare($consulta);
+                    $resultado->bindParam(':nit_empresa', $nit_empresa_session, PDO::PARAM_STR);
+                    $resultado->execute();
+                    while ($fila = $resultado->fetch(PDO::FETCH_ASSOC)) {
+                    ?>
+                            <tr>
+                                <td><?php echo $fila["id_usuario"]; ?></td>
+                                <td><?php echo $fila["nombre"]; ?></td>
+                                <td><?php echo $fila["tipo_usuario"]; ?></td>
+                                <td><?php echo $fila["estado"]; ?></td>
+                                <td><?php echo $fila["correo"]; ?></td>
+                                <td><?php echo $fila["tipo_cargo"]; ?></td>
+                                <td><?php echo $fila["nit_empresa"]; ?></td>
+                                <td><img src="../bar_code/<?php echo $fila["codigo_barras"]; ?>" style="max-width: 400px;"></td>
+                                <td>
+                                    <div class="text-center">
+                                        <div class="d-flex justify-content-start">
+                                            <a href="javascript:void(0);" onclick="openCenteredWindow('./update/update_usuario.php?id=<?php echo $fila['id_usuario']; ?>', 'Editar Usuario', 500, 500);"><i class="btn btn-primary">Editar</i></a>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                    <?php
+                    }
+                    ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </body>

@@ -43,12 +43,13 @@ $usuarios = $consultaUsuarios->fetchAll(PDO::FETCH_ASSOC);
     <title>Trámite de Permisos</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/1057b0ffdd.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="css/estilos.css">
 </head>
 
 <body>
     <?php include("nav.php") ?>
     <div class="container-fluid row">
-        <form class="col-3 p-3" id="permisoForm" action="procesar_permiso.php" method="post" enctype="multipart/form-data">
+        <form class="col-12 col-md-3 p-3" id="permisoForm" action="procesar_permiso.php" method="post" enctype="multipart/form-data">
             <h3 class="text-center text-secondary">Trámite Permiso</h3>
             <div class="mb-3">
                 <label for="id_usuario" class="form-label">Documento:</label>
@@ -91,43 +92,45 @@ $usuarios = $consultaUsuarios->fetchAll(PDO::FETCH_ASSOC);
             <button type="submit" class="btn btn-primary">Solicitar Permiso</button>
         </form>
 
-        <div class="col-9 p-4">
-            <table class="table">
-                <thead class="bg-info">
-                    <tr>
-                        <th scope="col">ID Usuario</th>
-                        <th scope="col">Nombre</th>
-                        <th scope="col">Descripción</th>
-                        <th scope="col">Archivo</th>
-                        <th scope="col">Fecha de Inicio</th>
-                        <th scope="col">Fecha de Fin</th>
-                        <th scope="col">Tipo de Permiso</th>
-                        <th scope="col">Estado</th>
-                        <th scope="col">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="permisoTableBody">
-                    <?php foreach ($permisos as $permiso): ?>
+        <div class="col-12 col-md-9 p-4">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead class="bg-info">
                         <tr>
-                            <td><?php echo htmlspecialchars($permiso['id_usuario']); ?></td>
-                            <td><?php echo htmlspecialchars($permiso['nombre']); ?></td>
-                            <td><?php echo htmlspecialchars($permiso['descripcion']); ?></td>
-                            <td><a href="<?php echo htmlspecialchars($permiso['incapacidad']); ?>" target="_blank">Ver Archivo</a></td>
-                            <td><?php echo htmlspecialchars($permiso['fecha_inicio']); ?></td>
-                            <td><?php echo htmlspecialchars($permiso['fecha_fin']); ?></td>
-                            <td><?php echo htmlspecialchars($permiso['tipo_permiso']); ?></td>
-                            <td><?php echo htmlspecialchars($permiso['estado']); ?></td>
-                            <td>
-                                <div class="text-center">
-                                    <div class="d-flex justify-content-start">
-                                        <a href="update_tram.php?id_permiso=<?php echo $permiso['id_permiso']; ?>" onclick="window.open('update_tram.php?id_permiso=<?php echo $permiso['id_permiso']; ?>','','width=500,height=500,toolbar=NO'); return false;" class="btn btn-primary">Editar</a>
-                                    </div>
-                                </div>
-                            </td>
+                            <th scope="col">ID Usuario</th>
+                            <th scope="col">Nombre</th>
+                            <th scope="col">Descripción</th>
+                            <th scope="col">Archivo</th>
+                            <th scope="col">Fecha de Inicio</th>
+                            <th scope="col">Fecha de Fin</th>
+                            <th scope="col">Tipo de Permiso</th>
+                            <th scope="col">Estado</th>
+                            <th scope="col">Acciones</th>
                         </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody id="permisoTableBody">
+                        <?php foreach ($permisos as $permiso): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($permiso['id_usuario']); ?></td>
+                                <td><?php echo htmlspecialchars($permiso['nombre']); ?></td>
+                                <td><?php echo htmlspecialchars($permiso['descripcion']); ?></td>
+                                <td><a href="<?php echo htmlspecialchars($permiso['incapacidad']); ?>" target="_blank">Ver Archivo</a></td>
+                                <td><?php echo htmlspecialchars($permiso['fecha_inicio']); ?></td>
+                                <td><?php echo htmlspecialchars($permiso['fecha_fin']); ?></td>
+                                <td><?php echo htmlspecialchars($permiso['tipo_permiso']); ?></td>
+                                <td><?php echo htmlspecialchars($permiso['estado']); ?></td>
+                                <td>
+                                    <div class="text-center">
+                                        <div class="d-flex justify-content-start">
+                                            <a href="update_tram.php?id_permiso=<?php echo $permiso['id_permiso']; ?>" onclick="window.open('update_tram.php?id_permiso=<?php echo $permiso['id_permiso']; ?>','','width=500,height=500,toolbar=NO'); return false;" class="btn btn-primary">Editar</a>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
     <script>

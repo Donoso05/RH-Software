@@ -47,18 +47,19 @@ $usuarios = $stmtUsuarios->fetchAll(PDO::FETCH_ASSOC);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solicitud de Préstamo</title>
     <link rel="stylesheet" href="css/presta.css">
+    <link rel="stylesheet" href="css/estilos.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/1057b0ffdd.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <?php include("nav.php") ?>
     <div class="container-fluid row">
-        <div class="col-md-4 p-3">
+        <div class="col-12 col-md-3 p-3">
             <div class="form-container">
-                <h2>Solicitud de Préstamo</h2>
+                <h3 class="text-center text-secondary">Solicitud de Préstamo</h3>
                 <form id="creditoForm" method="post" action="procesar_credito.php">
                     <div class="form-group mb-3">
-                        <label for="id_usuario">Documento:</label>
+                        <label for="id_usuario" class="form-label">Documento:</label>
                         <select id="id_usuario" name="id_usuario" class="form-control" required>
                             <option value="">Seleccione un usuario</option>
                             <?php foreach ($usuarios as $usuario): ?>
@@ -69,19 +70,19 @@ $usuarios = $stmtUsuarios->fetchAll(PDO::FETCH_ASSOC);
                         </select>
                     </div>
                     <div class="form-group mb-3">
-                        <label for="nombre_usuario">Nombre del Usuario:</label>
+                        <label for="nombre_usuario" class="form-label">Nombre del Usuario:</label>
                         <input type="text" id="nombre_usuario" name="nombre_usuario" class="form-control" readonly>
                     </div>
                     <div class="form-group mb-3">
-                        <label for="monto">Monto Solicitado:</label>
+                        <label for="monto" class="form-label">Monto Solicitado:</label>
                         <input type="number" id="monto" name="monto" class="form-control" required>
                     </div>
                     <div class="form-group mb-3">
-                        <label for="cuotas">Cantidad de Cuotas:</label>
+                        <label for="cuotas" class="form-label">Cantidad de Cuotas:</label>
                         <input type="number" id="cuotas" name="cuotas" class="form-control" required>
                     </div>
                     <div class="form-group mb-3">
-                        <label for="valorCuotas">Valor de cada Cuota:</label>
+                        <label for="valorCuotas" class="form-label">Valor de cada Cuota:</label>
                         <span id="valorCuotas" class="form-control"></span>
                     </div>
                     <button type="submit" class="btn btn-primary">Enviar Solicitud</button>
@@ -89,43 +90,45 @@ $usuarios = $stmtUsuarios->fetchAll(PDO::FETCH_ASSOC);
                 </form>
             </div>
         </div>
-        <div class="col-md-8 p-4">
-            <table class="table">
-                <thead class="bg-info">
-                    <tr>
-                        <th scope="col">ID Usuario</th>
-                        <th scope="col">Nombre Usuario</th>
-                        <th scope="col">Monto Solicitado</th>
-                        <th scope="col">Cantidad de Cuotas</th>
-                        <th scope="col">Valor de Cuotas</th>
-                        <th scope="col">Mes</th>
-                        <th scope="col">Año</th>
-                        <th scope="col">Estado</th>
-                        <th scope="col">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($creditos as $credito): ?>
+        <div class="col-12 col-md-9 p-4">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead class="bg-info">
                         <tr>
-                            <td><?php echo htmlspecialchars($credito['id_usuario']); ?></td>
-                            <td><?php echo htmlspecialchars($credito['nombre']); ?></td>
-                            <td><?php echo number_format($credito['monto_solicitado'], 0, ',', '.'); ?></td>
-                            <td><?php echo htmlspecialchars($credito['cant_cuotas']); ?></td>
-                            <td><?php echo number_format($credito['valor_cuotas'], 0, ',', '.'); ?></td>
-                            <td><?php echo htmlspecialchars($credito['mes']); ?></td>
-                            <td><?php echo htmlspecialchars($credito['anio']); ?></td>
-                            <td><?php echo htmlspecialchars($credito['nombre_estado']); ?></td>
-                            <td>
-                            <div class="text-center">
-                                <div class="d-flex justify-content-start">
-                                    <a href="update_prestamo.php?id=<?php echo $credito['id_prestamo']; ?>" onclick="window.open('./update/update_prestamo.php?id=<?php echo $credito['id_prestamo']; ?>','','width=500,height=500,toolbar=NO'); return false;"><i class="btn btn-primary">Editar</i></a>
-                                </div>
-                            </div>
-                            </td>
+                            <th scope="col">ID Usuario</th>
+                            <th scope="col">Nombre Usuario</th>
+                            <th scope="col">Monto Solicitado</th>
+                            <th scope="col">Cantidad de Cuotas</th>
+                            <th scope="col">Valor de Cuotas</th>
+                            <th scope="col">Mes</th>
+                            <th scope="col">Año</th>
+                            <th scope="col">Estado</th>
+                            <th scope="col">Acciones</th>
                         </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($creditos as $credito): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($credito['id_usuario']); ?></td>
+                                <td><?php echo htmlspecialchars($credito['nombre']); ?></td>
+                                <td><?php echo number_format($credito['monto_solicitado'], 0, ',', '.'); ?></td>
+                                <td><?php echo htmlspecialchars($credito['cant_cuotas']); ?></td>
+                                <td><?php echo number_format($credito['valor_cuotas'], 0, ',', '.'); ?></td>
+                                <td><?php echo htmlspecialchars($credito['mes']); ?></td>
+                                <td><?php echo htmlspecialchars($credito['anio']); ?></td>
+                                <td><?php echo htmlspecialchars($credito['nombre_estado']); ?></td>
+                                <td>
+                                    <div class="text-center">
+                                        <div class="d-flex justify-content-start">
+                                            <a href="update_prestamo.php?id=<?php echo $credito['id_prestamo']; ?>" onclick="window.open('./update/update_prestamo.php?id=<?php echo $credito['id_prestamo']; ?>','','width=500,height=500,toolbar=NO'); return false;" class="btn btn-primary">Editar</a>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
     <script src="js/credito.js"></script>
