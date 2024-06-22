@@ -23,5 +23,5 @@ if ($stmt->execute()) {
     echo "Estado actualizado exitosamente.";
 } else {
     echo "Error al actualizar el estado.";
-}
+}   
 ?>
