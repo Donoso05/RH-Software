@@ -23,8 +23,8 @@ if (!$usua) {
     exit();
 }
 
-// Cargar opciones de cargos excluyendo el id_tipo_cargo = 1
-$cargos_sql = $con->prepare("SELECT * FROM tipo_cargo WHERE id_tipo_cargo > 1");
+// Cargar opciones de cargos
+$cargos_sql = $con->prepare("SELECT * FROM tipo_cargo");
 $cargos_sql->execute();
 $cargos = $cargos_sql->fetchAll(PDO::FETCH_ASSOC);
 
@@ -37,6 +37,9 @@ $estados = $estados_sql->fetchAll(PDO::FETCH_ASSOC);
 $tipos_usuarios_sql = $con->prepare("SELECT * FROM tipos_usuarios WHERE id_tipo_usuario > 1");
 $tipos_usuarios_sql->execute();
 $tipos_usuarios = $tipos_usuarios_sql->fetchAll(PDO::FETCH_ASSOC);
+
+// Verificar si el usuario de la sesión es un administrador
+$isAdmin = $_SESSION['id_tipo_usuario'] == 1;
 
 if (isset($_POST["update"])) {
     $nombre = trim($_POST['nombre']);
@@ -113,7 +116,7 @@ if (isset($_POST["update"])) {
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7HUIbX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
 
     <!-- Los iconos tipo Solid de Fontawesome-->
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.8/css/solid.css">
@@ -147,17 +150,36 @@ if (isset($_POST["update"])) {
                         </div>
                     </div>
                     <div class="form-group row">
+                        <label class="col-lg-3 col-form-label form-control-label">Tipo Usuario</label>
+                        <div class="col-lg-9">
+                            <select class="form-control" name="id_tipo_usuario" id="id_tipo_usuario" required onchange="actualizarTipoCargo()">
+                                <?php if ($isAdmin && $usua['id_tipo_usuario'] == 1): ?>
+                                    <option value="1" selected>Administrador</option>
+                                <?php else: ?>
+                                    <?php foreach ($tipos_usuarios as $tipo_usuario): ?>
+                                        <?php if (in_array($tipo_usuario['id_tipo_usuario'], [2, 3])): ?>
+                                            <option value="<?php echo $tipo_usuario['id_tipo_usuario'] ?>" <?php echo ($tipo_usuario['id_tipo_usuario'] == $usua['id_tipo_usuario']) ? 'selected' : ''; ?>>
+                                                <?php echo $tipo_usuario['tipo_usuario'] ?>
+                                            </option>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group row">
                         <label class="col-lg-3 col-form-label form-control-label">Cargo</label>
                         <div class="col-lg-9">
                             <select class="form-control" name="id_tipo_cargo" id="id_tipo_cargo" required>
-                                <?php if ($usua['id_tipo_cargo'] == 1): ?>
+                                <?php if ($isAdmin && $usua['id_tipo_cargo'] == 1): ?>
                                     <option value="1" selected>Administrador</option>
+                                <?php else: ?>
+                                    <?php foreach ($cargos as $cargo): ?>
+                                        <option value="<?php echo $cargo['id_tipo_cargo'] ?>" <?php echo ($cargo['id_tipo_cargo'] == $usua['id_tipo_cargo']) ? 'selected' : ''; ?>>
+                                            <?php echo $cargo['cargo'] ?>
+                                        </option>
+                                    <?php endforeach; ?>
                                 <?php endif; ?>
-                                <?php foreach ($cargos as $cargo): ?>
-                                    <option value="<?php echo $cargo['id_tipo_cargo'] ?>" <?php echo ($cargo['id_tipo_cargo'] == $usua['id_tipo_cargo']) ? 'selected' : ''; ?>>
-                                        <?php echo $cargo['cargo'] ?>
-                                    </option>
-                                <?php endforeach; ?>
                             </select>
                         </div>
                     </div>
@@ -177,21 +199,6 @@ if (isset($_POST["update"])) {
                         <label class="col-lg-3 col-form-label form-control-label">Correo</label>
                         <div class="col-lg-9">
                             <input class="form-control" name="correo" value="<?php echo $usua['correo'] ?>" required>
-                        </div>
-                    </div>
-                    <div class="form-group row">
-                        <label class="col-lg-3 col-form-label form-control-label">Tipo Usuario</label>
-                        <div class="col-lg-9">
-                            <select class="form-control" name="id_tipo_usuario" id="id_tipo_usuario" required>
-                                <?php if ($usua['id_tipo_usuario'] == 1): ?>
-                                    <option value="1" selected>Administrador</option>
-                                <?php endif; ?>
-                                <?php foreach ($tipos_usuarios as $tipo_usuario): ?>
-                                    <option value="<?php echo $tipo_usuario['id_tipo_usuario'] ?>" <?php echo ($tipo_usuario['id_tipo_usuario'] == $usua['id_tipo_usuario']) ? 'selected' : ''; ?>>
-                                        <?php echo $tipo_usuario['tipo_usuario'] ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
                         </div>
                     </div>
                     <div class="form-group row">
@@ -228,6 +235,43 @@ if (isset($_POST["update"])) {
         function confirmarEliminacion() {
             return confirm("¿Estás seguro de que deseas eliminar este usuario?");
         }
+
+        function actualizarTipoCargo() {
+            const tipoUsuario = document.querySelector('select[name="id_tipo_usuario"]').value;
+            const tipoCargo = document.querySelector('select[name="id_tipo_cargo"]');
+            const cargos = <?php echo json_encode($cargos); ?>;
+
+            tipoCargo.innerHTML = ''; // Limpiar las opciones actuales
+
+            let opcionesFiltradas = [];
+            if (tipoUsuario == 2) {
+                // Solo mostrar id_tipo_cargo 4
+                opcionesFiltradas = cargos.filter(cargo => cargo.id_tipo_cargo == 4);
+            } else if (tipoUsuario == 3) {
+                // Excluir id_tipo_cargo 1 y 4
+                opcionesFiltradas = cargos.filter(cargo => cargo.id_tipo_cargo != 1 && cargo.id_tipo_cargo != 4);
+            } else if (tipoUsuario == 1) {
+                // Solo mostrar id_tipo_cargo 1 para Administradores
+                opcionesFiltradas = cargos.filter(cargo => cargo.id_tipo_cargo == 1);
+            }
+
+            opcionesFiltradas.forEach(cargo => {
+                const option = document.createElement('option');
+                option.value = cargo.id_tipo_cargo;
+                option.textContent = cargo.cargo;
+                tipoCargo.appendChild(option);
+            });
+
+            // Seleccionar el id_tipo_cargo actual si está en las opciones filtradas
+            if (opcionesFiltradas.some(cargo => cargo.id_tipo_cargo == <?php echo $usua['id_tipo_cargo']; ?>)) {
+                tipoCargo.value = <?php echo $usua['id_tipo_cargo']; ?>;
+            }
+        }
+
+        // Ejecutar al cargar para ajustar los selects según sea necesario
+        document.addEventListener('DOMContentLoaded', function () {
+            actualizarTipoCargo();
+        });
     </script>
 </body>
 
