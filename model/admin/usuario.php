@@ -38,9 +38,9 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
     $codigo_barras_filename = uniqid() . '.png';
     file_put_contents(__DIR__ . '/../bar_code/' . $codigo_barras_filename, $codigo_barras_imagen);
 
-    // Validación de id_usuario para que solo tenga entre 9 y 11 dígitos y solo números
-    if (!preg_match('/^\d{6,11}$/', $id_usuario)) {
-        echo '<script>alert("El Número de Documento debe contener entre 6 y 11 dígitos.");</script>';
+    // Validación de id_usuario para que solo tenga entre 6 y 10 dígitos y solo números
+    if (!preg_match('/^\d{6,10}$/', $id_usuario)) {
+        echo '<script>alert("El Número de Documento debe contener entre 6 y 10 dígitos.");</script>';
         echo '<script>window.location="usuario.php"</script>';
         exit();
     }
@@ -105,32 +105,99 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
     <title>Usuarios</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/1057b0ffdd.js" crossorigin="anonymous"></script>
+    <script>
+        function validarFormulario() {
+            const tipoUsuarioSelect = document.getElementById('id_tipo_usuario');
+            const tipoCargoSelect = document.getElementById('id_tipo_cargo');
+
+            if (tipoUsuarioSelect.value == '2' && tipoCargoSelect.value != '4') {
+                alert('Si selecciona Tipo Usuario 2, debe seleccionar Tipo Cargo 4.');
+                return false;
+            }
+
+            if (tipoUsuarioSelect.value == '3' && !['2', '3', '7'].includes(tipoCargoSelect.value)) {
+                alert('Si selecciona Tipo Usuario 3, debe seleccionar Tipo Cargo 2, 3 o 7.');
+                return false;
+            }
+
+            const idUsuario = document.getElementById('id_usuario').value.trim();
+            const idUsuarioRegex = /^\d{6,10}$/;
+            if (!idUsuarioRegex.test(idUsuario)) {
+                alert('El Número de Documento debe contener entre 6 y 10 dígitos y solo números.');
+                return false;
+            }
+
+            const nombre = document.querySelector('input[name="nombre"]').value.trim();
+            const nombreRegex = /^[a-zA-Z\s]+$/;
+            if (!nombre || !nombreRegex.test(nombre) || !/[a-zA-Z]/.test(nombre)) {
+                alert('El Nombre solo puede contener letras, no puede estar compuesto solo por espacios.');
+                return false;
+            }
+
+            return true;
+        }
+
+        function actualizarTipoCargo() {
+            const tipoUsuarioSelect = document.getElementById('id_tipo_usuario');
+            const tipoCargoSelect = document.getElementById('id_tipo_cargo');
+
+            // Resetear las opciones del select de tipo cargo
+            tipoCargoSelect.innerHTML = '';
+
+            fetch('obtener_cargos.php?tipo_usuario=' + tipoUsuarioSelect.value)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        data.forEach(cargo => {
+                            tipoCargoSelect.innerHTML += `<option value="${cargo.id_tipo_cargo}">${cargo.cargo}</option>`;
+                        });
+                        tipoCargoSelect.value = data[0].id_tipo_cargo; // Seleccionar la primera opción por defecto
+                    } else {
+                        tipoCargoSelect.innerHTML = '<option value="">No hay cargos disponibles</option>';
+                    }
+                });
+        }
+
+        function soloNumeros(evt) {
+            const charCode = (evt.which) ? evt.which : evt.keyCode;
+            if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+                evt.preventDefault();
+            }
+        }
+    </script>
 </head>
 
 <body>
     <?php include("nav.php") ?>
     <div class="container-fluid row">
-        <form class="col-4 p-3" method="post" enctype="multipart/form-data" onsubmit="return validarFormulario()">
+        <form class="col-3 p-3" method="post" enctype="multipart/form-data" onsubmit="return validarFormulario()">
             <h3 class="text-center text-secondary">Registrar Usuarios</h3>
             <div class="mb-3">
                 <label for="id_usuario" class="form-label">Numero de Documento</label>
-                <input type="text" class="form-control" name="id_usuario" id="id_usuario" required pattern="\d{6,11}" minlength="6" maxlength="11" title="El numero de documento debe contener entre 6 y 11 dígitos" autocomplete="off">
+                <input type="text" class="form-control" name="id_usuario" id="id_usuario" required minlength="6" maxlength="10" onkeypress="soloNumeros(event)" autocomplete="off">
             </div>
             <div class="mb-3">
                 <label for="nombre" class="form-label">Nombre</label>
                 <input type="text" class="form-control" name="nombre" id="nombre" required pattern="[a-zA-Z\s]+" title="Solo se permiten letras" autocomplete="off">
             </div>
             <div class="mb-3">
-                <label for="cargo" class="form-label">Tipo Cargo</label>
-                <select class="form-control" name="id_tipo_cargo" required autocomplete="off">
-                    <option value="">Selecciona el Tipo de Cargo</option>
+                <label for="id_tipo_usuario" class="form-label">Tipo Usuario</label>
+                <select class="form-control" name="id_tipo_usuario" id="id_tipo_usuario" onchange="actualizarTipoCargo()" required autocomplete="off">
+                    <option value="">Selecciona el Tipo Usuario</option>
                     <?php
-                    $control = $con->prepare("SELECT * FROM tipo_cargo WHERE id_tipo_cargo >= 2");
+                    // Solo mostrar tipos de usuario con id 2 y 3
+                    $control = $con->prepare("SELECT * FROM tipos_usuarios WHERE id_tipo_usuario IN (2, 3)");
                     $control->execute();
                     while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
-                        echo "<option value='" . $fila['id_tipo_cargo'] . "'>" . $fila['cargo'] . "</option>";
+                        echo "<option value='" . $fila['id_tipo_usuario'] . "'>" . $fila['tipo_usuario'] . "</option>";
                     }
                     ?>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label for="id_tipo_cargo" class="form-label">Tipo Cargo</label>
+                <select class="form-control" name="id_tipo_cargo" id="id_tipo_cargo" required autocomplete="off">
+                    <option value="">Selecciona el Tipo de Cargo</option>
                 </select>
             </div>
             <div class="mb-3">
@@ -148,20 +215,6 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
             <div class="mb-3">
                 <label for="correo" class="form-label">Correo</label>
                 <input type="email" class="form-control" name="correo" id="exampleInputEmail1" required autocomplete="off">
-            </div>
-            <div class="mb-3">
-                <label for="tipo_suario" class="form-label">Tipo Usuario</label>
-                <select class="form-control" name="id_tipo_usuario" required autocomplete="off">
-                    <option value="">Selecciona el Tipo Usuario</option>
-                    <?php
-                    // Solo mostrar tipos de usuario con id 2 y 3
-                    $control = $con->prepare("SELECT * FROM tipos_usuarios WHERE id_tipo_usuario IN (2, 3)");
-                    $control->execute();
-                    while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
-                        echo "<option value='" . $fila['id_tipo_usuario'] . "'>" . $fila['tipo_usuario'] . "</option>";
-                    }
-                    ?>
-                </select>
             </div>
             <input type="submit" class="btn btn-primary" name="validar" value="Registrar">
             <input type="hidden" name="MM_insert" value="formreg">
@@ -220,18 +273,5 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
             </table>
         </div>
     </div>
-    <script>
-    function validarFormulario() {
-        const nombre = document.querySelector('input[name="nombre"]').value.trim();
-        const nombreRegex = /^[a-zA-Z\s]+$/;
-
-        if (!nombre || !nombreRegex.test(nombre) || !/[a-zA-Z]/.test(nombre)) {
-            alert('El Nombre solo puede contener letras, no puede estar compuesto solo por espacios.');
-            return false;
-        }
-
-        return true;
-    }
-    </script>
 </body>
 </html>

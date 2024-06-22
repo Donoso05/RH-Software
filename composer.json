@@ -1,13 +1,14 @@
 {
-    "name": "vendor/creacion_barcode",
+    "name": "usuario/rh-software",
     "autoload": {
         "psr-4": {
-            "Vendor\\CreacionBarcode\\": "src/"
+            "Usuario\\RhSoftware\\": "src/"
         }
     },
     "authors": [
         {
-            "name": "kenner rojas"
+            "name": "Andrea Silva",
+            "email": "andreasilva23433@gmail.com"
         }
     ],
     "require": {

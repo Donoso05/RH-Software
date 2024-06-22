@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "3ae414d0037fe74dc21d9c48542faa87",
+    "content-hash": "1244a187563bd01c7dd94324deafcef2",
     "packages": [
         {
             "name": "picqer/php-barcode-generator",
