@@ -13,7 +13,7 @@ $db = new Database();
 $con = $db->conectar();
 date_default_timezone_set('America/Bogota');  // Establece la zona horaria a Bogotá
 
-$id_usuario = isset($_GET['id_usuario']) ? (int)$_GET['id_usuario'] : 0;
+$id_usuario = isset($_GET['id_usuario']) ? (int)$_GET['id_usuario'] : $_SESSION["id_usuario"];
 $nit_empresa = $_SESSION["nit_empresa"]; // Obtener el nit_empresa de la sesión
 
 // Función para vaciar la tabla 'nomina' al inicio del mes
@@ -22,18 +22,11 @@ function vaciarTablaNominaAlInicioDelMes($con)
     $current_date = date('Y-m-d');
     $first_day_of_month = date('Y-m-01'); // Obtener el primer día del mes
 
-    echo '<script>console.log("Fecha actual: ' . $current_date . '");</script>';
-    echo '<script>console.log("Primer día del mes: ' . $first_day_of_month . '");</script>';
-
     // Verificar si es el primer día del mes
     if ($current_date === $first_day_of_month) {
-        echo '<script>console.log("Vaciando tabla nomina...");</script>';
-
         // Vaciar la tabla 'nomina'
         $sql_empty_nomina = "TRUNCATE TABLE nomina";
         $con->exec($sql_empty_nomina);
-    } else {
-        echo '<script>console.log("No es el primer día del mes.");</script>';
     }
 }
 
@@ -49,6 +42,10 @@ $stmt_get_details = $con->prepare($sql_get_details);
 $stmt_get_details->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
 $stmt_get_details->execute();
 $user_details = $stmt_get_details->fetch(PDO::FETCH_ASSOC);
+
+if (!$user_details) {
+    die("Error al obtener los detalles del usuario.");
+}
 
 $id_arl = $user_details['id_arl'];
 $salario_base = $user_details['salario_base'];
@@ -102,12 +99,8 @@ function actualizarEstadoAPagado($con)
     $current_date = date('Y-m-d');
     $last_day_of_month = date('Y-m-t'); // Obtener el último día del mes
 
-    echo '<script>console.log("Fecha actual: ' . $current_date . '");</script>';
-    echo '<script>console.log("Último día del mes: ' . $last_day_of_month . '");</script>';
-
     // Verificar si es el último día del mes
     if ($current_date === $last_day_of_month) {
-        echo '<script>console.log("Actualizando estado a pagado...");</script>';
         $current_mes = date('m');
         $current_anio = date('Y');
 
@@ -119,8 +112,6 @@ function actualizarEstadoAPagado($con)
         $stmt_update_estado_nomina->bindParam(':mes', $current_mes, PDO::PARAM_INT);
         $stmt_update_estado_nomina->bindParam(':anio', $current_anio, PDO::PARAM_INT);
         $stmt_update_estado_nomina->execute();
-    } else {
-        echo '<script>console.log("No es el último día del mes.");</script>';
     }
 }
 
@@ -396,8 +387,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             document.getElementById('valor_neto').textContent = salarioNeto.toLocaleString('es-CO') + ' COP';
         }
-
-        
     </script>
 
 </head>

@@ -14,8 +14,6 @@ $con = $db->conectar();
 date_default_timezone_set('America/Bogota'); 
 
 function actualizarEstadoAPagado($con) {
-    // Forzar la fecha actual para pruebas
-    //$current_date = '2024-06-30'; // Forzar la fecha actual
     $current_date = date('Y-m-d'); // Usar la fecha real del servidor
     $last_day_of_month = date('Y-m-t'); // Obtener el último día del mes
 
@@ -126,6 +124,9 @@ $nominas = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                 <td><?php echo $nomina["fecha_li"]; ?></td>
                                 <td>
                                     <a href="ver_detalles_nomina_mensual.php?id_nomina=<?php echo $nomina['id_nomina']; ?>" class="btn btn-primary btn-sm">Ver Detalles</a>
+                                    <?php if ($nomina['id_estado'] == 3): ?>
+                                        <a href="liquidar.php?id_usuario=<?php echo $nomina['id_usuario']; ?>" class="btn btn-danger btn-sm">Liquidar</a>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

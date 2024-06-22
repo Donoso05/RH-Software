@@ -1,12 +1,25 @@
-/* En el archivo style.css o dentro de <style> en tu HTML */
+body {
+    background-color: #f8f9fa;
+}
+
+.profile-card {
+    margin-top: 20px;
+    border: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+}
+
 .profile-img-wrapper {
     position: relative;
     display: inline-block;
 }
 
 .profile-img {
-    border: 5px solid #3498db; /* Color vivo para el borde */
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
     border-radius: 50%;
+    border: 5px solid #3498db; /* Color vivo para el borde */
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
 }
 
@@ -26,7 +39,20 @@
     justify-content: center;
 }
 
-/* Estilos para personalizar el input tipo file */
+.profile-container {
+    padding: 2rem;
+    text-align: center;
+    background: linear-gradient(135deg, #3498db 0%, #98a6b6 100%);
+    color: #fff;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    margin-top: 20px;
+}
+
+.profile-info {
+    padding: 2rem;
+}
+
 .file-input-wrapper {
     position: relative;
     overflow: hidden;
@@ -61,8 +87,19 @@
     padding-right: 10px;
 }
 
-/* Estilos para centrar el contenido */
-.profile-container {
-    text-align: center;
-    margin-top: 20px;
+.btn-primary {
+    background-color: #007bff;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.modal-header {
+    border-bottom: none;
+}
+
+.modal-footer {
+    border-top: none;
 }

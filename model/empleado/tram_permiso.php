@@ -77,8 +77,8 @@ $permisos = $consultaPermisos->fetchAll(PDO::FETCH_ASSOC);
 
         <h2>Permisos Solicitados</h2>
 
-        <table>
-            <thead>
+        <table class="table table-striped">
+            <thead class="bg-dark text-white" >
                 <tr>
                     <th>Descripción</th>
                     <th>Archivo</th>

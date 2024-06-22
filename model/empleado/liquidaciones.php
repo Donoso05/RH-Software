@@ -29,12 +29,13 @@ $nominas = $query->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mis Liquidaciones</title>
-    <link rel="stylesheet" href="css/liquidacion.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/estilos.css">
     <style>
         .details {
             display: none;
@@ -46,46 +47,48 @@ $nominas = $query->fetchAll(PDO::FETCH_ASSOC);
 </head>
 <body>
 <?php include("nav.php") ?>
-<div class="container">
-    <h1>Mis Liquidaciones</h1>
-    <table id="liquidacionesTable">
-        <thead>
-            <tr>
-                <th>Mes</th>
-                <th>Monto</th>
-                <th>Acción</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($nominas as $nomina): ?>
-                <tr class="summary">
-                    <td><?php echo htmlspecialchars($nomina['mes']); ?></td>
-                    <td><?php echo htmlspecialchars($nomina['salario_total']); ?></td>
-                    <td><button class="toggle-details">Ver Detalles</button></td>
+<div class="container my-4">
+    <h1 class="text-center">Mis Liquidaciones</h1>
+    <div class="table-responsive">
+        <table class="table table-striped" id="liquidacionesTable">
+            <thead class="bg-dark text-white">
+                <tr>
+                    <th>Mes</th>
+                    <th>Monto</th>
+                    <th>Acción</th>
                 </tr>
-                <tr class="details">
-                    <td colspan="3">
-                        <div>
-                            <p>Año: <?php echo htmlspecialchars($nomina['anio']); ?></p>
-                            <p>Estado: <?php echo htmlspecialchars($nomina['id_estado']); ?></p>
-                            <p>ARL: <?php echo htmlspecialchars($nomina['precio_arl']); ?></p>
-                            <p>Salud: <?php echo htmlspecialchars($nomina['deduccion_salud']); ?></p>
-                            <p>Pensión: <?php echo htmlspecialchars($nomina['deduccion_pension']); ?></p>
-                            <p>Total Deducciones: <?php echo htmlspecialchars($nomina['total_deducciones']); ?></p>
-                            <p>Auxilio Transporte: <?php echo htmlspecialchars($nomina['aux_transporte_valor']); ?></p>
-                            <p>Horas Extras: <?php echo htmlspecialchars($nomina['horas_extras']); ?></p>
-                            <p>Salario Base: <?php echo htmlspecialchars($nomina['salario_base']); ?></p>
-                            <p>Días Trabajados: <?php echo htmlspecialchars($nomina['dias_trabajados']); ?></p>
-                            <p>Valor Horas Extras: <?php echo htmlspecialchars($nomina['valor_horas_extras']); ?></p>
-                            <p>Total Ingresos: <?php echo htmlspecialchars($nomina['total_ingresos']); ?></p>
-                            <p>Valor Neto: <?php echo htmlspecialchars($nomina['valor_neto']); ?></p>
-                            <p>Fecha Liquidación: <?php echo htmlspecialchars($nomina['fecha_li']); ?></p>
-                        </div>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                <?php foreach ($nominas as $nomina): ?>
+                    <tr class="summary">
+                        <td><?php echo htmlspecialchars($nomina['mes']); ?></td>
+                        <td><?php echo htmlspecialchars($nomina['salario_total']); ?></td>
+                        <td><button class="btn btn-primary btn-sm toggle-details">Ver Detalles</button></td>
+                    </tr>
+                    <tr class="details">
+                        <td colspan="3">
+                            <div class="p-3">
+                                <p><strong>Año:</strong> <?php echo htmlspecialchars($nomina['anio']); ?></p>
+                                <p><strong>Estado:</strong> <?php echo htmlspecialchars($nomina['id_estado']); ?></p>
+                                <p><strong>ARL:</strong> <?php echo htmlspecialchars($nomina['precio_arl']); ?></p>
+                                <p><strong>Salud:</strong> <?php echo htmlspecialchars($nomina['deduccion_salud']); ?></p>
+                                <p><strong>Pensión:</strong> <?php echo htmlspecialchars($nomina['deduccion_pension']); ?></p>
+                                <p><strong>Total Deducciones:</strong> <?php echo htmlspecialchars($nomina['total_deducciones']); ?></p>
+                                <p><strong>Auxilio Transporte:</strong> <?php echo htmlspecialchars($nomina['aux_transporte_valor']); ?></p>
+                                <p><strong>Horas Extras:</strong> <?php echo htmlspecialchars($nomina['horas_extras']); ?></p>
+                                <p><strong>Salario Base:</strong> <?php echo htmlspecialchars($nomina['salario_base']); ?></p>
+                                <p><strong>Días Trabajados:</strong> <?php echo htmlspecialchars($nomina['dias_trabajados']); ?></p>
+                                <p><strong>Valor Horas Extras:</strong> <?php echo htmlspecialchars($nomina['valor_horas_extras']); ?></p>
+                                <p><strong>Total Ingresos:</strong> <?php echo htmlspecialchars($nomina['total_ingresos']); ?></p>
+                                <p><strong>Valor Neto:</strong> <?php echo htmlspecialchars($nomina['valor_neto']); ?></p>
+                                <p><strong>Fecha Liquidación:</strong> <?php echo htmlspecialchars($nomina['fecha_li']); ?></p>
+                            </div>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
 </div>
 <script>
     document.querySelectorAll('.toggle-details').forEach(button => {
@@ -101,5 +104,6 @@ $nominas = $query->fetchAll(PDO::FETCH_ASSOC);
         });
     });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
 </body>
 </html>
