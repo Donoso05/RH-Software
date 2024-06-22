@@ -191,7 +191,7 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
     <?php include("nav.php") ?>
     <div class="container-fluid row">
         <form class="col-12 col-md-3 p-3" method="post" enctype="multipart/form-data" onsubmit="return validarFormulario()">
-            <h3 class="text-center text-secondary">Registrar Usuarios</h3>
+            <h3 class="text-center text-primary">Registrar Usuarios</h3>
             <div class="mb-3">
                 <label for="id_usuario" class="form-label">Numero de Documento</label>
                 <input type="text" class="form-control" name="id_usuario" id="id_usuario" required minlength="6" maxlength="10" onkeypress="soloNumeros(event)" autocomplete="off">
@@ -239,10 +239,10 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
             <input type="submit" class="btn btn-primary" name="validar" value="Registrar">
             <input type="hidden" name="MM_insert" value="formreg">
         </form>
-        <div class="col-12 col-md-8 p-4">
+        <div class="col-9 p-4">
             <div class="table-responsive">
                 <table class="table">
-                    <thead class="bg-info">
+                    <thead class="bg-dark text-white">
                         <tr>
                             <th scope="col">Documento</th>
                             <th scope="col">Nombre</th>

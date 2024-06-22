@@ -55,8 +55,8 @@ $usuarios = $stmtUsuarios->fetchAll(PDO::FETCH_ASSOC);
     <?php include("nav.php") ?>
     <div class="container-fluid row">
         <div class="col-12 col-md-3 p-3">
-            <div class="form-container">
-                <h3 class="text-center text-secondary">Solicitud de Préstamo</h3>
+            <div class="card">
+                <h3 class="text-center text-primary">Solicitud de Préstamo</h3>
                 <form id="creditoForm" method="post" action="procesar_credito.php">
                     <div class="form-group mb-3">
                         <label for="id_usuario" class="form-label">Documento:</label>
@@ -90,10 +90,10 @@ $usuarios = $stmtUsuarios->fetchAll(PDO::FETCH_ASSOC);
                 </form>
             </div>
         </div>
-        <div class="col-12 col-md-9 p-4">
+        <div class="col-12 col-md-9 p-3">
             <div class="table-responsive">
-                <table class="table">
-                    <thead class="bg-info">
+                <table class="table table-striped">
+                    <thead class="bg-dark text-white">
                         <tr>
                             <th scope="col">ID Usuario</th>
                             <th scope="col">Nombre Usuario</th>

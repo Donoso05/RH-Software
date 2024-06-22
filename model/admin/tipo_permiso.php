@@ -42,7 +42,7 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="UTF-8">
@@ -56,8 +56,8 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
 <body>
     <?php include("nav.php") ?>
     <div class="container-fluid row">
-        <form class="col-12 col-md-3 p-3" method="post" autocomplete="off" onsubmit="return validarFormulario()">
-            <h3 class="text-center text-secondary">Registrar Permisos</h3>
+        <form class="col-12 col-md-3 p-3 card" method="post" autocomplete="off" onsubmit="return validarFormulario()">
+            <h3 class="text-center text-primary">Registrar Permisos</h3>
             <div class="mb-3">
                 <label for="tipo_permiso" class="form-label">Tipo Permiso:</label>
                 <input type="text" class="form-control" name="tipo_permiso" required pattern="[A-Za-záéíóúÁÉÍÓÚñÑ\s]+" title="Solo se permiten letras, espacios y tildes">
@@ -72,10 +72,10 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
             <input type="hidden" name="MM_insert" value="formreg">
         </form>
 
-        <div class="col-12 col-md-9 p-4">
+        <div class="col-12 col-md-9 p-3">
             <div class="table-responsive">
-                <table class="table">
-                    <thead class="bg-info">
+                <table class="table table-striped">
+                    <thead class="bg-dark text-white">
                         <tr>
                             <th scope="col">Tipo Permiso</th>
                             <th scope="col">Dias</th>
@@ -84,7 +84,6 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
                     </thead>
                     <tbody>
                     <?php
-                    // Consulta de permisos filtrando por el mismo nit_empresa del usuario en sesión
                     $nit_empresa_session = $_SESSION['nit_empresa'];
                     $consulta = "SELECT * FROM tipo_permiso WHERE nit_empresa = ?";
                     $resultado = $con->prepare($consulta);

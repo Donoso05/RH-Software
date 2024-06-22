@@ -1,9 +1,9 @@
+
 <?php
 session_start();
 
 // Verificar si la sesión no está iniciada
 if (!isset($_SESSION["id_usuario"])) {
-    // Mostrar un alert y redirigir utilizando JavaScript
     echo '<script>alert("Debes iniciar sesión antes de acceder a la interfaz de administrador.");</script>';
     echo '<script>window.location.href = "../../login.html";</script>';
     exit();
@@ -20,7 +20,7 @@ $con = $db->conectar();
 $id_usuario = $_SESSION["id_usuario"];
 
 // Consultar información del usuario
-$sql = "SELECT u.nombre, u.id_usuario, u.correo, u.nit_empresa, u.id_estado, e.estado, u.id_tipo_cargo, c.cargo, u.foto
+$sql = "SELECT u.nombre, u.id_usuario, u.correo, u.nit_empresa, u.id_estado, e.estado, u.id_tipo_cargo, c.cargo, c.salario_base , u.foto
         FROM usuario u
         INNER JOIN estado e ON u.id_estado = e.id_estado
         INNER JOIN tipo_cargo c ON u.id_tipo_cargo = c.id_tipo_cargo
@@ -38,9 +38,9 @@ if ($result) {
     $nit_empresa = $result["nit_empresa"];
     $estado = $result["estado"];
     $cargo = $result["cargo"];
+    $salario = $result["salario_base"];
     $foto = $result["foto"];
 } else {
-    // Si no se encuentra el usuario, redirigir o manejar el error de alguna forma
     exit("Usuario no encontrado");
 }
 
@@ -54,53 +54,65 @@ $stmt->execute();
 $password_changed = $stmt->fetchColumn() > 0;
 $stmt->closeCursor();
 $con = null;
-?>
-<!DOCTYPE html>
+?><!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil de Usuario</title>
-    <link rel="stylesheet" href="css/style.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/1057b0ffdd.js" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="css/nav.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/style.css"> <!-- Asegúrate de incluir tu archivo CSS unificado -->
 </head>
 <body>
     <?php include("nav.php") ?>
 
     <div class="formulario">
         <div class="container">
-            <div class="card">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="profile-container">
-                                <div class="profile-img-wrapper">
-                                    <img src="<?php echo !empty($foto) ? $foto : 'img/user.webp'; ?>" class="img-fluid rounded" alt="Foto de perfil">
-                                </div>
-                                <form action="upload.php" method="post" enctype="multipart/form-data" style="margin-top: 20px;">
-                                    <div class="file-input-wrapper">
-                                        <label class="file-input">
-                                            <input type="file" name="fileToUpload" id="fileToUpload" accept="image/*">
-                                            Actualizar Foto
-                                        </label>
-                                    </div>
-                                    <br>
-                                    <input type="submit" class="btn btn-primary" value="Actualizar">
-                                </form>
-                            </div>
+            <div class="card profile-card">
+                <div class="profile-container">
+                    <div class="profile-img-wrapper mx-auto">
+                        <img src="<?php echo !empty($foto) ? $foto : 'images/user.webp'; ?>" class="profile-img" alt="Foto de perfil">
+                    </div>
+                    <h2><?php echo $nombre; ?></h2>
+                    <form action="upload.php" method="post" enctype="multipart/form-data" class="text-center mt-3">
+                        <div class="file-input-wrapper">
+                            <label class="file-input">
+                                <input type="file" name="fileToUpload" id="fileToUpload" accept="image/*">
+                                Actualizar Foto
+                            </label>
                         </div>
-                        <div class="col-md-8">
-                            <h2><?php echo $nombre; ?></h2>
-                            <p><strong>Documento:</strong> <?php echo $id_usuario; ?></p>
-                            <p><strong>Correo Electronico:</strong> <?php echo $correo; ?></p>
-                            <p><strong>NIT de la Empresa:</strong> <?php echo $nit_empresa; ?></p>
-                            <p><strong>Estado:</strong> <?php echo $estado; ?></p>
-                            <p><strong>Cargo:</strong> <?php echo $cargo; ?></p>
-                        </div>
+                        <br>
+                        <input type="submit" class="btn btn-primary mt-3" value="Actualizar">
+                    </form>
+                </div>
+                <div class="card-body profile-info">
+                    <div class="row mb-3">
+                        <div class="col-sm-4 text-end"><strong>Documento:</strong></div>
+                        <div class="col-sm-8"><?php echo $id_usuario; ?></div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 text-end"><strong>Correo:</strong></div>
+                        <div class="col-sm-8"><?php echo $correo; ?></div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 text-end"><strong>NIT de la Empresa:</strong></div>
+                        <div class="col-sm-8"><?php echo $nit_empresa; ?></div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 text-end"><strong>Estado:</strong></div>
+                        <div class="col-sm-8"><?php echo $estado; ?></div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 text-end"><strong>Cargo:</strong></div>
+                        <div class="col-sm-8"><?php echo $cargo; ?></div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 text-end"><strong>Salario:</strong></div>
+                        <div class="col-sm-8"><?php echo number_format($result['salario_base']) ?></div>
                     </div>
                 </div>
             </div>
@@ -108,7 +120,6 @@ $con = null;
     </div>
 
     <?php if (!$password_changed): ?>
-    <!-- Modal para cambiar la contraseña -->
     <div class="modal fade" id="changePasswordModal" tabindex="-1" role="dialog" aria-labelledby="changePasswordModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -132,6 +143,10 @@ $con = null;
                         <div class="modal-footer">
                             <button type="submit" class="btn btn-primary">Cambiar Contraseña</button>
                         </div>
+                        <div class="row mb-3">
+                        <div class="col-sm-4 text-end"><strong>Salario:</strong></div>
+                        <div class="col-sm-8"><?php echo number_format($result['salario_base']) ?></div>
+                    </div>
                     </form>
                 </div>
             </div>
@@ -141,13 +156,11 @@ $con = null;
 
     <script>
         $(document).ready(function() {
-            // Show the modal if password has not been changed
             <?php if (!$password_changed): ?>
                 $('#changePasswordModal').modal({ backdrop: 'static', keyboard: false });
                 $('#changePasswordModal').modal('show');
             <?php endif; ?>
 
-            // Validate the password before submitting the form
             $('#changePasswordForm').on('submit', function(e) {
                 const password = $('#password').val();
                 const confirmPassword = $('#confirm_password').val();
