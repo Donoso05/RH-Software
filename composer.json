@@ -1,14 +1,26 @@
 {
+<<<<<<< HEAD
+    "name": "usuario/rh-software",
+    "autoload": {
+        "psr-4": {
+            "Usuario\\RhSoftware\\": "src/"
+=======
     "name": "a1105/rh-software",
     "autoload": {
         "psr-4": {
             "A1105\\RhSoftware\\": "src/"
+>>>>>>> 83bdc4826dbffab19b366bf8a385be70275b7e83
         }
     },
     "authors": [
         {
+<<<<<<< HEAD
+            "name": "Andrea Silva",
+            "email": "andreasilva23433@gmail.com"
+=======
             "name": "alirio",
             "email": "a1105fut@gmail.com"
+>>>>>>> 83bdc4826dbffab19b366bf8a385be70275b7e83
         }
     ],
     "require": {

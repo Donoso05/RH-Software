@@ -120,21 +120,21 @@ $con = null;
             <div class="card">
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-4 text-center">
+                    <div class="col-md-4 text-center">
                             <div class="profile-container">
-                                 <div class="profile-img-wrapper">    
-                                    <img src="<?php echo !empty($foto) ? $foto : 'img/user.webp'; ?>" class="rounded-0" alt="Foto de perfil" style="width:50%">
+                                <div class="profile-img-wrapper">
+                                <img src="<?php echo !empty($foto) ? $foto : 'img/user.webp'; ?>" class="rounded-0" alt="Foto de perfil" style="width:50%"  >
                                 </div>
-                                <form action="upload.php" method="post" enctype="multipart/form-data" style="margin-top: 20px">
+                                <form action="upload.php" method="post" enctype="multipart/form-data" style="margin-top: 20px;">
                                     <div class="file-input-wrapper">
                                         <label class="file-input">
-                                            <input type="file" name="fileToUpload" id="fileToUpload" accept="image/*" >
+                                            <input type="file" name="fileToUpload" id="fileToUpload" accept="image/*">
                                             Actualizar Foto
                                         </label>
-                                        <br>
                                     </div>
-                                <button type="submit" class="btn btn-primary mt-3">Actualizar</button>
-                            </form>
+                                    <br>
+                                    <input type="submit" class="btn btn-primary mt-3" value="Actualizar">
+                                </form>
                             </div>
                         </div>
                         <div class="col-md-8">
