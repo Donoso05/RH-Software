@@ -1,13 +1,14 @@
 {
-    "name": "vendor/creacion_barcode",
+    "name": "a1105/rh-software",
     "autoload": {
         "psr-4": {
-            "Vendor\\CreacionBarcode\\": "src/"
+            "A1105\\RhSoftware\\": "src/"
         }
     },
     "authors": [
         {
-            "name": "kenner rojas"
+            "name": "alirio",
+            "email": "a1105fut@gmail.com"
         }
     ],
     "require": {

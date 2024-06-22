@@ -1,0 +1,68 @@
+/* En el archivo style.css o dentro de <style> en tu HTML */
+.profile-img-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.profile-img {
+    border: 5px solid #3498db; /* Color vivo para el borde */
+    border-radius: 50%;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+}
+
+.profile-img-wrapper::after {
+    content: '\f2bd'; /* Código Unicode del icono (Font Awesome) */
+    font-family: 'FontAwesome';
+    color: #fff;
+    background-color: #3498db;
+    border-radius: 50%;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Estilos para personalizar el input tipo file */
+.file-input-wrapper {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+    margin-top: 20px;
+}
+
+.file-input {
+    font-size: 16px;
+    color: white;
+    background-color: #3498db;
+    border: 2px solid #3498db;
+    padding: 10px 20px;
+    border-radius: 5px;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.file-input input[type="file"] {
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    cursor: pointer;
+    height: 100%;
+    width: 100%;
+}
+
+.file-input::before {
+    content: '\f093'; /* Código Unicode del icono (Font Awesome) */
+    font-family: 'FontAwesome';
+    padding-right: 10px;
+}
+
+/* Estilos para centrar el contenido */
+.profile-container {
+    text-align: center;
+    margin-top: 20px;
+}

@@ -3,7 +3,6 @@ session_start();
 
 // Verificar si la sesión no está iniciada
 if (!isset($_SESSION["id_usuario"])) {
-    // Mostrar un alert y redirigir utilizando JavaScript
     echo '<script>alert("Debes iniciar sesión antes de acceder a la interfaz de administrador.");</script>';
     echo '<script>window.location.href = "../../login.html";</script>';
     exit();
@@ -40,7 +39,6 @@ if ($result) {
     $cargo = $result["cargo"];
     $foto = $result["foto"];
 } else {
-    // Si no se encuentra el usuario, redirigir o manejar el error de alguna forma
     exit("Usuario no encontrado");
 }
 
@@ -57,18 +55,63 @@ $con = null;
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil de Usuario</title>
-    <link rel="stylesheet" href="css/style.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <script src="https://kit.fontawesome.com/1057b0ffdd.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/index.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .profile-img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .card {
+            margin-top: 20px;
+            border: none;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        .formulario {
+            padding: 2rem 0;
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        .modal-header {
+            border-bottom: none;
+        }
+
+        .modal-footer {
+            border-top: none;
+        }
+    </style>
 </head>
+
 <body>
     <?php include("nav.php") ?>
 
@@ -77,22 +120,45 @@ $con = null;
             <div class="card">
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-4">
-                            <img src="<?php echo !empty($foto) ? $foto : 'img/user.webp'; ?>" class="img-fluid rounded" alt="Foto de perfil">
-                            <form action="upload.php" method="post" enctype="multipart/form-data" style="margin-top: 20px;">
-                                <input type="file" name="fileToUpload" id="fileToUpload" accept="image/*">
-                                <br>
-                                <br>
-                                <input type="submit" class="btn btn-primary" value="Actualizar">
+                        <div class="col-md-4 text-center">
+                            <div class="profile-container">
+                                 <div class="profile-img-wrapper">    
+                                    <img src="<?php echo !empty($foto) ? $foto : 'img/user.webp'; ?>" class="rounded-0" alt="Foto de perfil" style="width:50%">
+                                </div>
+                                <form action="upload.php" method="post" enctype="multipart/form-data" style="margin-top: 20px">
+                                    <div class="file-input-wrapper">
+                                        <label class="file-input">
+                                            <input type="file" name="fileToUpload" id="fileToUpload" accept="image/*" >
+                                            Actualizar Foto
+                                        </label>
+                                        <br>
+                                    </div>
+                                <button type="submit" class="btn btn-primary mt-3">Actualizar</button>
                             </form>
+                            </div>
                         </div>
                         <div class="col-md-8">
                             <h2><?php echo $nombre; ?></h2>
-                            <p><strong>ID de Usuario:</strong> <?php echo $id_usuario; ?></p>
-                            <p><strong>Correo:</strong> <?php echo $correo; ?></p>
-                            <p><strong>NIT de la Empresa:</strong> <?php echo $nit_empresa; ?></p>
-                            <p><strong>Estado:</strong> <?php echo $estado; ?></p>
-                            <p><strong>Cargo:</strong> <?php echo $cargo; ?></p>
+                            <div class="row mb-3">
+                                <div class="col-sm-4"><strong>Documento:</strong></div>
+                                <div class="col-sm-8"><?php echo $id_usuario; ?></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-4"><strong>Correo:</strong></div>
+                                <div class="col-sm-8"><?php echo $correo; ?></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-4"><strong>NIT de la Empresa:</strong></div>
+                                <div class="col-sm-8"><?php echo $nit_empresa; ?></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-4"><strong>Estado:</strong></div>
+                                <div class="col-sm-8"><?php echo $estado; ?></div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-sm-4"><strong>Cargo:</strong></div>
+                                <div class="col-sm-8"><?php echo $cargo; ?></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -100,47 +166,41 @@ $con = null;
         </div>
     </div>
 
-    <?php if (!$password_changed): ?>
-    <!-- Modal para cambiar la contraseña -->
-    <div class="modal fade" id="changePasswordModal" tabindex="-1" role="dialog" aria-labelledby="changePasswordModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h3 class="modal-title" id="changePasswordModalLabel">Cambiar contraseña</h3>
-                    <button type="button" class="btn btn-primary" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="changePasswordForm" action="cambiar_contrasena.php" method="POST">
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Nueva Contraseña</label>
-                            <input type="password" id="password" name="password" class="form-control" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="confirm_password" class="form-label">Confirmar Nueva Contraseña</label>
-                            <input type="password" id="confirm_password" name="confirm_password" class="form-control" required>
-                        </div>
-                        <input type="hidden" name="id_usuario" value="<?php echo $id_usuario; ?>">
-                        <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary">Cambiar Contraseña</button>
-                        </div>
-                    </form>
+    <?php if (!$password_changed) : ?>
+        <div class="modal fade" id="changePasswordModal" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title" id="changePasswordModalLabel">Cambiar Contraseña</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="changePasswordForm" action="cambiar_contrasena.php" method="POST">
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Nueva Contraseña</label>
+                                <input type="password" id="password" name="password" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="confirm_password" class="form-label">Confirmar Nueva Contraseña</label>
+                                <input type="password" id="confirm_password" name="confirm_password" class="form-control" required>
+                            </div>
+                            <input type="hidden" name="id_usuario" value="<?php echo $id_usuario; ?>">
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary">Cambiar Contraseña</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
     <?php endif; ?>
 
     <script>
         $(document).ready(function() {
-            // Show the modal if password has not been changed
-            <?php if (!$password_changed): ?>
-                $('#changePasswordModal').modal({ backdrop: 'static', keyboard: false });
+            <?php if (!$password_changed) : ?>
                 $('#changePasswordModal').modal('show');
             <?php endif; ?>
 
-            // Validate the password before submitting the form
             $('#changePasswordForm').on('submit', function(e) {
                 const password = $('#password').val();
                 const confirmPassword = $('#confirm_password').val();
@@ -165,4 +225,5 @@ $con = null;
         });
     </script>
 </body>
+
 </html>
