@@ -33,11 +33,26 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
     if ($nit_empresa == "" || $licencia == "") {
         echo '<script>alert ("EXISTEN DATOS VACIOS"); </script>';
     } else {
-        $insertSQL = $con->prepare("INSERT INTO licencia(nit_empresa, licencia, fecha_inicio, fecha_final) 
-        VALUES ('$nit_empresa','$licencia', '$fecha_inicio', '$fecha_final')");
-        $insertSQL->execute();
-        echo '<script>alert ("Licencia asignada con éxito"); </script>';
-        echo '<script>window.location="index.php"</script>';
+        // Verificar si ya existe una licencia para el nit_empresa
+        $checkSQL = $con->prepare("SELECT COUNT(*) FROM licencia WHERE nit_empresa = :nit_empresa");
+        $checkSQL->bindParam(':nit_empresa', $nit_empresa );
+        $checkSQL->execute();
+        $count = $checkSQL->fetchColumn();
+
+        if ($count > 0) {
+            echo '<script>alert ("Ya existe una licencia para esta empresa."); </script>';
+        } else {
+            // Insertar nueva licencia
+            $insertSQL = $con->prepare("INSERT INTO licencia (nit_empresa, licencia, fecha_inicio, fecha_final) 
+            VALUES (:nit_empresa, :licencia, :fecha_inicio, :fecha_final)");
+            $insertSQL->bindParam(':nit_empresa', $nit_empresa);
+            $insertSQL->bindParam(':licencia', $licencia);
+            $insertSQL->bindParam(':fecha_inicio', $fecha_inicio);
+            $insertSQL->bindParam(':fecha_final', $fecha_final);
+            $insertSQL->execute();
+            echo '<script>alert ("Licencia asignada con éxito"); </script>';
+            echo '<script>window.location="index.php"</script>';
+        }
     }
 }
 
@@ -49,24 +64,39 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formemp")) {
     if ($nit == "" || $nombre == "" || $correo == "") {
         echo '<script>alert ("EXISTEN DATOS VACIOS"); </script>';
     } else {
-        $insertSQL = $con->prepare("INSERT INTO empresas(nit_empresa, nombre, correo) 
-        VALUES ('$nit','$nombre', '$correo')");
-        $insertSQL->execute();
-        echo '<script>alert ("Empresa creada con éxito"); </script>';
-        echo '<script>window.location="index.php"</script>';
+        // Verificar si ya existe una empresa con el mismo NIT o correo
+        $checkSQL = $con->prepare("SELECT COUNT(*) FROM empresas WHERE nit_empresa = :nit OR correo = :correo OR nombre = :nombre");
+        $checkSQL->bindParam(':nit', $nit );
+        $checkSQL->bindParam(':correo', $correo);
+        $checkSQL->bindParam(':nombre', $nombre);
+        $checkSQL->execute();
+        $count = $checkSQL->fetchColumn();
+
+        if ($count > 0) {
+            echo '<script>alert ("Ya existe una empresa con esos datos de registro"); </script>';
+        } else {
+            // Insertar nueva empresa
+            $insertSQL = $con->prepare("INSERT INTO empresas (nit_empresa, nombre, correo) 
+            VALUES (:nit, :nombre, :correo)");
+            $insertSQL->bindParam(':nit', $nit);
+            $insertSQL->bindParam(':nombre', $nombre);
+            $insertSQL->bindParam(':correo', $correo);
+            $insertSQL->execute();
+            echo '<script>alert ("Empresa creada con éxito"); </script>';
+            echo '<script>window.location="index.php"</script>';
+        }
     }
 }
 
-$empresas = $con->prepare("
-    SELECT e.nit_empresa, e.nombre, l.licencia, e.correo
+
+$empresas = $con->prepare("SELECT e.nit_empresa, e.nombre, l.licencia, e.correo
     FROM empresas e
     LEFT JOIN licencia l ON e.nit_empresa = l.nit_empresa
 ");
 $empresas->execute();
 $empresas_data = $empresas->fetchAll(PDO::FETCH_ASSOC);
 
-$administradores = $con->prepare("
-    SELECT u.id_usuario, u.nombre, e.estado, u.correo, tu.tipo_usuario, u.nit_empresa
+$administradores = $con->prepare("SELECT u.id_usuario, u.nombre, e.estado, u.correo, tu.tipo_usuario, u.nit_empresa
     FROM usuario u
     LEFT JOIN estado e ON u.id_estado = e.id_estado
     LEFT JOIN tipos_usuarios tu ON u.id_tipo_usuario = tu.id_tipo_usuario
@@ -137,24 +167,25 @@ $administradores_data = $administradores->fetchAll(PDO::FETCH_ASSOC);
                                 <form method="post">
                                     <div class="mb-3">
                                         <label for="serial" class="form-label">Serial</label>
-                                        <input type="text" name="licencia" id="serial" class="form-control" value="<?php echo $licencia ?>" readonly>
+                                        <input type="text" name="licencia" id="serial" class="form-control" value="<?php echo htmlspecialchars($licencia, ENT_QUOTES, 'UTF-8'); ?>" readonly>
                                     </div>
                                     <div class="mb-3">
                                         <label for="fechainicio" class="form-label">Fecha Inicio</label>
-                                        <input type="text" name="fecha_inicio" id="fechainicio" class="form-control" value="<?php echo $f_hoy ?>" readonly>
+                                        <input type="text" name="fecha_inicio" id="fechainicio" class="form-control" value="<?php echo htmlspecialchars($f_hoy, ENT_QUOTES, 'UTF-8'); ?>" readonly>
                                     </div>
                                     <div class="mb-3">
                                         <label for="fechafin" class="form-label">Fecha Fin</label>
-                                        <input type="text" name="fecha_final" id="fechafin" class="form-control" value="<?php echo $fin ?>" readonly>
+                                        <input type="text" name="fecha_final" id="fechafin" class="form-control" value="<?php echo htmlspecialchars($fin, ENT_QUOTES, 'UTF-8'); ?>" readonly>
                                     </div>
                                     <div class="mb-3">
                                         <label for="empresa" class="form-label">Empresa</label>
                                         <select name="nit_empresa" id="empresa" class="form-select">
+                                            <option value="">Selecione una Empresa</option>
                                             <?php
                                             $control = $con->prepare("SELECT * FROM empresas");
                                             $control->execute();
                                             while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
-                                                echo "<option value='" . $fila['nit_empresa'] . "'>" . $fila['nombre'] . "</option>";
+                                                echo "<option value='" . htmlspecialchars($fila['nit_empresa'], ENT_QUOTES, 'UTF-8') . "'>" . htmlspecialchars($fila['nombre'], ENT_QUOTES, 'UTF-8') . "</option>";
                                             }
                                             ?>
                                         </select>
@@ -184,12 +215,13 @@ $administradores_data = $administradores->fetchAll(PDO::FETCH_ASSOC);
                                     </div>
                                     <div class="mb-3">
                                         <label for="empresa" class="form-label">Empresa</label>
-                                        <select name="empresa" id="empresa" class="form-select">
+                                        <select name="empresa" id="empresa" class="form-select" require>
+                                        <option value="">Selecione una Empresa</option>
                                             <?php
                                             $control = $con->prepare("SELECT * FROM empresas");
                                             $control->execute();
                                             while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
-                                                echo "<option value='" . $fila['nit_empresa'] . "'>" . $fila['nombre'] . "</option>";
+                                                echo "<option value='" . htmlspecialchars($fila['nit_empresa'], ENT_QUOTES, 'UTF-8') . "'>" . htmlspecialchars($fila['nombre'], ENT_QUOTES, 'UTF-8') . "</option>";
                                             }
                                             ?>
                                         </select>
@@ -222,10 +254,10 @@ $administradores_data = $administradores->fetchAll(PDO::FETCH_ASSOC);
                                 <tbody>
                                     <?php foreach ($empresas_data as $empresa): ?>
                                         <tr>
-                                            <td><?php echo htmlspecialchars($empresa['nit_empresa']); ?></td>
-                                            <td><?php echo htmlspecialchars($empresa['nombre']); ?></td>
-                                            <td><?php echo htmlspecialchars($empresa['licencia']); ?></td>
-                                            <td><?php echo htmlspecialchars($empresa['correo']); ?></td>
+                                            <td><?php echo htmlspecialchars($empresa['nit_empresa'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                            <td><?php echo htmlspecialchars($empresa['nombre'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                            <td><?php echo htmlspecialchars($empresa['licencia'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                            <td><?php echo htmlspecialchars($empresa['correo'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>
@@ -242,7 +274,7 @@ $administradores_data = $administradores->fetchAll(PDO::FETCH_ASSOC);
                             <table class="table table-hover">
                                 <thead class="table-dark">
                                     <tr>
-                                        <th>ID Usuario</th>
+                                        <th>Documento</th>
                                         <th>Nombre</th>
                                         <th>Estado</th>
                                         <th>Correo</th>
@@ -253,12 +285,12 @@ $administradores_data = $administradores->fetchAll(PDO::FETCH_ASSOC);
                                 <tbody>
                                     <?php foreach ($administradores_data as $admin): ?>
                                         <tr>
-                                            <td><?php echo htmlspecialchars($admin['id_usuario']); ?></td>
-                                            <td><?php echo htmlspecialchars($admin['nombre']); ?></td>
-                                            <td><?php echo htmlspecialchars($admin['estado']); ?></td>
-                                            <td><?php echo htmlspecialchars($admin['correo']); ?></td>
-                                            <td><?php echo htmlspecialchars($admin['tipo_usuario']); ?></td>
-                                            <td><?php echo htmlspecialchars($admin['nit_empresa']); ?></td>
+                                            <td><?php echo htmlspecialchars($admin['id_usuario'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                            <td><?php echo htmlspecialchars($admin['nombre'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                            <td><?php echo htmlspecialchars($admin['estado'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                            <td><?php echo htmlspecialchars($admin['correo'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                            <td><?php echo htmlspecialchars($admin['tipo_usuario'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
+                                            <td><?php echo htmlspecialchars($admin['nit_empresa'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>

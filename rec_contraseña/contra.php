@@ -30,7 +30,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             // Enviar el correo electrónico con la contraseña para restablecer
             $subject = "Recuperación de Contraseña";
-            $message = "Hola, Tu contraseña actual es: $contrasena\n\n";
+            $message = "Hola, el token para restablecer tu contraseña es el siguiente: $contrasena\n\n";
             $headers = "From: sjuliethws@gmail.com" . "\r\n" .
                        "Reply-To: $correo" . "\r\n" . // Corregir el nombre de la variable a $correo
                        "X-Mailer: PHP/" . phpversion();
