@@ -129,6 +129,12 @@ nav ul li a:hover {
     flex-wrap: wrap;
 }
 
+.table-wrapper {
+    flex: 1;
+    min-width: 300px;
+    margin: 10px;
+}
+
 .table-wrapper table {
     width: 100%;
     border-collapse: collapse;

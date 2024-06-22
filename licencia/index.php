@@ -38,7 +38,11 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
         echo '<script>alert ("EXISTEN DATOS VACIOS"); </script>';
     } else {
         $insertSQL = $con->prepare("INSERT INTO licencia(nit_empresa, licencia, fecha_inicio, fecha_final) 
-        VALUES ('$nit_empresa','$licencia', '$fecha_inicio', '$fecha_final')");
+        VALUES (:nit_empresa, :licencia, :fecha_inicio, :fecha_final)");
+        $insertSQL->bindParam(':nit_empresa', $nit_empresa);
+        $insertSQL->bindParam(':licencia', $licencia);
+        $insertSQL->bindParam(':fecha_inicio', $fecha_inicio);
+        $insertSQL->bindParam(':fecha_final', $fecha_final);
         $insertSQL->execute();
         echo '<script>alert ("Licencia asignada con éxito"); </script>';
         echo '<script>window.location="index.php"</script>';
@@ -54,7 +58,10 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formemp")) {
         echo '<script>alert ("EXISTEN DATOS VACIOS"); </script>';
     } else {
         $insertSQL = $con->prepare("INSERT INTO empresas(nit_empresa, nombre, correo) 
-        VALUES ('$nit','$nombre', '$correo')");
+        VALUES (:nit, :nombre, :correo)");
+        $insertSQL->bindParam(':nit', $nit);
+        $insertSQL->bindParam(':nombre', $nombre);
+        $insertSQL->bindParam(':correo', $correo);
         $insertSQL->execute();
         echo '<script>alert ("Empresa creada con éxito"); </script>';
         echo '<script>window.location="index.php"</script>';
@@ -111,164 +118,140 @@ $administradores_data = $administradores->fetchAll(PDO::FETCH_ASSOC);
                 </div>
             </div>
         </nav>
-        <div class="row g-4">
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Crear Empresas</h5>
-                        <form method="post">
-                            <div class="mb-3">
-                                <label for="nit" class="form-label">NIT</label>
-                                <input type="text" name="nit" id="nit" class="form-control" placeholder="NIT">
-                            </div>
-                            <div class="mb-3">
-                                <label for="nombre" class="form-label">Nombre Empresa</label>
-                                <input type="text" name="nombre" id="nombre" class="form-control" placeholder="Nombre Empresa">
-                            </div>
-                            <div class="mb-3">
-                                <label for="correo" class="form-label">Correo Electrónico</label>
-                                <input type="email" name="correo" id="correo" class="form-control" placeholder="Correo Electrónico">
-                            </div>
-                            <button type="submit" class="btn btn-primary">Registrar</button>
-                            <input type="hidden" name="MM_insert" value="formemp">
-                        </form>
+        <div class="form-wrapper">
+            <div class="form">
+                <h2>Crear Empresas</h2>
+                <form method="post">
+                    <div class="form-group">
+                        <label for="nit">NIT</label>
+                        <input type="text" name="nit" id="nit" class="form-control" placeholder="NIT">
                     </div>
-                </div>
+                    <div class="form-group">
+                        <label for="nombre">Nombre Empresa</label>
+                        <input type="text" name="nombre" id="nombre" class="form-control" placeholder="Nombre Empresa">
+                    </div>
+                    <div class="form-group">
+                        <label for="correo">Correo Electrónico</label>
+                        <input type="email" name="correo" id="correo" class="form-control" placeholder="Correo Electrónico">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Registrar</button>
+                    <input type="hidden" name="MM_insert" value="formemp">
+                </form>
             </div>
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Crear Licencia</h5>
-                        <form method="post">
-                            <div class="mb-3">
-                                <label for="serial" class="form-label">Serial</label>
-                                <input type="text" name="licencia" id="serial" class="form-control" value="<?php echo $licencia ?>" readonly>
-                            </div>
-                            <div class="mb-3">
-                                <label for="fechainicio" class="form-label">Fecha Inicio</label>
-                                <input type="text" name="fecha_inicio" id="fechainicio" class="form-control" value="<?php echo $f_hoy ?>" readonly>
-                            </div>
-                            <div class="mb-3">
-                                <label for="fechafin" class="form-label">Fecha Fin</label>
-                                <input type="text" name="fecha_final" id="fechafin" class="form-control" value="<?php echo $fin ?>" readonly>
-                            </div>
-                            <div class="mb-3">
-                                <label for="empresa" class="form-label">Empresa</label>
-                                <select name="nit_empresa" id="empresa" class="form-select">
-                                    <?php
-                                    $control = $con->prepare("SELECT * FROM empresas");
-                                    $control->execute();
-                                    while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
-                                        echo "<option value='" . $fila['nit_empresa'] . "'>" . $fila['nombre'] . "</option>";
-                                    }
-                                    ?>
-                                </select>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Crear</button>
-                            <input type="hidden" name="MM_insert" value="formreg">
-                        </form>
+            <div class="form">
+                <h2>Crear Licencia</h2>
+                <form method="post">
+                    <div class="form-group">
+                        <label for="serial">Serial</label>
+                        <input type="text" name="licencia" id="serial" class="form-control" value="<?php echo $licencia ?>" readonly>
                     </div>
-                </div>
+                    <div class="form-group">
+                        <label for="fechainicio">Fecha Inicio</label>
+                        <input type="text" name="fecha_inicio" id="fechainicio" class="form-control" value="<?php echo $f_hoy ?>" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="fechafin">Fecha Fin</label>
+                        <input type="text" name="fecha_final" id="fechafin" class="form-control" value="<?php echo $fin ?>" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="empresa">Empresa</label>
+                        <select name="nit_empresa" id="empresa" class="form-select">
+                            <?php
+                            $control = $con->prepare("SELECT * FROM empresas");
+                            $control->execute();
+                            while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
+                                echo "<option value='" . $fila['nit_empresa'] . "'>" . $fila['nombre'] . "</option>";
+                            }
+                            ?>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Crear</button>
+                    <input type="hidden" name="MM_insert" value="formreg">
+                </form>
             </div>
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Crear Administrador</h5>
-                        <form method="post" action="cadmin.php">
-                            <div class="mb-3">
-                                <label for="documento" class="form-label">Documento</label>
-                                <input type="text" name="documento" id="documento" class="form-control" placeholder="Documento">
-                            </div>
-                            <div class="mb-3">
-                                <label for="nombre" class="form-label">Nombre</label>
-                                <input type="text" name="nombre" id="nombre" class="form-control" placeholder="Nombre">
-                            </div>
-                            <div class="mb-3">
-                                <label for="correo" class="form-label">Correo Electrónico</label>
-                                <input type="email" name="correo" id="correo" class="form-control" placeholder="Correo Electrónico">
-                            </div>
-                            <div class="mb-3">
-                                <label for="empresa" class="form-label">Empresa</label>
-                                <select name="empresa" id="empresa" class="form-select">
-                                    <?php
-                                    $control = $con->prepare("SELECT * FROM empresas");
-                                    $control->execute();
-                                    while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
-                                        echo "<option value='" . $fila['nit_empresa'] . "'>" . $fila['nombre'] . "</option>";
-                                    }
-                                    ?>
-                                </select>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Registrar</button>
-                            <input type="hidden" name="MM_insert" value="formreg">
-                        </form>
+            <div class="form">
+                <h2>Crear Administrador</h2>
+                <form method="post" action="cadmin.php">
+                    <div class="form-group">
+                        <label for="documento">Documento</label>
+                        <input type="text" name="documento" id="documento" class="form-control" placeholder="Documento">
                     </div>
-                </div>
+                    <div class="form-group">
+                        <label for="nombre">Nombre</label>
+                        <input type="text" name="nombre" id="nombre" class="form-control" placeholder="Nombre">
+                    </div>
+                    <div class="form-group">
+                        <label for="correo">Correo Electrónico</label>
+                        <input type="email" name="correo" id="correo" class="form-control" placeholder="Correo Electrónico">
+                    </div>
+                    <div class="form-group">
+                        <label for="empresa">Empresa</label>
+                        <select name="empresa" id="empresa" class="form-select">
+                            <?php
+                            $control = $con->prepare("SELECT * FROM empresas");
+                            $control->execute();
+                            while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
+                                echo "<option value='" . $fila['nit_empresa'] . "'>" . $fila['nombre'] . "</option>";
+                            }
+                            ?>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Registrar</button>
+                    <input type="hidden" name="MM_insert" value="formreg">
+                </form>
             </div>
         </div>
 
-        <div class="row g-4 mt-4">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Empresas</h5>
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>NIT Empresa</th>
-                                        <th>Nombre</th>
-                                        <th>Licencia</th>
-                                        <th>Correo</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($empresas_data as $empresa): ?>
-                                        <tr>
-                                            <td><?php echo htmlspecialchars($empresa['nit_empresa']); ?></td>
-                                            <td><?php echo htmlspecialchars($empresa['nombre']); ?></td>
-                                            <td><?php echo htmlspecialchars($empresa['licencia']); ?></td>
-                                            <td><?php echo htmlspecialchars($empresa['correo']); ?></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+        <div class="tables-wrapper">
+            <div class="table-wrapper">
+                <h5>Empresas</h5>
+                <table class="table table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>NIT Empresa</th>
+                            <th>Nombre</th>
+                            <th>Licencia</th>
+                            <th>Correo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($empresas_data as $empresa): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($empresa['nit_empresa']); ?></td>
+                                <td><?php echo htmlspecialchars($empresa['nombre']); ?></td>
+                                <td><?php echo htmlspecialchars($empresa['licencia']); ?></td>
+                                <td><?php echo htmlspecialchars($empresa['correo']); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
             </div>
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Administradores</h5>
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>ID Usuario</th>
-                                        <th>Nombre</th>
-                                        <th>Estado</th>
-                                        <th>Correo</th>
-                                        <th>Tipo Usuario</th>
-                                        <th>NIT Empresa</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($administradores_data as $admin): ?>
-                                        <tr>
-                                            <td><?php echo htmlspecialchars($admin['id_usuario']); ?></td>
-                                            <td><?php echo htmlspecialchars($admin['nombre']); ?></td>
-                                            <td><?php echo htmlspecialchars($admin['estado']); ?></td>
-                                            <td><?php echo htmlspecialchars($admin['correo']); ?></td>
-                                            <td><?php echo htmlspecialchars($admin['tipo_usuario']); ?></td>
-                                            <td><?php echo htmlspecialchars($admin['nit_empresa']); ?></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+            <div class="table-wrapper">
+                <h5>Administradores</h5>
+                <table class="table table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID Usuario</th>
+                            <th>Nombre</th>
+                            <th>Estado</th>
+                            <th>Correo</th>
+                            <th>Tipo Usuario</th>
+                            <th>NIT Empresa</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($administradores_data as $admin): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($admin['id_usuario']); ?></td>
+                                <td><?php echo htmlspecialchars($admin['nombre']); ?></td>
+                                <td><?php echo htmlspecialchars($admin['estado']); ?></td>
+                                <td><?php echo htmlspecialchars($admin['correo']); ?></td>
+                                <td><?php echo htmlspecialchars($admin['tipo_usuario']); ?></td>
+                                <td><?php echo htmlspecialchars($admin['nit_empresa']); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
