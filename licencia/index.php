@@ -9,9 +9,7 @@ if (!isset($_SESSION["id_usuario"])) {
     echo '<script>window.location.href = "../login.html";</script>';
     exit();
 }
-
 require_once("../conexion/conexion.php");
-
 $db = new Database();
 $con = $db->conectar();
 
@@ -35,7 +33,7 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
     } else {
         // Verificar si ya existe una licencia para el nit_empresa
         $checkSQL = $con->prepare("SELECT COUNT(*) FROM licencia WHERE nit_empresa = :nit_empresa");
-        $checkSQL->bindParam(':nit_empresa', $nit_empresa );
+        $checkSQL->bindParam(':nit_empresa', $nit_empresa);
         $checkSQL->execute();
         $count = $checkSQL->fetchColumn();
 
@@ -50,6 +48,16 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
             $insertSQL->bindParam(':fecha_inicio', $fecha_inicio);
             $insertSQL->bindParam(':fecha_final', $fecha_final);
             $insertSQL->execute();
+
+            // Obtener el ID de la licencia recién insertada
+            $id_licencia = $con->lastInsertId();
+
+            // Actualizar la empresa para asignar la licencia
+            $updateSQL = $con->prepare("UPDATE empresas SET id_licencia = :id_licencia WHERE nit_empresa = :nit_empresa");
+            $updateSQL->bindParam(':id_licencia', $id_licencia);
+            $updateSQL->bindParam(':nit_empresa', $nit_empresa);
+            $updateSQL->execute();
+
             echo '<script>alert ("Licencia asignada con éxito"); </script>';
             echo '<script>window.location="index.php"</script>';
         }
@@ -66,7 +74,7 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formemp")) {
     } else {
         // Verificar si ya existe una empresa con el mismo NIT o correo
         $checkSQL = $con->prepare("SELECT COUNT(*) FROM empresas WHERE nit_empresa = :nit OR correo = :correo OR nombre = :nombre");
-        $checkSQL->bindParam(':nit', $nit );
+        $checkSQL->bindParam(':nit', $nit);
         $checkSQL->bindParam(':correo', $correo);
         $checkSQL->bindParam(':nombre', $nombre);
         $checkSQL->execute();
@@ -87,7 +95,6 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formemp")) {
         }
     }
 }
-
 
 $empresas = $con->prepare("SELECT e.nit_empresa, e.nombre, l.licencia, e.correo
     FROM empresas e
@@ -180,7 +187,7 @@ $administradores_data = $administradores->fetchAll(PDO::FETCH_ASSOC);
                                     <div class="mb-3">
                                         <label for="empresa" class="form-label">Empresa</label>
                                         <select name="nit_empresa" id="empresa" class="form-select">
-                                            <option value="">Selecione una Empresa</option>
+                                            <option value="">Seleccione una Empresa</option>
                                             <?php
                                             $control = $con->prepare("SELECT * FROM empresas");
                                             $control->execute();
@@ -215,8 +222,8 @@ $administradores_data = $administradores->fetchAll(PDO::FETCH_ASSOC);
                                     </div>
                                     <div class="mb-3">
                                         <label for="empresa" class="form-label">Empresa</label>
-                                        <select name="empresa" id="empresa" class="form-select" require>
-                                        <option value="">Selecione una Empresa</option>
+                                        <select name="empresa" id="empresa" class="form-select" required>
+                                            <option value="">Seleccione una Empresa</option>
                                             <?php
                                             $control = $con->prepare("SELECT * FROM empresas");
                                             $control->execute();
