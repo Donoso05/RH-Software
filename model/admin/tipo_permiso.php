@@ -56,7 +56,7 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
 <body>
     <?php include("nav.php") ?>
     <div class="container-fluid row">
-        <form class="col-12 col-md-3 p-3 card" method="post" autocomplete="off" onsubmit="return validarFormulario()">
+        <form class="col-12 col-md-3 p-3" method="post" autocomplete="off" onsubmit="return validarFormulario()">
             <h3 class="text-center text-primary">Registrar Permisos</h3>
             <div class="mb-3">
                 <label for="tipo_permiso" class="form-label">Tipo Permiso:</label>

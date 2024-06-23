@@ -83,24 +83,27 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
 <body>
     <?php include("nav.php") ?>
     <div class="container-fluid row">
-        <form class="col-12 col-md-3 p-3" method="post" name="formreg" onsubmit="return validateForm()" autocomplete="off">
-            <h3 class="text-center text-secondary">ARL</h3>
-            <div class="mb-3">
-                <label for="tipo" class="form-label">Tipo ARL:</label>
-                <input type="text" class="form-control" name="tipo" autocomplete="off" required oninput="allowOnlyLetters(this)">
+        <div class="col-12 col-md-3 p-3">
+            <div class="">
+                <h3 class="text-center text-primary">ARL</h3>
+                <form method="post" name="formreg" onsubmit="return validateForm()" autocomplete="off">
+                    <div class="mb-3">
+                        <label for="tipo" class="form-label">Tipo ARL:</label>
+                        <input type="text" class="form-control" name="tipo" autocomplete="off" required oninput="allowOnlyLetters(this)">
+                    </div>
+                    <div class="mb-3">
+                        <label for="porcentaje" class="form-label">Porcentaje:</label>
+                        <input type="text" class="form-control" name="porcentaje" autocomplete="off" required oninput="allowOnlyNumbers(this)">
+                    </div>
+                    <input type="submit" class="btn btn-primary" name="validar" value="Registrar">
+                    <input type="hidden" name="MM_insert" value="formreg" required>
+                </form>
             </div>
-            <div class="mb-3">
-                <label for="porcentaje" class="form-label">Porcentaje:</label>
-                <input type="text" class="form-control" name="porcentaje" autocomplete="off" required oninput="allowOnlyNumbers(this)">
-            </div>
-            <input type="submit" class="btn btn-primary" name="validar" value="Registrar">
-            <input type="hidden" name="MM_insert" value="formreg" required>
-        </form>
-
+        </div>
         <div class="col-12 col-md-9 p-4">
             <div class="table-responsive">
-                <table class="table">
-                    <thead class="bg-info">
+                <table class="table table-striped">
+                    <thead class="bg-dark text-white">
                         <tr>
                             <th scope="col">Tipo ARL</th>
                             <th scope="col">Porcentaje</th>

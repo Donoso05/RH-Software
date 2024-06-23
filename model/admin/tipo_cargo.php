@@ -58,7 +58,7 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
     <?php include("nav.php") ?>
     <div class="container-fluid row">
         <div class="col-12 col-md-3 p-3">
-            <div class="card">
+            <div class="">
                 <h3 class="text-center text-secondary">Registrar Tipos Cargo</h3>
                 <form method="post">
                     <div class="mb-3">

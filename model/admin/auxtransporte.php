@@ -44,7 +44,6 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
         document.addEventListener('DOMContentLoaded', function () {
             const valorInput = document.getElementById('valor');
 
-            // Función para validar entrada solo de números
             function soloNumeros(e) {
                 const char = String.fromCharCode(e.which);
                 if (!/[0-9]/.test(char)) {
@@ -52,14 +51,12 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
                 }
             }
 
-            // Función para eliminar espacios iniciales
             function sinEspaciosIniciales(e) {
                 if (e.target.value === '' && e.which === 32) {
                     e.preventDefault();
                 }
             }
 
-            // Asignar eventos para validar la entrada
             valorInput.addEventListener('keypress', function (e) {
                 sinEspaciosIniciales(e);
                 soloNumeros(e);
@@ -71,20 +68,23 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
 <body>
     <?php include("nav.php") ?>
     <div class="container-fluid row">
-        <form class="col-12 col-md-3 p-3" method="post">
-            <h3 class="text-center text-secondary">Auxilio de Transporte</h3>
-            <div class="mb-3">
-                <label for="valor" class="form-label">Valor:</label>
-                <input type="number" class="form-control" id="valor" name="valor" required>
+        <div class="col-12 col-md-3 p-3">
+            <div class="">
+                <h3 class="text-center text-primary">Auxilio de Transporte</h3>
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="valor" class="form-label">Valor:</label>
+                        <input type="number" class="form-control" id="valor" name="valor" required>
+                    </div>
+                    <input type="submit" class="btn btn-primary" name="validar" value="Registrar">
+                    <input type="hidden" name="MM_insert" value="formreg" required>
+                </form>
             </div>
-            <input type="submit" class="btn btn-primary" name="validar" value="Registrar">
-            <input type="hidden" name="MM_insert" value="formreg" required>
-        </form>
-
+        </div>
         <div class="col-12 col-md-9 p-4">
             <div class="table-responsive">
-                <table class="table">
-                    <thead class="bg-info">
+                <table class="table table-striped">
+                    <thead class="bg-dark text-white">
                         <tr>
                             <th scope="col">Auxilio</th>
                             <th scope="col">Valor</th>

@@ -55,20 +55,24 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
 <body>
     <?php include("nav.php") ?>
     <div class="container-fluid row">
-        <form class="col-12 col-md-3 p-3" method="post" autocomplete="off" onsubmit="return validarFormulario()">
-            <h3 class="text-center text-secondary">Registrar Observación</h3>
-            <div class="mb-3">
-                <label for="observacion" class="form-label">Observación:</label>
-                <input type="text" class="form-control" name="observacion" required pattern="[A-Za-z\s]+" title="Solo se permiten letras y espacios">
+        <div class="col-12 col-md-3 p-3">
+            <div class="">
+                <h3 class="text-center text-primary">Registrar Observación</h3>
+                <form method="post" autocomplete="off" onsubmit="return validarFormulario()">
+                    <div class="mb-3">
+                        <label for="observacion" class="form-label">Observación:</label>
+                        <input type="text" class="form-control" name="observacion" required pattern="[A-Za-z\s]+" title="Solo se permiten letras y espacios">
+                    </div>
+                    <input type="submit" class="btn btn-primary" name="validar" value="Registrar">
+                    <input type="hidden" name="MM_insert" value="formreg">
+                </form>
             </div>
-            <input type="submit" class="btn btn-primary" name="validar" value="Registrar">
-            <input type="hidden" name="MM_insert" value="formreg">
-        </form>
+        </div>
 
         <div class="col-12 col-md-9 p-4">
             <div class="table-responsive">
-                <table class="table">
-                    <thead class="bg-info">
+                <table class="table table-striped">
+                    <thead class="bg-dark text-white">
                         <tr>
                             <th scope="col">Observación</th>
                             <th scope="col">Acciones</th>

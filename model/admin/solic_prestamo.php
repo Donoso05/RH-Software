@@ -55,7 +55,7 @@ $usuarios = $stmtUsuarios->fetchAll(PDO::FETCH_ASSOC);
     <?php include("nav.php") ?>
     <div class="container-fluid row">
         <div class="col-12 col-md-3 p-3">
-            <div class="card">
+            <div class="">
                 <h3 class="text-center text-primary">Solicitud de Préstamo</h3>
                 <form id="creditoForm" method="post" action="procesar_credito.php">
                     <div class="form-group mb-3">

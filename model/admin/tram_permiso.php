@@ -49,7 +49,7 @@ $usuarios = $consultaUsuarios->fetchAll(PDO::FETCH_ASSOC);
 <body>
     <?php include("nav.php") ?>
     <div class="container-fluid row">
-        <form class="col-12 col-md-3 p-3 card" id="permisoForm" action="procesar_permiso.php" method="post" enctype="multipart/form-data">
+        <form class="col-12 col-md-3 p-3 " id="permisoForm" action="procesar_permiso.php" method="post" enctype="multipart/form-data">
             <h3 class="text-center text-primary">Trámite Permiso</h3>
             <div class="mb-3">
                 <label for="id_usuario" class="form-label">Documento:</label>
