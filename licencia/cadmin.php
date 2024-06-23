@@ -34,33 +34,34 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
     // Validación de id_usuario para que solo tenga entre 6 y 11 dígitos y solo números
     if (!preg_match('/^\d{6,11}$/', $id_usuario)) {
         echo '<script>alert("El Número de Documento debe contener entre 6 y 11 dígitos.");</script>';
-        echo '<script>window.location="usuario.php"</script>';
+        echo '<script>window.location="index.php"</script>';
         exit();
     }
 
     // Validación de nombre para que solo contenga letras y espacios, y no solo espacios
     if (!preg_match('/^[a-zA-Z\s]+$/', $nombre) || !preg_match('/[a-zA-Z]/', $nombre)) {
         echo '<script>alert("El Nombre solo puede contener letras y no puede estar compuesto solo por espacios.");</script>';
-        echo '<script>window.location="usuario.php"</script>';
+        echo '<script>window.location="index.php"</script>';
         exit();
     }
 
     // Validación de correo
     if (!filter_var($correo, FILTER_VALIDATE_EMAIL)) {
         echo '<script>alert("El Correo no es válido.");</script>';
-        echo '<script>window.location="usuario.php"</script>';
+        echo '<script>window.location="index.php"</script>';
         exit();
     }
 
     // Resto de la validación
-    $sql = $con->prepare("SELECT * FROM usuario WHERE id_usuario = :id_usuario");
+    $sql = $con->prepare("SELECT * FROM usuario WHERE id_usuario = :id_usuario OR correo = :correo");
     $sql->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
+    $sql->bindParam(':correo', $correo, PDO::PARAM_INT);
     $sql->execute();
     $fila = $sql->fetch(PDO::FETCH_ASSOC);
 
     if ($fila) {
-        echo '<script>alert("USUARIO YA REGISTRADO");</script>';
-        echo '<script>window.location="usuario.php"</script>';
+        echo '<script>alert("Ya existe un Usuario registrado con esos datos");</script>';
+        echo '<script>window.location="index.php"</script>';
     } else {
         $insertSQL = $con->prepare("INSERT INTO usuario (id_usuario, nombre, id_tipo_cargo, id_estado, correo, id_tipo_usuario, contrasena, nit_empresa, foto) 
         VALUES (:id_usuario, :nombre, :id_tipo_cargo, :id_estado, :correo, :id_tipo_usuario, :contrasena, :nit_empresa, :foto)");
