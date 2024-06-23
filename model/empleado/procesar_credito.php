@@ -27,31 +27,25 @@ if ($monto < 500000) {
 
 $cuotas = filter_var($_POST["cuotas"], FILTER_SANITIZE_NUMBER_INT);
 
-// Verificación de que el número de cuotas no supere las 36
+// Verificación de que el número de cuotas no supere las 36 o sea menor a 2
 if ($cuotas > 36) {
     echo '<script>alert("El número máximo de cuotas es de 36.");</script>';
     echo '<script>window.location.href = "credito.php";</script>';
     exit();
 }
 
-$interesAnual = 12; // Ejemplo de tasa de interés anual
+if ($cuotas < 2) {
+    echo '<script>alert("El número minimo de cuotas es de 2.");</script>';
+    echo '<script>window.location.href = "credito.php";</script>';
+    exit();
+}
+
 $mes = date('F'); // Mes actual
 $anio = date('Y'); // Año actual
 
-// Función para calcular el valor de las cuotas
-function calcularValorCuotas($monto, $cuotas, $interesAnual) {
-    // Convierte la tasa de interés anual a mensual
-    $interesMensual = $interesAnual / 12 / 100;
-
-    // Si la tasa de interés es 0, solo divide el monto por el número de cuotas
-    if ($interesMensual == 0) {
-        return $monto / $cuotas;
-    }
-
-    // Fórmula para calcular la cuota mensual con interés compuesto
-    $valorCuota = $monto * ($interesMensual * pow(1 + $interesMensual, $cuotas)) / (pow(1 + $interesMensual, $cuotas) - 1);
-
-    return $valorCuota;
+// Función para calcular el valor de las cuotas sin interés
+function calcularValorCuotas($monto, $cuotas) {
+    return $monto / $cuotas;
 }
 
 // Verificar si el usuario tiene más créditos pendientes
@@ -87,6 +81,17 @@ if ($monto > $salarioDoble) {
     exit();
 }
 
+// Calcular el valor de las cuotas
+$valorCuotas = calcularValorCuotas($monto, $cuotas);
+
+// Verificar si el valor de la cuota no supera el 40% del salario base
+$maxValorCuota = $salarioUsuario * 0.40;
+if ($valorCuotas > $maxValorCuota) {
+    echo '<script>alert("El valor de la cuota no puede superar el 40% de su salario base.");</script>';
+    echo '<script>window.location.href = "credito.php";</script>';
+    exit();
+}
+
 // Generar un id_prestamo único basado en el id_usuario y un número aleatorio de 4 dígitos
 do {
     $randomNumber = rand(1000, 9999);
@@ -98,9 +103,6 @@ do {
     $stmtCheck->execute();
     $count = $stmtCheck->fetchColumn();
 } while ($count > 0);
-
-// Calcular el valor de las cuotas
-$valorCuotas = calcularValorCuotas($monto, $cuotas, $interesAnual);
 
 // Formatear el monto y valor de las cuotas en pesos colombianos
 $montoFormateado = number_format($monto, 0, ',', '.');

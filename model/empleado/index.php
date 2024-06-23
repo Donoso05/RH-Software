@@ -1,4 +1,3 @@
-
 <?php
 session_start();
 
@@ -54,8 +53,10 @@ $stmt->execute();
 $password_changed = $stmt->fetchColumn() > 0;
 $stmt->closeCursor();
 $con = null;
-?><!DOCTYPE html>
+?>
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -67,6 +68,7 @@ $con = null;
     <link rel="stylesheet" href="css/nav.css">
     <link rel="stylesheet" href="css/estilos.css"> <!-- Asegúrate de incluir tu archivo CSS unificado -->
 </head>
+
 <body>
     <?php include("nav.php") ?>
 
@@ -82,7 +84,7 @@ $con = null;
                         <div class="file-input-wrapper">
                             <label class="file-input">
                                 <input type="file" name="fileToUpload" id="fileToUpload" accept="image/*">
-                                Actualizar Foto
+                                Subir Foto
                             </label>
                         </div>
                         <br>
@@ -119,45 +121,44 @@ $con = null;
         </div>
     </div>
 
-    <?php if (!$password_changed): ?>
-    <div class="modal fade" id="changePasswordModal" tabindex="-1" role="dialog" aria-labelledby="changePasswordModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h3 class="modal-title" id="changePasswordModalLabel">Cambiar contraseña</h3>
-                    <button type="button" class="btn btn-primary" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="changePasswordForm" action="cambiar_contrasena.php" method="POST">
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Nueva Contraseña</label>
-                            <input type="password" id="password" name="password" class="form-control" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="confirm_password" class="form-label">Confirmar Nueva Contraseña</label>
-                            <input type="password" id="confirm_password" name="confirm_password" class="form-control" required>
-                        </div>
-                        <input type="hidden" name="id_usuario" value="<?php echo $id_usuario; ?>">
-                        <div class="modal-footer">
-                            <button type="submit" class="btn btn-primary">Cambiar Contraseña</button>
-                        </div>
-                        <div class="row mb-3">
-                        <div class="col-sm-4 text-end"><strong>Salario:</strong></div>
-                        <div class="col-sm-8"><?php echo number_format($result['salario_base']) ?></div>
+    <?php if (!$password_changed) : ?>
+        <div class="modal fade" id="changePasswordModal" tabindex="-1" role="dialog" aria-labelledby="changePasswordModalLabel" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h3 class="modal-title" id="changePasswordModalLabel">Cambiar contraseña</h3>
+                        <button type="button" class="btn btn-primary" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
                     </div>
-                    </form>
+                    <div class="modal-body">
+                        <form id="changePasswordForm" action="cambiar_contrasena.php" method="POST">
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Nueva Contraseña</label>
+                                <input type="password" id="password" name="password" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="confirm_password" class="form-label">Confirmar Nueva Contraseña</label>
+                                <input type="password" id="confirm_password" name="confirm_password" class="form-control" required>
+                            </div>
+                            <input type="hidden" name="id_usuario" value="<?php echo $id_usuario; ?>">
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-primary">Cambiar Contraseña</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
     <?php endif; ?>
 
     <script>
         $(document).ready(function() {
-            <?php if (!$password_changed): ?>
-                $('#changePasswordModal').modal({ backdrop: 'static', keyboard: false });
+            <?php if (!$password_changed) : ?>
+                $('#changePasswordModal').modal({
+                    backdrop: 'static',
+                    keyboard: false
+                });
                 $('#changePasswordModal').modal('show');
             <?php endif; ?>
 
@@ -185,4 +186,5 @@ $con = null;
         });
     </script>
 </body>
+
 </html>

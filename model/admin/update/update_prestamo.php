@@ -44,8 +44,8 @@ if (isset($_POST["update"])) {
     exit();
 }
 
-// Obtener los estados disponibles (solo id_estado 3 y 5)
-$stmtEstados = $con->prepare("SELECT id_estado, estado FROM estado WHERE id_estado IN (3, 5)");
+// Obtener los estados disponibles (id_estado 3, 5 y 7)
+$stmtEstados = $con->prepare("SELECT id_estado, estado FROM estado WHERE id_estado IN (3, 5, 7)");
 $stmtEstados->execute();
 $estados = $stmtEstados->fetchAll(PDO::FETCH_ASSOC);
 

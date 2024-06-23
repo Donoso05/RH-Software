@@ -5,7 +5,7 @@ session_start();
 if (!isset($_SESSION["id_usuario"])) {
     // Mostrar un alert y redirigir utilizando JavaScript
     echo '<script>alert("Debes iniciar sesión antes de acceder a la interfaz de administrador.");</script>';
-    echo '<script>window.location.href = "../login.html";</script>';
+    echo '<script>window.location.href = "../../login.html";</script>';
     exit();
 }
 
@@ -59,8 +59,10 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
         exit();
     }
 
-    // Resto de la validación
-    $sql = $con->prepare("SELECT * FROM usuario WHERE id_usuario='$id_usuario'");
+    // Verificar si el id_usuario o correo ya existen en la base de datos
+    $sql = $con->prepare("SELECT * FROM usuario WHERE id_usuario=:id_usuario OR correo=:correo");
+    $sql->bindParam(':id_usuario', $id_usuario, PDO::PARAM_STR);
+    $sql->bindParam(':correo', $correo, PDO::PARAM_STR);
     $sql->execute();
     $fila = $sql->fetch(PDO::FETCH_ASSOC);
 
@@ -69,14 +71,23 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
         echo '<script>window.location="usuario.php"</script>';
         exit();
     } elseif ($fila) {
-        echo '<script>alert("USUARIO YA REGISTRADO");</script>';
+        echo '<script>alert("USUARIO YA REGISTRADO O CORREO YA UTILIZADO");</script>';
         echo '<script>window.location="usuario.php"</script>';
         exit();
     } else {
         $contrasena_fija = "103403sena"; // Contraseña fija
         $password = password_hash($contrasena_fija, PASSWORD_DEFAULT, array("cost" => 12)); // Hash de la contraseña fija
         $insertSQL = $con->prepare("INSERT INTO usuario(id_usuario, nombre, id_tipo_cargo, id_estado, correo, id_tipo_usuario, contrasena, nit_empresa, codigo_barras) 
-        VALUES ('$id_usuario', '$nombre', '$id_tipo_cargo', '$id_estado', '$correo', '$id_tipo_usuario', '$password', '$nit_empresa', '$codigo_barras_filename')");
+        VALUES (:id_usuario, :nombre, :id_tipo_cargo, :id_estado, :correo, :id_tipo_usuario, :password, :nit_empresa, :codigo_barras_filename)");
+        $insertSQL->bindParam(':id_usuario', $id_usuario, PDO::PARAM_STR);
+        $insertSQL->bindParam(':nombre', $nombre, PDO::PARAM_STR);
+        $insertSQL->bindParam(':id_tipo_cargo', $id_tipo_cargo, PDO::PARAM_INT);
+        $insertSQL->bindParam(':id_estado', $id_estado, PDO::PARAM_INT);
+        $insertSQL->bindParam(':correo', $correo, PDO::PARAM_STR);
+        $insertSQL->bindParam(':id_tipo_usuario', $id_tipo_usuario, PDO::PARAM_INT);
+        $insertSQL->bindParam(':password', $password, PDO::PARAM_STR);
+        $insertSQL->bindParam(':nit_empresa', $nit_empresa, PDO::PARAM_STR);
+        $insertSQL->bindParam(':codigo_barras_filename', $codigo_barras_filename, PDO::PARAM_STR);
         $insertSQL->execute();
 
         // Enviar correo al empleado
@@ -257,14 +268,14 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
                     </thead>
                     <tbody>
                     <?php
-                    // Consulta de usuarios filtrando por el mismo nit_empresa del usuario en sesión
+                    // Consulta de usuarios filtrando por el mismo nit_empresa del usuario en sesión y id_tipo_usuario <= 4
                     $nit_empresa_session = $_SESSION['nit_empresa'];
                     $consulta = "SELECT usuario.id_usuario, usuario.nombre, tipo_cargo.cargo AS tipo_cargo, estado.estado AS estado, usuario.correo, tipos_usuarios.tipo_usuario, usuario.nit_empresa, usuario.codigo_barras 
                                  FROM usuario 
                                  INNER JOIN tipo_cargo ON usuario.id_tipo_cargo = tipo_cargo.id_tipo_cargo 
                                  INNER JOIN tipos_usuarios ON usuario.id_tipo_usuario = tipos_usuarios.id_tipo_usuario 
                                  INNER JOIN estado ON usuario.id_estado = estado.id_estado
-                                 WHERE usuario.nit_empresa = :nit_empresa";
+                                 WHERE usuario.nit_empresa = :nit_empresa AND usuario.id_tipo_usuario <= 4";
                     $resultado = $con->prepare($consulta);
                     $resultado->bindParam(':nit_empresa', $nit_empresa_session, PDO::PARAM_STR);
                     $resultado->execute();
