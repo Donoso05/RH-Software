@@ -88,7 +88,7 @@ if (!$detalle) {
                     <div class="card-body">
                         <h5 class="card-title"><i class="fas fa-user"></i> Datos del Usuario</h5>
                         <p class="card-text"><strong>Nombre:</strong> <?php echo $detalle['nombre']; ?></p>
-                        <p class="card-text"><strong>ID Usuario:</strong> <?php echo $detalle['id_usuario']; ?></p>
+                        <p class="card-text"><strong>Documento:</strong> <?php echo $detalle['id_usuario']; ?></p>
                         <p class="card-text"><strong>Sueldo Base:</strong> $<?php echo number_format($detalle['salario_total'], 0); ?></p>
                         <p class="card-text"><strong>Días Trabajados:</strong> <?php echo $detalle['dias_trabajados']; ?></p>
                         <p class="card-text"><strong>Horas Extras:</strong> <?php echo $detalle['horas_extras']; ?></p>

@@ -82,7 +82,7 @@ $con = null;
                         <div class="file-input-wrapper">
                             <label class="file-input">
                                 <input type="file" name="fileToUpload" id="fileToUpload" accept="image/*">
-                                Actualizar Foto
+                                Subir Foto
                             </label>
                         </div>
                         <br>
@@ -143,9 +143,6 @@ $con = null;
                         <div class="modal-footer">
                             <button type="submit" class="btn btn-primary">Cambiar Contraseña</button>
                         </div>
-                        <div class="row mb-3">
-                        <div class="col-sm-4 text-end"><strong>Salario:</strong></div>
-                        <div class="col-sm-8"><?php echo number_format($result['salario_base']) ?></div>
                     </div>
                     </form>
                 </div>
