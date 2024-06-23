@@ -143,10 +143,7 @@ $con = null;
                         <div class="modal-footer">
                             <button type="submit" class="btn btn-primary">Cambiar Contraseña</button>
                         </div>
-                        <div class="row mb-3">
-                        <div class="col-sm-4 text-end"><strong>Salario:</strong></div>
-                        <div class="col-sm-8"><?php echo number_format($result['salario_base']) ?></div>
-                    </div>
+                    
                     </form>
                 </div>
             </div>
