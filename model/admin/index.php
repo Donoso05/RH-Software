@@ -143,7 +143,7 @@ $con = null;
                         <div class="modal-footer">
                             <button type="submit" class="btn btn-primary">Cambiar Contraseña</button>
                         </div>
-                    
+
                     </form>
                 </div>
             </div>

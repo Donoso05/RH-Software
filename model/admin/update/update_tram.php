@@ -164,7 +164,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                                 <select class="form-control" name="id_estado" required>
                                     <option value="">Seleccione uno</option>
                                     <?php
-                                    $control = $con->prepare("SELECT * FROM estado WHERE id_estado IN (3, 5)");
+                                    $control = $con->prepare("SELECT * FROM estado WHERE id_estado IN (3, 5, 7)");
                                     $control->execute();
                                     while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
                                         $selected = ($fila['id_estado'] == $usua['id_estado']) ? 'selected' : '';

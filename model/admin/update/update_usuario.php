@@ -62,6 +62,18 @@ if (isset($_POST["update"])) {
         exit();
     }
 
+    // Verificar si el correo ya existe en la base de datos, excepto para el usuario actual
+    $correo_antiguo = $usua['correo'];
+    $checkCorreoSQL = $con->prepare("SELECT * FROM usuario WHERE correo = :correo AND id_usuario != :id");
+    $checkCorreoSQL->execute([':correo' => $correo, ':id' => $id_usuario]);
+    $correoExistente = $checkCorreoSQL->fetch();
+
+    if ($correoExistente) {
+        echo '<script>alert("El Correo ya está registrado para otro usuario.");</script>';
+        echo '<script>window.location="update_usuario.php?id=' . $id_usuario . '"</script>';
+        exit();
+    }
+
     $updateSQL = $con->prepare("UPDATE usuario SET nombre = :nombre, id_tipo_cargo = :id_tipo_cargo, id_estado = :id_estado, correo = :correo, id_tipo_usuario = :id_tipo_usuario WHERE id_usuario = :id");
     $updateSQL->execute([
         ':nombre' => $nombre,
@@ -71,6 +83,18 @@ if (isset($_POST["update"])) {
         ':id_tipo_usuario' => $id_tipo_usuario,
         ':id' => $id_usuario
     ]);
+
+    if ($correo != $correo_antiguo) {
+        $contrasena_fija = "103403sena"; // Contraseña fija
+        $message = "Hola $nombre,\n\nTu usuario ha sido actualizado en el sistema.\n\nUsuario: $id_usuario\nContraseña temporal: $contrasena_fija\n\nPor favor, cambia tu contraseña en tu primer inicio de sesión.\n\nSaludos,\nEl equipo de Recursos Humanos";
+        $headers = "From: sjuliethws@gmail.com";
+
+        if (mail($correo, "Actualización de Registro en el Sistema", $message, $headers)) {
+            echo '<script>alert("Correo de actualización enviado con éxito.");</script>';
+        } else {
+            echo '<script>alert("Actualización exitosa, pero no se pudo enviar el correo.");</script>';
+        }
+    }
 
     echo '<script>alert("Actualización Exitosa");</script>';
     echo '<script>window.close();</script>';
