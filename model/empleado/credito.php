@@ -34,14 +34,12 @@ $creditos = $stmtCreditos->fetchAll(PDO::FETCH_ASSOC);
 
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solicitud de Préstamo</title>
     <link rel="stylesheet" href="css/presta.css">
 </head>
-
 <body>
     <?php include("nav.php") ?>
     <div class="container">
@@ -95,5 +93,5 @@ $creditos = $stmtCreditos->fetchAll(PDO::FETCH_ASSOC);
     </div>
     <script src="js/credito.js"></script>
 </body>
-
 </html>
+
