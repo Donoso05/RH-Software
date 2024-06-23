@@ -93,7 +93,7 @@ if (isset($_POST["update"])) {
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label form-control-label">Dias</label>
                         <div class="col-lg-9">
-                            <input class="form-control" name="dias" value="<?php echo $usua['dias']; ?>">
+                            <input class="form-control" type="number" name="dias" value="<?php echo $usua['dias']; ?>">
                         </div>
                     </div>
                     <div class="form-group row">

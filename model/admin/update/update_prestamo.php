@@ -19,9 +19,6 @@ $stmt->execute([$id_prestamo]);
 $prestamo = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (isset($_POST["update"])) {
-    $monto_solicitado = $_POST['monto_solicitado'];
-    $cant_cuotas = $_POST['cant_cuotas'];
-    $valor_cuotas = $_POST['valor_cuotas'];
     $id_estado = $_POST['id_estado'];
 
     // Obtener el mes y año actuales
@@ -38,17 +35,11 @@ if (isset($_POST["update"])) {
 
     $stmtUpdate = $con->prepare("
         UPDATE solic_prestamo 
-        SET monto_solicitado = ?, cant_cuotas = ?, valor_cuotas = ?, mes = ?, anio = ?, id_estado = ?
+        SET mes = ?, anio = ?, id_estado = ?
         WHERE id_prestamo = ?
     ");
-    $stmtUpdate->execute([$monto_solicitado, $cant_cuotas, $valor_cuotas, $nombre_mes, $anio, $id_estado, $id_prestamo]);
+    $stmtUpdate->execute([$nombre_mes, $anio, $id_estado, $id_prestamo]);
     echo '<script>alert("Préstamo actualizado correctamente.");</script>';
-    echo '<script>window.close();</script>';
-    exit();
-} elseif (isset($_POST["delete"])) {
-    $stmtDelete = $con->prepare("DELETE FROM solic_prestamo WHERE id_prestamo = ?");
-    $stmtDelete->execute([$id_prestamo]);
-    echo '<script>alert("Préstamo eliminado correctamente.");</script>';
     echo '<script>window.close();</script>';
     exit();
 }
@@ -100,20 +91,20 @@ $salarioUsuario = $stmtSalario->fetch(PDO::FETCH_ASSOC)['salario_base'];
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label form-control-label">Monto Solicitado</label>
                         <div class="col-lg-9">
-                            <input class="form-control" id="monto" name="monto_solicitado" value="<?php echo $prestamo['monto_solicitado']; ?>" required>
+                            <input class="form-control" name="monto_solicitado" value="<?php echo $prestamo['monto_solicitado']; ?>" readonly>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label form-control-label">Cantidad de Cuotas</label>
                         <div class="col-lg-9">
-                            <input class="form-control" id="cuotas" name="cant_cuotas" value="<?php echo $prestamo['cant_cuotas']; ?>" required>
+                            <input class="form-control" name="cant_cuotas" value="<?php echo $prestamo['cant_cuotas']; ?>" readonly>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label form-control-label">Valor de Cuotas</label>
                         <div class="col-lg-9">
                             <span id="valorCuotas" class="form-control"><?php echo number_format($prestamo['valor_cuotas'], 2, ',', '.'); ?></span>
-                            <input type="hidden" id="valor_cuotas" name="valor_cuotas" value="<?php echo $prestamo['valor_cuotas']; ?>">
+                            <input type="hidden" name="valor_cuotas" value="<?php echo $prestamo['valor_cuotas']; ?>">
                         </div>
                     </div>
                     <input type="hidden" name="mes" value="<?php echo $nombre_mes; ?>">
@@ -133,7 +124,6 @@ $salarioUsuario = $stmtSalario->fetch(PDO::FETCH_ASSOC)['salario_base'];
                     <div class="form-group row">
                         <div class="col-lg-12 text-center">
                             <input name="update" type="submit" class="btn btn-primary" value="Actualizar">
-                            <button class="btn btn-danger" name="delete" onclick="return confirmarEliminacion()">Eliminar</button>
                         </div>
                     </div>
                 </form>
@@ -141,12 +131,7 @@ $salarioUsuario = $stmtSalario->fetch(PDO::FETCH_ASSOC)['salario_base'];
         </div>
     </main>
     <script>
-        function confirmarEliminacion() {
-            return confirm("¿Estás seguro de que deseas eliminar este préstamo?");
-        }
-
         const salarioUsuario = <?php echo json_encode($salarioUsuario); ?>;
     </script>
-    <script src="update_credito.js"></script>
 </body>
 </html>

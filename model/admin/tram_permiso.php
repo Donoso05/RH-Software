@@ -97,7 +97,7 @@ $usuarios = $consultaUsuarios->fetchAll(PDO::FETCH_ASSOC);
                 <table class="table table-striped">
                     <thead class="bg-dark text-white">
                         <tr>
-                            <th scope="col">ID Usuario</th>
+                            <th scope="col">Documento</th>
                             <th scope="col">Nombre</th>
                             <th scope="col">Descripción</th>
                             <th scope="col">Archivo</th>
@@ -122,7 +122,7 @@ $usuarios = $consultaUsuarios->fetchAll(PDO::FETCH_ASSOC);
                                 <td>
                                     <div class="text-center">
                                         <div class="d-flex justify-content-start">
-                                            <a href="update_tram.php?id_permiso=<?php echo $permiso['id_permiso']; ?>" onclick="window.open('update_tram.php?id_permiso=<?php echo $permiso['id_permiso']; ?>','','width=500,height=500,toolbar=NO'); return false;" class="btn btn-primary">Editar</a>
+                                            <a href="update_tram.php?id_permiso=<?php echo $permiso['id_permiso']; ?>" onclick="window.open('update/update_tram.php?id_permiso=<?php echo $permiso['id_permiso']; ?>','','width=500,height=500,toolbar=NO'); return false;" class="btn btn-primary">Editar</a>
                                         </div>
                                     </div>
                                 </td>

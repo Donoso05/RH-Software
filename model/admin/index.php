@@ -1,3 +1,4 @@
+
 <?php
 session_start();
 
@@ -15,38 +16,22 @@ $db = new Database();
 // Conectar a la base de datos
 $con = $db->conectar();
 
-// Verificar la conexión a la base de datos
-if (!$con) {
-    exit("Error en la conexión a la base de datos.");
-} else {
-    echo "Conexión a la base de datos exitosa.<br>";
-}
-
 // Obtener el id de usuario de la sesión
 $id_usuario = $_SESSION["id_usuario"];
 
-// Verificar que $id_usuario tiene un valor válido
-if (empty($id_usuario)) {
-    exit("ID de usuario no válido en la sesión.");
-}
-
-// Mostrar el id_usuario para depuración
-echo "ID de usuario de la sesión: " . htmlspecialchars($id_usuario) . "<br>";
-
-// Consultar información del usuario utilizando prepare
-$sql = "SELECT u.id_usuario, u.nombre, u.correo, u.nit_empresa, u.id_estado, e.estado, u.id_tipo_cargo, c.cargo, c.salario_base, u.foto
+// Consultar información del usuario
+$sql = "SELECT u.nombre, u.id_usuario, u.correo, u.nit_empresa, u.id_estado, e.estado, u.id_tipo_cargo, c.cargo, c.salario_base , u.foto
         FROM usuario u
         INNER JOIN estado e ON u.id_estado = e.id_estado
         INNER JOIN tipo_cargo c ON u.id_tipo_cargo = c.id_tipo_cargo
-        WHERE u.id_usuario = :id_usuario";
+        WHERE u.id_usuario = ?";
+
 $stmt = $con->prepare($sql);
-$stmt->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
+$stmt->bindParam(1, $id_usuario, PDO::PARAM_INT);
 $stmt->execute();
 $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Verificar si se encontró el usuario
 if ($result) {
-    echo "Usuario encontrado.<br>";
     $nombre = $result["nombre"];
     $id_usuario = $result["id_usuario"];
     $correo = $result["correo"];
@@ -56,35 +41,20 @@ if ($result) {
     $salario = $result["salario_base"];
     $foto = $result["foto"];
 } else {
-    // Imprimir el resultado de la consulta para depuración
-    echo "No user found with ID: " . htmlspecialchars($id_usuario) . "<br>";
-    $errorInfo = $stmt->errorInfo();
-    echo "Error in query: " . htmlspecialchars($errorInfo[2]);
-
-    // Realizar una consulta directa sin parámetros para depuración
-    $sql_direct = "SELECT * FROM usuario WHERE id_usuario = :id_usuario";
-    $stmt_direct = $con->prepare($sql_direct);
-    $stmt_direct->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
-    $stmt_direct->execute();
-    $result_direct = $stmt_direct->fetch(PDO::FETCH_ASSOC);
-
-    echo "Resultado de la consulta directa: ";
-    var_dump($result_direct);
-    exit("Usuario no encontrado. ID de usuario: " . htmlspecialchars($id_usuario));
+    exit("Usuario no encontrado");
 }
 
 $stmt->closeCursor();
 
 // Verificar si el usuario ha cambiado su contraseña
-$sql = "SELECT COUNT(*) FROM triggers WHERE id_usuario = :id_usuario";
+$sql = "SELECT COUNT(*) FROM triggers WHERE id_usuario = ?";
 $stmt = $con->prepare($sql);
-$stmt->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
+$stmt->bindParam(1, $id_usuario, PDO::PARAM_INT);
 $stmt->execute();
 $password_changed = $stmt->fetchColumn() > 0;
 $stmt->closeCursor();
 $con = null;
-?>
-<!DOCTYPE html>
+?><!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -112,7 +82,7 @@ $con = null;
                         <div class="file-input-wrapper">
                             <label class="file-input">
                                 <input type="file" name="fileToUpload" id="fileToUpload" accept="image/*">
-                                Actualizar Foto
+                                Subir Foto
                             </label>
                         </div>
                         <br>
@@ -142,7 +112,7 @@ $con = null;
                     </div>
                     <div class="row mb-3">
                         <div class="col-sm-4 text-end"><strong>Salario:</strong></div>
-                        <div class="col-sm-8"><?php echo number_format($salario); ?></div>
+                        <div class="col-sm-8"><?php echo number_format($result['salario_base']) ?></div>
                     </div>
                 </div>
             </div>
@@ -173,6 +143,10 @@ $con = null;
                         <div class="modal-footer">
                             <button type="submit" class="btn btn-primary">Cambiar Contraseña</button>
                         </div>
+                        <div class="row mb-3">
+                        <div class="col-sm-4 text-end"><strong>Salario:</strong></div>
+                        <div class="col-sm-8"><?php echo number_format($result['salario_base']) ?></div>
+                    </div>
                     </form>
                 </div>
             </div>

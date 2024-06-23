@@ -19,11 +19,17 @@ if (!$id_permiso) {
     exit();
 }
 
+// Obtener el nit_empresa del usuario logueado
+$id_usuario_sesion = $_SESSION["id_usuario"];
+$sqlUsuario = $con->prepare("SELECT nit_empresa FROM usuario WHERE id_usuario = ?");
+$sqlUsuario->execute([$id_usuario_sesion]);
+$nit_empresa = $sqlUsuario->fetchColumn();
+
 $sql = $con->prepare("SELECT * FROM tram_permiso tp
                       JOIN tipo_permiso tperm ON tp.id_tipo_permiso = tperm.id_tipo_permiso
                       JOIN estado e ON tp.id_estado = e.id_estado
-                      WHERE tp.id_permiso = ?");
-$sql->execute([$id_permiso]);
+                      WHERE tp.id_permiso = ? AND tp.nit_empresa = ?");
+$sql->execute([$id_permiso, $nit_empresa]);
 $usua = $sql->fetch();
 
 if (!$usua) {
@@ -31,6 +37,14 @@ if (!$usua) {
     echo '<script>window.location.href = "../listado_permisos.php";</script>';
     exit();
 }
+
+// Consultar los tipos de permiso según el nit_empresa del usuario al que se va a editar
+$consultaTipos = $con->prepare("SELECT tp.id_tipo_permiso, tp.tipo_permiso, tp.dias
+                                FROM tipo_permiso tp
+                                JOIN usuario u ON tp.nit_empresa = u.nit_empresa
+                                WHERE u.id_usuario = ?");
+$consultaTipos->execute([$usua['id_usuario']]);
+$tipos_permiso = $consultaTipos->fetchAll(PDO::FETCH_ASSOC);
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     if (isset($_POST["update"])) {
@@ -56,14 +70,14 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             }
         }
 
-        $updateSQL = $con->prepare("UPDATE tram_permiso SET id_usuario = ?, id_tipo_permiso = ?, fecha_inicio = ?, fecha_fin = ?, id_estado = ?, descripcion = ?, incapacidad = ? WHERE id_permiso = ?");
-        $updateSQL->execute([$id_usuario, $id_tipo_permiso, $fecha_inicio, $fecha_fin, $id_estado, $descripcion, $rutaArchivo, $id_permiso]);
+        $updateSQL = $con->prepare("UPDATE tram_permiso SET id_usuario = ?, id_tipo_permiso = ?, fecha_inicio = ?, fecha_fin = ?, id_estado = ?, descripcion = ?, incapacidad = ? WHERE id_permiso = ? AND nit_empresa = ?");
+        $updateSQL->execute([$id_usuario, $id_tipo_permiso, $fecha_inicio, $fecha_fin, $id_estado, $descripcion, $rutaArchivo, $id_permiso, $nit_empresa]);
 
         echo '<script>alert("Actualización Exitosa");</script>';
         echo '<script>window.close();</script>';
     } elseif (isset($_POST["delete"])) {
-        $deleteSQL = $con->prepare("DELETE FROM tram_permiso WHERE id_permiso = ?");
-        $deleteSQL->execute([$id_permiso]);
+        $deleteSQL = $con->prepare("DELETE FROM tram_permiso WHERE id_permiso = ? AND nit_empresa = ?");
+        $deleteSQL->execute([$id_permiso, $nit_empresa]);
 
         echo '<script>alert("Registro Eliminado Exitosamente");</script>';
         echo '<script>window.close();</script>';
@@ -71,7 +85,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 }
 ?>
-
 <!doctype html>
 <html lang="es">
 <head>
@@ -112,11 +125,9 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                                 <select class="form-control" name="id_tipo_permiso" id="id_tipo_permiso" required>
                                     <option value="">Seleccione uno</option>
                                     <?php
-                                    $control = $con->prepare("SELECT * FROM tipo_permiso");
-                                    $control->execute();
-                                    while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
-                                        $selected = ($fila['id_tipo_permiso'] == $usua['id_tipo_permiso']) ? 'selected' : '';
-                                        echo "<option value='" . htmlspecialchars($fila['id_tipo_permiso'], ENT_QUOTES, 'UTF-8') . "' data-dias='" . htmlspecialchars($fila['dias'], ENT_QUOTES, 'UTF-8') . "' $selected>" . htmlspecialchars($fila['tipo_permiso'], ENT_QUOTES, 'UTF-8') . "</option>";
+                                    foreach ($tipos_permiso as $tipo) {
+                                        $selected = ($tipo['id_tipo_permiso'] == $usua['id_tipo_permiso']) ? 'selected' : '';
+                                        echo "<option value='" . htmlspecialchars($tipo['id_tipo_permiso'], ENT_QUOTES, 'UTF-8') . "' data-dias='" . htmlspecialchars($tipo['dias'], ENT_QUOTES, 'UTF-8') . "' $selected>" . htmlspecialchars($tipo['tipo_permiso'], ENT_QUOTES, 'UTF-8') . "</option>";
                                     }
                                     ?>
                                 </select>
@@ -166,7 +177,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                         <div class="form-group row">
                             <div class="col-lg-12 text-center">
                                 <input name="update" type="submit" class="btn btn-primary" value="Actualizar">
-                                <button class="btn btn-danger" name="delete" onclick="return confirmarEliminacion()">Eliminar</button>
                             </div>
                         </div>
                     </form>
@@ -191,10 +201,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 var fechaFin = yyyy + '-' + mm + '-' + dd;
                 document.getElementById('fecha_fin').value = fechaFin;
             }
-        }
-
-        function confirmarEliminacion() {
-            return confirm('¿Estás seguro de que deseas eliminar este registro?');
         }
     </script>
 </body>

@@ -3,7 +3,6 @@ session_start();
 
 // Verificar si la sesión no está iniciada
 if (!isset($_SESSION["id_usuario"])) {
-    // Mostrar un alert y redirigir utilizando JavaScript
     echo '<script>alert("Debes iniciar sesión antes de acceder a la interfaz de administrador.");</script>';
     echo '<script>window.location.href = "../login.html";</script>';
     exit();
@@ -12,12 +11,22 @@ require_once("../../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
 
-$sql = $con->prepare("SELECT * FROM tipo_cargo, arl WHERE tipo_cargo.id_arl = arl.id_arl AND tipo_cargo.id_tipo_cargo = ?");
-$sql->execute([$_GET['id']]);
-$usua = $sql->fetch();
-?>
+// Obtener el nit_empresa del usuario logueado
+$id_usuario_sesion = $_SESSION["id_usuario"];
+$sqlUsuario = $con->prepare("SELECT nit_empresa FROM usuario WHERE id_usuario = ?");
+$sqlUsuario->execute([$id_usuario_sesion]);
+$nit_empresa = $sqlUsuario->fetchColumn();
 
-<?php
+$sql = $con->prepare("SELECT * FROM tipo_cargo, arl WHERE tipo_cargo.id_arl = arl.id_arl AND tipo_cargo.id_tipo_cargo = ? AND tipo_cargo.nit_empresa = ?");
+$sql->execute([$_GET['id'], $nit_empresa]);
+$usua = $sql->fetch();
+
+if (!$usua) {
+    echo '<script>alert("No se encontraron resultados para el tipo de cargo especificado.");</script>';
+    echo '<script>window.location.href = "../listado_cargos.php";</script>';
+    exit();
+}
+
 if (isset($_POST["update"])) {
     $id_tipo_cargo = $_POST['id_tipo_cargo'];
     $cargo = trim($_POST['cargo']);
@@ -29,25 +38,23 @@ if (isset($_POST["update"])) {
     } elseif (!preg_match('/[a-zA-Z]/', $cargo) || !is_numeric($salario_base) || !is_numeric($id_arl)) {
         echo '<script>alert("Datos inválidos. Verifique que el cargo contenga letras y que el salario y ARL sean números válidos.");</script>';
     } else {
-        $insertSQL = $con->prepare("UPDATE tipo_cargo SET cargo = ?, salario_base = ?, id_arl = ? WHERE id_tipo_cargo = ?");
-        $insertSQL->execute([$cargo, $salario_base, $id_arl, $id_tipo_cargo]);
+        $insertSQL = $con->prepare("UPDATE tipo_cargo SET cargo = ?, salario_base = ?, id_arl = ? WHERE id_tipo_cargo = ? AND nit_empresa = ?");
+        $insertSQL->execute([$cargo, $salario_base, $id_arl, $id_tipo_cargo, $nit_empresa]);
         echo '<script>alert("Actualización Exitosa");</script>';
         echo '<script>window.close();</script>';
     }
 } elseif (isset($_POST["delete"])) {
     $id_tipo_cargo = $_POST['id_tipo_cargo'];
 
-    $deleteSQL = $con->prepare("DELETE FROM tipo_cargo WHERE id_tipo_cargo = ?");
-    $deleteSQL->execute([$id_tipo_cargo]);
+    $deleteSQL = $con->prepare("DELETE FROM tipo_cargo WHERE id_tipo_cargo = ? AND nit_empresa = ?");
+    $deleteSQL->execute([$id_tipo_cargo, $nit_empresa]);
     echo '<script>alert("Registro Eliminado Exitosamente");</script>';
     echo '<script>window.close();</script>';
     exit;
 }
 ?>
-
 <!doctype html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -83,7 +90,6 @@ if (isset($_POST["update"])) {
         }
     </script>
 </head>
-
 <body>
     <main>
         <div class="card">
@@ -116,8 +122,8 @@ if (isset($_POST["update"])) {
                             <select class="form-control" name="id_arl" required>
                                 <option value="">Seleccione uno</option>
                                 <?php
-                                $control = $con->prepare("SELECT * FROM arl");
-                                $control->execute();
+                                $control = $con->prepare("SELECT * FROM arl WHERE nit_empresa = ?");
+                                $control->execute([$nit_empresa]);
                                 while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
                                     $selected = ($fila['id_arl'] == $usua['id_arl']) ? 'selected' : '';
                                     echo "<option value='" . htmlspecialchars($fila['id_arl'], ENT_QUOTES, 'UTF-8') . "' $selected>" . htmlspecialchars($fila['tipo'], ENT_QUOTES, 'UTF-8') . "</option>";
@@ -146,5 +152,4 @@ if (isset($_POST["update"])) {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6jty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 </body>
-
 </html>

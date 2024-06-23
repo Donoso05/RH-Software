@@ -74,8 +74,9 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
                         <select class="form-control" name="id_arl" required>
                             <option value="">Selecciona el Tipo de ARL</option>
                             <?php
-                            $control = $con->prepare("SELECT * FROM arl");
-                            $control->execute();
+                            // Filtrar los registros de ARL según el nit_empresa de la persona logueada
+                            $control = $con->prepare("SELECT * FROM arl WHERE nit_empresa = ?");
+                            $control->execute([$nit_empresa_session]);
                             while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
                                 echo "<option value='" . htmlspecialchars($fila['id_arl'], ENT_QUOTES, 'UTF-8') . "'>" . htmlspecialchars($fila['tipo'], ENT_QUOTES, 'UTF-8') . "</option>";
                             }
@@ -117,7 +118,7 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
                                 <td>
                                     <div class="text-center">
                                         <div class="d-flex justify-content-start">
-                                            <a href="update_cargo.php?id=<?php echo $fila['id_tipo_cargo']; ?>" onclick="window.open('./update/update_cargo.php?id=<?php echo $fila['id_tipo_cargo']; ?>','','width=500,height=500,toolbar=NO'); return false;" class="btn btn-primary">Editar</a>
+                                            <a href="update_cargo.php?id=<?php echo $fila['id_tipo_cargo']; ?>" onclick="window.open('update/update_cargo.php?id=<?php echo $fila['id_tipo_cargo']; ?>','','width=500,height=500,toolbar=NO'); return false;" class="btn btn-primary">Editar</a>
                                         </div>
                                     </div>
                                 </td>
