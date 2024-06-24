@@ -48,13 +48,16 @@ function calcularValorCuotas($monto, $cuotas) {
     return $monto / $cuotas;
 }
 
-// Verificar si el usuario tiene préstamos pendientes que no estén en estado "Finalizado"
 $idEstadoFinalizado = 9; // ID del estado "Finalizado"
-$stmt = $con->prepare("SELECT COUNT(*) AS total FROM solic_prestamo WHERE id_usuario = :idUsuario AND id_estado != :idEstadoFinalizado");
+$idEstadoRechazado = 7; // ID del estado "Rechazado"
+
+$stmt = $con->prepare("SELECT COUNT(*) AS total FROM solic_prestamo WHERE id_usuario = :idUsuario AND id_estado NOT IN (:idEstadoFinalizado, :idEstadoRechazado)");
 $stmt->bindParam(':idUsuario', $idUsuario, PDO::PARAM_INT);
 $stmt->bindParam(':idEstadoFinalizado', $idEstadoFinalizado, PDO::PARAM_INT);
+$stmt->bindParam(':idEstadoRechazado', $idEstadoRechazado, PDO::PARAM_INT);
 $stmt->execute();
 $datos = $stmt->fetch(PDO::FETCH_ASSOC);
+
 
 if ($datos["total"] > 0) {
     echo '<script>alert("Tienes préstamos pendientes que no están finalizados.");</script>';
