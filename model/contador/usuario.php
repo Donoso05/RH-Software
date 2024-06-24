@@ -20,7 +20,6 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
     $id_usuario = $_POST['id_usuario'];
     $nombre = trim($_POST['nombre']);
     $id_tipo_cargo = $_POST['id_tipo_cargo'];
-    $id_estado = $_POST['id_estado'];
     $correo = $_POST['correo'];
     $id_tipo_usuario = $_POST['id_tipo_usuario'];
     $nit_empresa = $_SESSION['nit_empresa']; // Obtener el NIT de la empresa de la sesión
@@ -38,7 +37,7 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
     $codigo_barras_filename = uniqid() . '.png';
     file_put_contents(__DIR__ . '/../bar_code/' . $codigo_barras_filename, $codigo_barras_imagen);
 
-    // Validación de id_usuario para que solo tenga entre 6 y 10 dígitos y solo números
+    // Validación de id_usuario para que solo tenga entre 6 y 11 dígitos y solo números
     if (!preg_match('/^\d{6,11}$/', $id_usuario)) {
         echo '<script>alert("El Número de Documento debe contener entre 6 y 11 dígitos.");</script>';
         echo '<script>window.location="usuario.php"</script>';
@@ -75,8 +74,8 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
     } else {
         $contrasena_fija = "103403sena"; // Contraseña fija
         $password = password_hash($contrasena_fija, PASSWORD_DEFAULT, array("cost" => 12)); // Hash de la contraseña fija
-        $insertSQL = $con->prepare("INSERT INTO usuario(id_usuario, nombre, id_tipo_cargo, id_estado, correo, id_tipo_usuario, contrasena, nit_empresa, codigo_barras) 
-        VALUES ('$id_usuario', '$nombre', '$id_tipo_cargo', '$id_estado', '$correo', '$id_tipo_usuario', '$password', '$nit_empresa', '$codigo_barras_filename')");
+        $insertSQL = $con->prepare("INSERT INTO usuario(id_usuario, nombre, id_tipo_cargo, correo, id_tipo_usuario, contrasena, nit_empresa, codigo_barras) 
+        VALUES ('$id_usuario', '$nombre', '$id_tipo_cargo', '$correo', '$id_tipo_usuario', '$password', '$nit_empresa','$codigo_barras_filename')");
         $insertSQL->execute();
 
         // Enviar correo al empleado
@@ -90,9 +89,6 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
         } else {
             echo '<script>alert("Usuario Creado con Exito, pero no se pudo enviar el correo");</script>';
         }
-
-        echo '<script>window.location="usuario.php"</script>';
-        exit();
     }
 }
 ?>
@@ -112,13 +108,13 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
             const tipoUsuarioSelect = document.getElementById('id_tipo_usuario');
             const tipoCargoSelect = document.getElementById('id_tipo_cargo');
 
-            if (tipoUsuarioSelect.value == '2' && tipoCargoSelect.value != '7') {
-                alert('Si selecciona Tipo Usuario 2, debe seleccionar Tipo Cargo 7.');
+            if (tipoUsuarioSelect.value == '2' && tipoCargoSelect.value != '4') {
+                alert('Si selecciona Tipo Usuario 2, debe seleccionar Tipo Cargo 4.');
                 return false;
             }
 
-            if (tipoUsuarioSelect.value == '3' && !['2', '3', '4'].includes(tipoCargoSelect.value)) {
-                alert('Si selecciona Tipo Usuario 3, debe seleccionar Tipo Cargo 2, 3 o 4.');
+            if (tipoUsuarioSelect.value == '3' && !['2', '3', '7'].includes(tipoCargoSelect.value)) {
+                alert('Si selecciona Tipo Usuario 3, debe seleccionar Tipo Cargo 2, 3 o 7.');
                 return false;
             }
 
@@ -211,17 +207,14 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
                         <tbody>
                             <?php
                             // Consulta de usuarios
-                            $nit_empresa_session = $_SESSION['nit_empresa'];
-                    $consulta = "SELECT usuario.id_usuario, usuario.nombre, tipo_cargo.cargo AS tipo_cargo, estado.estado AS estado, usuario.correo, tipos_usuarios.tipo_usuario, usuario.nit_empresa, usuario.codigo_barras 
-                                 FROM usuario 
-                                 INNER JOIN tipo_cargo ON usuario.id_tipo_cargo = tipo_cargo.id_tipo_cargo 
-                                 INNER JOIN tipos_usuarios ON usuario.id_tipo_usuario = tipos_usuarios.id_tipo_usuario 
-                                 INNER JOIN estado ON usuario.id_estado = estado.id_estado
-                                 WHERE usuario.nit_empresa = :nit_empresa AND  tipos_usuarios.id_tipo_usuario <= 4";
-                    $resultado = $con->prepare($consulta);
-                    $resultado->bindParam(':nit_empresa', $nit_empresa_session, PDO::PARAM_STR);
-                    $resultado->execute();
-                    while ($fila = $resultado->fetch(PDO::FETCH_ASSOC)) {
+                            $consulta = "SELECT usuario.id_usuario, usuario.nombre, tipo_cargo.cargo AS tipo_cargo, estado.estado AS estado, usuario.correo, tipos_usuarios.tipo_usuario, usuario.contrasena, usuario.nit_empresa, usuario.codigo_barras
+                            FROM usuario
+                            INNER JOIN tipo_cargo ON usuario.id_tipo_cargo = tipo_cargo.id_tipo_cargo 
+                            INNER JOIN tipos_usuarios ON usuario.id_tipo_usuario = tipos_usuarios.id_tipo_usuario 
+                            INNER JOIN estado ON usuario.id_estado = estado.id_estado";
+                            $resultado = $con->query($consulta);
+
+                            while ($fila = $resultado->fetch()) {
                             ?>
                                 <tr>
                                     <td><?php echo $fila["id_usuario"]; ?></td>
