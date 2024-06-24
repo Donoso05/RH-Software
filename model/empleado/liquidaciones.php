@@ -69,14 +69,13 @@ $nominas = $query->fetchAll(PDO::FETCH_ASSOC);
                         <td colspan="3">
                             <div class="p-3">
                                 <p><strong>Año:</strong> <?php echo htmlspecialchars($nomina['anio']); ?></p>
-                                <p><strong>Estado:</strong> <?php echo htmlspecialchars($nomina['id_estado']); ?></p>
                                 <p><strong>ARL:</strong> <?php echo htmlspecialchars($nomina['precio_arl']); ?></p>
                                 <p><strong>Salud:</strong> <?php echo htmlspecialchars($nomina['deduccion_salud']); ?></p>
                                 <p><strong>Pensión:</strong> <?php echo htmlspecialchars($nomina['deduccion_pension']); ?></p>
                                 <p><strong>Total Deducciones:</strong> <?php echo htmlspecialchars($nomina['total_deducciones']); ?></p>
                                 <p><strong>Auxilio Transporte:</strong> <?php echo htmlspecialchars($nomina['aux_transporte_valor']); ?></p>
                                 <p><strong>Horas Extras:</strong> <?php echo htmlspecialchars($nomina['horas_extras']); ?></p>
-                                <p><strong>Salario Base:</strong> <?php echo htmlspecialchars($nomina['salario_base']); ?></p>
+                                <p><strong>Salario Total:</strong> <?php echo htmlspecialchars($nomina['salario_total']); ?></p>
                                 <p><strong>Días Trabajados:</strong> <?php echo htmlspecialchars($nomina['dias_trabajados']); ?></p>
                                 <p><strong>Valor Horas Extras:</strong> <?php echo htmlspecialchars($nomina['valor_horas_extras']); ?></p>
                                 <p><strong>Total Ingresos:</strong> <?php echo htmlspecialchars($nomina['total_ingresos']); ?></p>

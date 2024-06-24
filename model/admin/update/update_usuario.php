@@ -194,7 +194,7 @@ if (isset($_POST["update"])) {
                     <div class="form-group row">
                         <label class="col-lg-3 col-form-label form-control-label">Cargo</label>
                         <div class="col-lg-9">
-                            <select class="form-control" name="id_tipo_cargo" id="id_tipo_cargo" required>
+                            <select class="form-control" name="id_tipo_cargo" id="id_tipo_cargo" >
                                 <?php if ($isAdmin && $usua['id_tipo_cargo'] == 1): ?>
                                     <option value="1" selected>Administrador</option>
                                 <?php else: ?>

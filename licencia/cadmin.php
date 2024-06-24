@@ -34,22 +34,19 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
     // Validación de id_usuario para que solo tenga entre 6 y 11 dígitos y solo números
     if (!preg_match('/^\d{6,11}$/', $id_usuario)) {
         echo '<script>alert("El Número de Documento debe contener entre 6 y 11 dígitos.");</script>';
-        echo '<script>window.location="index.php"</script>';
-        exit();
+    
     }
 
     // Validación de nombre para que solo contenga letras y espacios, y no solo espacios
     if (!preg_match('/^[a-zA-Z\s]+$/', $nombre) || !preg_match('/[a-zA-Z]/', $nombre)) {
         echo '<script>alert("El Nombre solo puede contener letras y no puede estar compuesto solo por espacios.");</script>';
-        echo '<script>window.location="index.php"</script>';
-        exit();
+    
     }
 
     // Validación de correo
     if (!filter_var($correo, FILTER_VALIDATE_EMAIL)) {
         echo '<script>alert("El Correo no es válido.");</script>';
-        echo '<script>window.location="index.php"</script>';
-        exit();
+
     }
 
     // Resto de la validación
