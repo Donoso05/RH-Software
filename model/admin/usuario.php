@@ -119,18 +119,6 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
     <link rel="stylesheet" href="css/estilos.css">
     <script>
         function validarFormulario() {
-            const tipoUsuarioSelect = document.getElementById('id_tipo_usuario');
-            const tipoCargoSelect = document.getElementById('id_tipo_cargo');
-
-            if (tipoUsuarioSelect.value == '2' && tipoCargoSelect.value != '4') {
-                alert('Si selecciona Tipo Usuario 2, debe seleccionar Tipo Cargo 4.');
-                return false;
-            }
-
-            if (tipoUsuarioSelect.value == '3' && !['2', '3', '7'].includes(tipoCargoSelect.value)) {
-                alert('Si selecciona Tipo Usuario 3, debe seleccionar Tipo Cargo 2, 3 o 7.');
-                return false;
-            }
 
             const idUsuario = document.getElementById('id_usuario').value.trim();
             const idUsuarioRegex = /^\d{6,11}$/;
@@ -275,7 +263,7 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
                                  INNER JOIN tipo_cargo ON usuario.id_tipo_cargo = tipo_cargo.id_tipo_cargo 
                                  INNER JOIN tipos_usuarios ON usuario.id_tipo_usuario = tipos_usuarios.id_tipo_usuario 
                                  INNER JOIN estado ON usuario.id_estado = estado.id_estado
-                                 WHERE usuario.nit_empresa = :nit_empresa AND usuario.id_tipo_usuario <= 4";
+                                 WHERE usuario.nit_empresa = :nit_empresa";
                     $resultado = $con->prepare($consulta);
                     $resultado->bindParam(':nit_empresa', $nit_empresa_session, PDO::PARAM_STR);
                     $resultado->execute();

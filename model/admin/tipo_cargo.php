@@ -16,18 +16,19 @@ $nit_empresa_session = $_SESSION['nit_empresa']; // Obtener el NIT de la empresa
 <?php
 if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
     $cargo = trim($_POST['cargo']);
+    $id_tipo_usuario = trim($_POST['id_tipo_usuario']);
     $salario_base = trim($_POST['salario_base']);
     $id_arl = trim($_POST['id_arl']);
 
-    if (empty($cargo) || empty($salario_base) || empty($id_arl)) {
+    if (empty($cargo) || empty($id_tipo_usuario) || empty($salario_base) || empty($id_arl)) {
         echo '<script>alert("EXISTEN DATOS VACIOS");</script>';
         echo '<script>window.location="tipo_cargo.php"</script>';
     } elseif (!preg_match('/[a-zA-Z]/', $cargo) || !is_numeric($salario_base) || !is_numeric($id_arl)) {
         echo '<script>alert("Datos inválidos. Verifique que el cargo contenga letras y que el salario y ARL sean números válidos.");</script>';
         echo '<script>window.location="tipo_cargo.php"</script>';
     } else {
-        $insertSQL = $con->prepare("INSERT INTO tipo_cargo (cargo, salario_base, id_arl, nit_empresa) VALUES (?, ?, ?, ?)");
-        $insertSQL->execute([$cargo, $salario_base, $id_arl, $nit_empresa_session]);
+        $insertSQL = $con->prepare("INSERT INTO tipo_cargo (cargo, id_tipo_usuario, salario_base, id_arl, nit_empresa) VALUES (?, ?, ?, ?, ?)");
+        $insertSQL->execute([$cargo, $id_tipo_usuario, $salario_base, $id_arl, $nit_empresa_session]);
         echo '<script>alert("Registro exitoso");</script>';
         echo '<script>window.location="tipo_cargo.php"</script>';
     }
@@ -64,6 +65,20 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
                     <div class="mb-3">
                         <label for="cargo" class="form-label">Tipo Cargo:</label>
                         <input type="text" class="form-control" name="cargo" oninput="validateLetters(this)" pattern=".*[a-zA-Z]+.*" required autocomplete="off" value="">
+                    </div>
+                    <div class="mb-3">
+                        <label for="cargo" class="form-label">Tipo Usuario:</label>
+                        <select class="form-control" name="id_tipo_usuario" required>
+                            <option value="">Selecciona el Tipo de Usuario</option>
+                            <?php
+                            // Filtrar los registros de ARL según el nit_empresa de la persona logueada
+                            $control = $con->prepare("SELECT * FROM tipos_usuarios WHERE id_tipo_usuario NOT IN (1, 6)");
+                            $control->execute();
+                            while ($fila = $control->fetch(PDO::FETCH_ASSOC)) {
+                                echo "<option value='" . htmlspecialchars($fila['id_tipo_usuario'], ENT_QUOTES, 'UTF-8') . "'>" . htmlspecialchars($fila['tipo_usuario'], ENT_QUOTES, 'UTF-8') . "</option>";
+                            }
+                            ?>
+                        </select>
                     </div>
                     <div class="mb-3">
                         <label for="salario_base" class="form-label">Salario Base:</label>

@@ -20,7 +20,6 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
     $id_usuario = $_POST['id_usuario'];
     $nombre = trim($_POST['nombre']);
     $id_tipo_cargo = $_POST['id_tipo_cargo'];
-    $id_estado = $_POST['id_estado'];
     $correo = $_POST['correo'];
     $id_tipo_usuario = $_POST['id_tipo_usuario'];
     $nit_empresa = $_SESSION['nit_empresa']; // Obtener el NIT de la empresa de la sesión
@@ -60,7 +59,9 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
     }
 
     // Resto de la validación
-    $sql = $con->prepare("SELECT * FROM usuario WHERE id_usuario='$id_usuario'");
+    $sql = $con->prepare("SELECT * FROM usuario WHERE id_usuario=:id_usuario OR correo=:correo");
+    $sql->bindParam(':id_usuario', $id_usuario, PDO::PARAM_STR);
+    $sql->bindParam(':correo', $correo, PDO::PARAM_STR);
     $sql->execute();
     $fila = $sql->fetch(PDO::FETCH_ASSOC);
 
@@ -75,8 +76,8 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
     } else {
         $contrasena_fija = "103403sena"; // Contraseña fija
         $password = password_hash($contrasena_fija, PASSWORD_DEFAULT, array("cost" => 12)); // Hash de la contraseña fija
-        $insertSQL = $con->prepare("INSERT INTO usuario(id_usuario, nombre, id_tipo_cargo, id_estado, correo, id_tipo_usuario, contrasena, nit_empresa, codigo_barras) 
-        VALUES ('$id_usuario', '$nombre', '$id_tipo_cargo', '$id_estado', '$correo', '$id_tipo_usuario', '$password', '$nit_empresa', '$codigo_barras_filename')");
+        $insertSQL = $con->prepare("INSERT INTO usuario(id_usuario, nombre, id_tipo_cargo, correo, id_tipo_usuario, contrasena, nit_empresa, codigo_barras) 
+        VALUES ('$id_usuario', '$nombre', '$id_tipo_cargo', '$correo', '$id_tipo_usuario', '$password', '$nit_empresa', '$codigo_barras_filename')");
         $insertSQL->execute();
 
         // Enviar correo al empleado
@@ -108,23 +109,7 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
     <link rel="stylesheet" href="css/nav.css">
     <link rel="stylesheet" href="css/usuario.css">
     <script>
-        function validarFormulario() {
-            const tipoUsuarioSelect = document.getElementById('id_tipo_usuario');
-            const tipoCargoSelect = document.getElementById('id_tipo_cargo');
-
-            if (tipoUsuarioSelect.value == '2' && tipoCargoSelect.value != '7') {
-                alert('Si selecciona Tipo Usuario 2, debe seleccionar Tipo Cargo 7.');
-                return false;
-            }
-
-            if (tipoUsuarioSelect.value == '3' && !['2', '3', '4'].includes(tipoCargoSelect.value)) {
-                alert('Si selecciona Tipo Usuario 3, debe seleccionar Tipo Cargo 2, 3 o 4.');
-                return false;
-            }
-
-            return true;
-        }
-
+    
         function actualizarTipoCargo() {
             const tipoUsuarioSelect = document.getElementById('id_tipo_usuario');
             const tipoCargoSelect = document.getElementById('id_tipo_cargo');
@@ -217,7 +202,7 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
                                  INNER JOIN tipo_cargo ON usuario.id_tipo_cargo = tipo_cargo.id_tipo_cargo 
                                  INNER JOIN tipos_usuarios ON usuario.id_tipo_usuario = tipos_usuarios.id_tipo_usuario 
                                  INNER JOIN estado ON usuario.id_estado = estado.id_estado
-                                 WHERE usuario.nit_empresa = :nit_empresa AND  tipos_usuarios.id_tipo_usuario <= 4";
+                                 WHERE usuario.nit_empresa = :nit_empresa";
                     $resultado = $con->prepare($consulta);
                     $resultado->bindParam(':nit_empresa', $nit_empresa_session, PDO::PARAM_STR);
                     $resultado->execute();

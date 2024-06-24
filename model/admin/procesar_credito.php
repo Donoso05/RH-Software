@@ -30,6 +30,12 @@ if ($cuotas > 36) {
     exit();
 }
 
+if ($cuotas < 2) {
+    echo '<script>alert("El número minimo de cuotas son 2.");</script>';
+    echo '<script>window.location.href = "solic_prestamo.php";</script>';
+    exit();
+}
+
 $interesAnual = 12;
 $mes = date('F');
 $anio = date('Y');

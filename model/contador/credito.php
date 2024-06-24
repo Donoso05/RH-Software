@@ -178,7 +178,7 @@ $creditos = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <select id="selectMotivoRechazo" class="form-select" required>
                         <option value="" disabled selected>Seleccione un motivo</option>
                         <?php
-                        $observaciones = $con->query("SELECT * FROM observaciones WHERE id_observacion > 5");
+                        $observaciones = $con->query("SELECT * FROM observaciones WHERE id_observacion");
                         while ($obs = $observaciones->fetch()) {
                             echo '<option value="'.$obs['id_observacion'].'">'.$obs['observacion'].'</option>';
                         }
