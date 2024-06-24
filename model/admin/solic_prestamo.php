@@ -95,7 +95,7 @@ $usuarios = $stmtUsuarios->fetchAll(PDO::FETCH_ASSOC);
                 <table class="table table-striped">
                     <thead class="bg-dark text-white">
                         <tr>
-                            <th scope="col">ID Usuario</th>
+                            <th scope="col">Documento</th>
                             <th scope="col">Nombre Usuario</th>
                             <th scope="col">Monto Solicitado</th>
                             <th scope="col">Cantidad de Cuotas</th>

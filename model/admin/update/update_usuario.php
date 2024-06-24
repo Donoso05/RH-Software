@@ -256,40 +256,29 @@ if (isset($_POST["update"])) {
             return true;
         }
 
-        function confirmarEliminacion() {
-            return confirm("¿Estás seguro de que deseas eliminar este usuario?");
+        function actualizarTipoCargo() {
+            const tipoUsuarioSelect = document.getElementById('id_tipo_usuario');
+            const tipoCargoSelect = document.getElementById('id_tipo_cargo');
+
+            // Resetear las opciones del select de tipo cargo
+            tipoCargoSelect.innerHTML = '';
+
+            fetch('../obtener_cargos.php?tipo_usuario=' + tipoUsuarioSelect.value)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        data.forEach(cargo => {
+                            tipoCargoSelect.innerHTML += `<option value="${cargo.id_tipo_cargo}">${cargo.cargo}</option>`;
+                        });
+                        tipoCargoSelect.value = data[0].id_tipo_cargo; // Seleccionar la primera opción por defecto
+                    } else {
+                        tipoCargoSelect.innerHTML = '<option value="">No hay cargos disponibles</option>';
+                    }
+                });
         }
 
-        function actualizarTipoCargo() {
-            const tipoUsuario = document.querySelector('select[name="id_tipo_usuario"]').value;
-            const tipoCargo = document.querySelector('select[name="id_tipo_cargo"]');
-            const cargos = <?php echo json_encode($cargos); ?>;
-
-            tipoCargo.innerHTML = ''; // Limpiar las opciones actuales
-
-            let opcionesFiltradas = [];
-            if (tipoUsuario == 2) {
-                // Solo mostrar id_tipo_cargo 4
-                opcionesFiltradas = cargos.filter(cargo => cargo.id_tipo_cargo == 4);
-            } else if (tipoUsuario == 3) {
-                // Excluir id_tipo_cargo 1 y 4
-                opcionesFiltradas = cargos.filter(cargo => cargo.id_tipo_cargo != 1 && cargo.id_tipo_cargo != 4);
-            } else if (tipoUsuario == 1) {
-                // Solo mostrar id_tipo_cargo 1 para Administradores
-                opcionesFiltradas = cargos.filter(cargo => cargo.id_tipo_cargo == 1);
-            }
-
-            opcionesFiltradas.forEach(cargo => {
-                const option = document.createElement('option');
-                option.value = cargo.id_tipo_cargo;
-                option.textContent = cargo.cargo;
-                tipoCargo.appendChild(option);
-            });
-
-            // Seleccionar el id_tipo_cargo actual si está en las opciones filtradas
-            if (opcionesFiltradas.some(cargo => cargo.id_tipo_cargo == <?php echo $usua['id_tipo_cargo']; ?>)) {
-                tipoCargo.value = <?php echo $usua['id_tipo_cargo']; ?>;
-            }
+        function confirmarEliminacion() {
+            return confirm("¿Estás seguro de que deseas eliminar este usuario?");
         }
 
         // Ejecutar al cargar para ajustar los selects según sea necesario

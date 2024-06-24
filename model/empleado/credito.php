@@ -3,7 +3,6 @@ session_start();
 
 // Verificar si la sesión no está iniciada
 if (!isset($_SESSION["id_usuario"])) {
-    // Mostrar un alert y redirigir utilizando JavaScript
     echo '<script>alert("Debes iniciar sesión antes de acceder a la interfaz de administrador.");</script>';
     echo '<script>window.location.href = "../../login.html";</script>';
     exit();
@@ -94,4 +93,3 @@ $creditos = $stmtCreditos->fetchAll(PDO::FETCH_ASSOC);
     <script src="js/credito.js"></script>
 </body>
 </html>
-

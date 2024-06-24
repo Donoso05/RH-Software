@@ -125,7 +125,7 @@ $creditos = $stmt->fetchAll(PDO::FETCH_ASSOC);
                                     <td><?php echo htmlspecialchars($credito['estado']); ?></td>
                                     <td><?php echo htmlspecialchars($credito['observacion']); ?></td>
                                     <td id="acciones-<?php echo $credito['id_prestamo']; ?>">
-                                        <?php if ($credito['id_estado'] == 5 || $credito['id_estado'] == 7 || $credito['id_estado'] == 9) { ?>
+                                        <?php if ($credito['id_estado'] == 5 || $credito['id_estado'] == 7 || $credito['id_estado'] == 9 || $credito['id_estado'] == 8) { ?>
                                             <span class="text-success">Solicitud ya procesada</span>
                                         <?php } else { ?>
                                             <button id="btnAprobar-<?php echo $credito['id_prestamo']; ?>" class="btn btn-success" onclick="abrirModalAprobar(<?php echo $credito['id_prestamo']; ?>)">Aprobar</button>
@@ -178,7 +178,7 @@ $creditos = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <select id="selectMotivoRechazo" class="form-select" required>
                         <option value="" disabled selected>Seleccione un motivo</option>
                         <?php
-                        $observaciones = $con->query("SELECT * FROM observaciones WHERE id_observacion > 5");
+                        $observaciones = $con->query("SELECT * FROM observaciones WHERE id_observacion");
                         while ($obs = $observaciones->fetch()) {
                             echo '<option value="'.$obs['id_observacion'].'">'.$obs['observacion'].'</option>';
                         }

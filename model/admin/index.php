@@ -20,10 +20,9 @@ $con = $db->conectar();
 $id_usuario = $_SESSION["id_usuario"];
 
 // Consultar información del usuario
-$sql = "SELECT u.nombre, u.id_usuario, u.correo, u.nit_empresa, u.id_estado, e.estado, u.id_tipo_cargo, c.cargo, c.salario_base , u.foto
+$sql = "SELECT u.nombre, u.id_usuario, u.correo, u.nit_empresa, u.id_estado, e.estado, u.foto
         FROM usuario u
         INNER JOIN estado e ON u.id_estado = e.id_estado
-        INNER JOIN tipo_cargo c ON u.id_tipo_cargo = c.id_tipo_cargo
         WHERE u.id_usuario = ?";
 
 $stmt = $con->prepare($sql);
@@ -31,18 +30,19 @@ $stmt->bindParam(1, $id_usuario, PDO::PARAM_INT);
 $stmt->execute();
 $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
+
 if ($result) {
     $nombre = $result["nombre"];
     $id_usuario = $result["id_usuario"];
     $correo = $result["correo"];
     $nit_empresa = $result["nit_empresa"];
     $estado = $result["estado"];
-    $cargo = $result["cargo"];
-    $salario = $result["salario_base"];
-    $foto = $result["foto"];
+    
+  
 } else {
     exit("Usuario no encontrado");
 }
+$foto = $result["foto"];
 
 $stmt->closeCursor();
 
@@ -105,14 +105,6 @@ $con = null;
                     <div class="row mb-3">
                         <div class="col-sm-4 text-end"><strong>Estado:</strong></div>
                         <div class="col-sm-8"><?php echo $estado; ?></div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-sm-4 text-end"><strong>Cargo:</strong></div>
-                        <div class="col-sm-8"><?php echo $cargo; ?></div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-sm-4 text-end"><strong>Salario:</strong></div>
-                        <div class="col-sm-8"><?php echo number_format($result['salario_base']) ?></div>
                     </div>
                 </div>
             </div>

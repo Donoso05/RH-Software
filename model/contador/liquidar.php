@@ -128,6 +128,7 @@ function esPrimerosDiasDelMes()
     return $current_day <= 5; // Considerar los primeros 5 días del mes
 }
 
+<<<<<<< HEAD
 // Continuar con la lógica de selección y renderizado de la vista HTML
 $sql = "SELECT usuario.id_usuario, usuario.nombre, tipo_cargo.cargo, tipo_cargo.salario_base, solic_prestamo.cant_cuotas,
                tipo_cargo.salario_base < 2600000 AS aplica_aux_transporte,
@@ -146,8 +147,48 @@ $sql = "SELECT usuario.id_usuario, usuario.nombre, tipo_cargo.cargo, tipo_cargo.
         LEFT JOIN solic_prestamo ON usuario.id_usuario = solic_prestamo.id_usuario WHERE 
         LEFT JOIN auxtransporte ON auxtransporte.id_auxtransporte = 1
         WHERE usuario.id_usuario = :id_usuario";
+=======
+$sql = "SELECT 
+            usuario.id_usuario, 
+            usuario.nombre, 
+            tipo_cargo.cargo, 
+            tipo_cargo.salario_base, 
+            MAX(solic_prestamo.cant_cuotas) AS cant_cuotas,
+            tipo_cargo.salario_base < 2600000 AS aplica_aux_transporte,
+            tipo_cargo.salario_base * arl.porcentaje / 100 AS precio_arl,
+            salud.porcentaje_s, 
+            pension.porcentaje_p, 
+            MAX(solic_prestamo.valor_cuotas) AS valor_cuotas, 
+            MAX(solic_prestamo.monto_solicitado) AS monto_solicitado, 
+            MAX(solic_prestamo.id_estado) AS estado_prestamo,
+            CASE
+                WHEN tipo_cargo.salario_base < 2600000 THEN auxtransporte.valor
+                ELSE NULL
+            END AS valor_aux_transporte
+        FROM 
+            usuario
+        INNER JOIN 
+            tipo_cargo ON usuario.id_tipo_cargo = tipo_cargo.id_tipo_cargo
+        INNER JOIN 
+            arl ON tipo_cargo.id_arl = arl.id_arl
+        INNER JOIN 
+            nomina ON usuario.id_usuario = nomina.id_usuario
+        INNER JOIN 
+            salud ON 1 = 1 -- Asume el porcentaje de salud es el mismo para todos
+        INNER JOIN 
+            pension ON 1 = 1 -- Asume el porcentaje de pensión es el mismo para todos
+        LEFT JOIN 
+            solic_prestamo ON usuario.id_usuario = solic_prestamo.id_usuario AND solic_prestamo.id_estado NOT IN (9)
+        LEFT JOIN 
+            auxtransporte ON auxtransporte.id_auxtransporte = 1
+        WHERE 
+            usuario.id_usuario = :id_usuario
+        GROUP BY 
+            usuario.id_usuario, usuario.nombre, tipo_cargo.cargo, tipo_cargo.salario_base, 
+            aplica_aux_transporte, precio_arl, salud.porcentaje_s, pension.porcentaje_p, valor_aux_transporte";
+>>>>>>> fe7a8ce509eeb11b8f2e06d6b60c6ae078744733
 
-$stmt = $con->prepare($sql);
+$stmt = $con->prepare($sql);    
 $stmt->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
 $stmt->execute();
 $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -163,20 +204,18 @@ if (count($result) > 0) {
     $estadoPrestamo = $row['estado_prestamo'];
     $cantCuotas = $row['cant_cuotas'];
 
+    
     // Asignar valores según el estado del préstamo
-    if ($estadoPrestamo == 3) { // Estado En espera
-        $valorCuotas = "Préstamo en espera";
-        $montoSolicitado = "Préstamo en espera";
-    } elseif ($estadoPrestamo == 5) { // Estado Aprobado
+    if ($estadoPrestamo == 3) { // Estado Aprobado
+        $valorCuotas = "Prestamo en Espera";
+        $montoSolicitado = "Prestamo en espera";
+    }elseif ($estadoPrestamo == 5) { // Estado Aprobado
         $valorCuotas = "Cuota en próxima liquidación";
         $montoSolicitado = $row['monto_solicitado'];
     } elseif ($estadoPrestamo == 8) { // Estado Pagado
         $valorCuotas = $row['valor_cuotas'];
         $montoSolicitado = "Ya ha sido cargado el monto";
-    } elseif ($estadoPrestamo == 9) { // Estado Terminado
-        $valorCuotas = 0;
-        $montoSolicitado = 0;
-    }
+    } 
 
     $valorAuxTransporte = isset($row['valor_aux_transporte']) ? $row['valor_aux_transporte'] : 0;
 
