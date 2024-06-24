@@ -143,7 +143,7 @@ $sql = "SELECT usuario.id_usuario, usuario.nombre, tipo_cargo.cargo, tipo_cargo.
         INNER JOIN nomina ON usuario.id_usuario = nomina.id_usuario
         INNER JOIN salud ON 1 = 1 -- Asume el porcentaje de salud es el mismo para todos
         INNER JOIN pension ON 1 = 1 -- Asume el porcentaje de pensión es el mismo para todos
-        LEFT JOIN solic_prestamo ON usuario.id_usuario = solic_prestamo.id_usuario
+        LEFT JOIN solic_prestamo ON usuario.id_usuario = solic_prestamo.id_usuario WHERE 
         LEFT JOIN auxtransporte ON auxtransporte.id_auxtransporte = 1
         WHERE usuario.id_usuario = :id_usuario";
 
