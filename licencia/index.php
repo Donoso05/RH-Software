@@ -1,20 +1,27 @@
 <?php
+// Iniciar la sesión
 session_start();
 
+// Mostrar todos los errores
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+// Verificar si el usuario ha iniciado sesión
 if (!isset($_SESSION["id_usuario"])) {
     echo '<script>alert("Debes iniciar sesión antes de acceder a la interfaz de administrador.");</script>';
     echo '<script>window.location.href = "../login.html";</script>';
     exit();
 }
+
+// Conectar a la base de datos
 require_once("../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
 
+// Obtener el ID del usuario de la sesión
 $id_usuario = $_SESSION["id_usuario"];
 
+// Generar un serial de licencia aleatorio
 $caracteres = "lkjhsysaASMNB8811AMMaksjyuyysth098765432%#%poiyAZXSDEWQjhhs";
 $long = 20;
 $licencia = substr(str_shuffle($caracteres), 0, $long);
@@ -22,16 +29,18 @@ date_default_timezone_set("America/Mexico_City");
 $f_hoy = date('Y-m-d');
 $fin = date("Y-m-d", strtotime($f_hoy . "+ 1 year"));
 
+// Procesar el formulario de registro de licencia
 if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
     $nit_empresa = $_POST['nit_empresa'];
     $licencia = $_POST['licencia'];
     $fecha_inicio = $_POST['fecha_inicio'];
     $fecha_final = $_POST['fecha_final'];
 
+    // Verificar si hay campos vacíos
     if ($nit_empresa == "" || $licencia == "") {
         echo '<script>alert ("EXISTEN DATOS VACIOS"); </script>';
     } else {
-        // Verificar si ya existe una licencia para el nit_empresa
+        // Verificar si ya existe una licencia para la empresa
         $checkSQL = $con->prepare("SELECT COUNT(*) FROM licencia WHERE nit_empresa = :nit_empresa");
         $checkSQL->bindParam(':nit_empresa', $nit_empresa);
         $checkSQL->execute();
@@ -64,15 +73,17 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
     }
 }
 
+// Procesar el formulario de registro de empresa
 if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formemp")) {
     $nit = $_POST['nit'];
     $nombre = $_POST['nombre'];
     $correo = $_POST['correo'];
 
+    // Verificar si hay campos vacíos
     if ($nit == "" || $nombre == "" || $correo == "") {
         echo '<script>alert ("EXISTEN DATOS VACIOS"); </script>';
     } else {
-        // Verificar si ya existe una empresa con el mismo NIT o correo
+        // Verificar si ya existe una empresa con el mismo NIT, correo o nombre
         $checkSQL = $con->prepare("SELECT COUNT(*) FROM empresas WHERE nit_empresa = :nit OR correo = :correo OR nombre = :nombre");
         $checkSQL->bindParam(':nit', $nit);
         $checkSQL->bindParam(':correo', $correo);
@@ -96,6 +107,7 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formemp")) {
     }
 }
 
+// Obtener datos de empresas y sus licencias
 $empresas = $con->prepare("SELECT e.nit_empresa, e.nombre, l.licencia, e.correo
     FROM empresas e
     LEFT JOIN licencia l ON e.nit_empresa = l.nit_empresa
@@ -103,6 +115,7 @@ $empresas = $con->prepare("SELECT e.nit_empresa, e.nombre, l.licencia, e.correo
 $empresas->execute();
 $empresas_data = $empresas->fetchAll(PDO::FETCH_ASSOC);
 
+// Obtener datos de administradores
 $administradores = $con->prepare("SELECT u.id_usuario, u.nombre, e.estado, u.correo, tu.tipo_usuario, u.nit_empresa
     FROM usuario u
     LEFT JOIN estado e ON u.id_estado = e.id_estado
@@ -113,7 +126,6 @@ $administradores->execute();
 $administradores_data = $administradores->fetchAll(PDO::FETCH_ASSOC);
 
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
