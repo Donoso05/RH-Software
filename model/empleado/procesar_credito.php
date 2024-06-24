@@ -35,7 +35,7 @@ if ($cuotas > 36) {
 }
 
 if ($cuotas < 2) {
-    echo '<script>alert("El número minimo de cuotas es de 2.");</script>';
+    echo '<script>alert("El número mínimo de cuotas es de 2.");</script>';
     echo '<script>window.location.href = "credito.php";</script>';
     exit();
 }
@@ -92,6 +92,9 @@ if ($valorCuotas > $maxValorCuota) {
     exit();
 }
 
+// Definir el valor de $idEstadoEnRevision
+$idEstadoEnRevision = 3; // Reemplaza este valor con el ID correspondiente para el estado "En revisión"
+
 // Generar un id_prestamo único basado en el id_usuario y un número aleatorio de 4 dígitos
 do {
     $randomNumber = rand(1000, 9999);
@@ -113,7 +116,7 @@ try {
     $stmt = $con->prepare("INSERT INTO solic_prestamo (id_prestamo, id_usuario, monto_solicitado, id_estado, valor_cuotas, cant_cuotas, mes, anio, nit_empresa) 
                            VALUES (:idPrestamo, :idUsuario, :monto, :idEstado, :valorCuotas, :cuotas, :mes, :anio, :nitEmpresa)");
     $stmt->bindParam(':idPrestamo', $idPrestamo, PDO::PARAM_STR); // Usamos PDO::PARAM_STR para id_prestamo
-    $stmt->bindParam(':idUsuario', $idUsuario, PDO::PARAM_INT);
+    $stmt->bindParam(':idUsuario', $idUsuario, PDO::PARAM_STR); // Ajuste a VARCHAR
     $stmt->bindParam(':monto', $monto, PDO::PARAM_STR); // PDO::PARAM_STR es adecuado para decimal
     $stmt->bindParam(':idEstado', $idEstadoEnRevision, PDO::PARAM_INT);
     $stmt->bindParam(':valorCuotas', $valorCuotas, PDO::PARAM_STR); // PDO::PARAM_STR es adecuado para decimal
@@ -129,9 +132,10 @@ try {
         throw new Exception("Error al insertar el préstamo en la base de datos.");
     }
 } catch (Exception $e) {
-    error_log($e->getMessage()); // Registrar el error
+    $errorInfo = $stmt->errorInfo();
+    error_log("Error al ejecutar la consulta: " . print_r($errorInfo, true)); // Registrar el error
     echo '<script>alert("Hubo un error al enviar la solicitud de préstamo. Inténtalo de nuevo.");</script>';
-    echo '<script>window.location.href = "credito.php";</script>';
+    echo '<script>console.error("Error al ejecutar la consulta: ", ' . json_encode($errorInfo) . ');</script>'; // Agregar este log para más detalles del error
 }
 exit();
 ?>
