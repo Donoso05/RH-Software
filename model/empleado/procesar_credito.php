@@ -48,16 +48,16 @@ function calcularValorCuotas($monto, $cuotas) {
     return $monto / $cuotas;
 }
 
-// Verificar si el usuario tiene más créditos pendientes
-$idEstadoEnRevision = 3; // ID del estado "En revisión"
-$stmt = $con->prepare("SELECT COUNT(*) AS total FROM solic_prestamo WHERE id_usuario = :idUsuario AND id_estado = :idEstado");
+// Verificar si el usuario tiene préstamos pendientes que no estén en estado "Finalizado"
+$idEstadoFinalizado = 9; // ID del estado "Finalizado"
+$stmt = $con->prepare("SELECT COUNT(*) AS total FROM solic_prestamo WHERE id_usuario = :idUsuario AND id_estado != :idEstadoFinalizado");
 $stmt->bindParam(':idUsuario', $idUsuario, PDO::PARAM_INT);
-$stmt->bindParam(':idEstado', $idEstadoEnRevision, PDO::PARAM_INT);
+$stmt->bindParam(':idEstadoFinalizado', $idEstadoFinalizado, PDO::PARAM_INT);
 $stmt->execute();
 $datos = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if ($datos["total"] > 0) {
-    echo '<script>alert("Ya tienes un préstamo pendiente.");</script>';
+    echo '<script>alert("Tienes préstamos pendientes que no están finalizados.");</script>';
     echo '<script>window.location.href = "credito.php";</script>';
     exit();
 }

@@ -46,7 +46,7 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
 
     // Guardar la imagen del código de barras
     $codigo_barras_filename = uniqid() . '.png';
-    file_put_contents(__DIR__ . '/../bar_code/' . $codigo_barras_filename, $codigo_barras_imagen);
+    file_put_contents(__DIR__ . '../model/bar_code/' . $codigo_barras_filename, $codigo_barras_imagen);
 
     // Validación de id_usuario para que solo tenga entre 6 y 11 dígitos y solo números
     if (!preg_match('/^\d{6,11}$/', $id_usuario)) {
