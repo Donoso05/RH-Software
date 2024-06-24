@@ -37,7 +37,7 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
     $codigo_barras_filename = uniqid() . '.png';
     file_put_contents(__DIR__ . '/../bar_code/' . $codigo_barras_filename, $codigo_barras_imagen);
 
-    // Validación de id_usuario para que solo tenga entre 6 y 10 dígitos y solo números
+    // Validación de id_usuario para que solo tenga entre 6 y 11 dígitos y solo números
     if (!preg_match('/^\d{6,11}$/', $id_usuario)) {
         echo '<script>alert("El Número de Documento debe contener entre 6 y 11 dígitos.");</script>';
         echo '<script>window.location="usuario.php"</script>';
@@ -91,9 +91,6 @@ if (isset($_POST["MM_insert"]) && $_POST["MM_insert"] == "formreg") {
         } else {
             echo '<script>alert("Usuario Creado con Exito, pero no se pudo enviar el correo");</script>';
         }
-
-        echo '<script>window.location="usuario.php"</script>';
-        exit();
     }
 }
 ?>
