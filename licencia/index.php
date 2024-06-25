@@ -36,6 +36,16 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
     $fecha_inicio = $_POST['fecha_inicio'];
     $fecha_final = $_POST['fecha_final'];
 
+    // Validar fechas en el servidor
+    $hoy = date('Y-m-d');
+    $un_ano_despues = date("Y-m-d", strtotime($hoy . "+ 1 year"));
+
+    if ($fecha_inicio !== $hoy || $fecha_final !== $un_ano_despues) {
+        echo '<script>alert("Fechas no válidas. La fecha de inicio debe ser hoy y la fecha de fin debe ser un año después.");</script>';
+        echo '<script>window.location="index.php"</script>';
+        exit();
+    }
+
     // Verificar si hay campos vacíos
     if ($nit_empresa == "" || $licencia == "") {
         echo '<script>alert ("EXISTEN DATOS VACIOS"); </script>';
@@ -72,6 +82,8 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
         }
     }
 }
+
+
 
 // Procesar el formulario de registro de empresa
 if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formemp")) {
@@ -134,6 +146,39 @@ $administradores_data = $administradores->fetchAll(PDO::FETCH_ASSOC);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dev</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const fechaInicioInput = document.getElementById('fechainicio');
+            const fechaFinInput = document.getElementById('fechafin');
+
+            const originalFechaInicio = fechaInicioInput.value;
+            const originalFechaFin = fechaFinInput.value;
+
+            // Función para verificar cambios y mostrar alerta
+            const verificarCambioFecha = (input, originalValue, mensaje) => {
+                input.addEventListener('input', function () {
+                    if (input.value !== originalValue) {
+                        alert(mensaje);
+                        input.value = originalValue;
+                    }
+                });
+
+                // Monitorear el atributo "readonly" para detectar cambios
+                const observer = new MutationObserver(() => {
+                    if (!input.hasAttribute('readonly')) {
+                        alert(mensaje);
+                        input.setAttribute('readonly', 'readonly');
+                        input.value = originalValue;
+                    }
+                });
+
+                observer.observe(input, { attributes: true, attributeFilter: ['readonly'] });
+            };
+
+            verificarCambioFecha(fechaInicioInput, originalFechaInicio, 'No puedes cambiar la fecha de inicio.');
+            verificarCambioFecha(fechaFinInput, originalFechaFin, 'No puedes cambiar la fecha de fin.');
+        });
+    </script>
 </head>
 
 <body>
