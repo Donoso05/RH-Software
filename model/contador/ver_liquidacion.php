@@ -13,6 +13,8 @@ $db = new Database();
 $con = $db->conectar();
 date_default_timezone_set('America/Bogota'); 
 
+$nit_empresa = $_SESSION['nit_empresa']; // Corrigiendo el uso de la variable de sesión
+
 function actualizarEstadoAPagado($con) {
     $current_date = date('Y-m-d'); // Usar la fecha real del servidor
     $last_day_of_month = date('Y-m-t'); // Obtener el último día del mes
@@ -76,8 +78,10 @@ vaciarTablaNominaAlInicioDelMes($con);
 $sql = "SELECT n.*, u.nombre, e.estado AS estado_nombre
         FROM nomina n
         INNER JOIN usuario u ON n.id_usuario = u.id_usuario
-        INNER JOIN estado e ON n.id_estado = e.id_estado";
+        INNER JOIN estado e ON n.id_estado = e.id_estado
+        WHERE n.nit_empresa = :nit_empresa";
 $stmt = $con->prepare($sql);
+$stmt->bindParam(':nit_empresa', $nit_empresa, PDO::PARAM_STR); // Añadir enlace del parámetro
 $stmt->execute();
 
 $nominas = $stmt->fetchAll(PDO::FETCH_ASSOC);

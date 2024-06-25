@@ -21,12 +21,12 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
     if ($porcentaje_s == "") {
         echo '<script>alert("EXISTEN DATOS VACIOS");</script>';
         echo '<script>window.location="salud.php"</script>';
-    } elseif (!is_numeric($porcentaje_s)) {
-        echo '<script>alert("El campo \'Porcentaje\' debe contener solo números y decimales.");</script>';
+    } elseif (!ctype_digit($porcentaje_s) || intval($porcentaje_s) <= 0 || intval($porcentaje_s) > 100) {
+        echo '<script>alert("El campo \'Porcentaje\' debe contener un número entre 1 y 100.");</script>';
         echo '<script>window.location="salud.php"</script>';
     } else {
         $insertSQL = $con->prepare("INSERT INTO salud (porcentaje_s, nit_empresa) VALUES (:porcentaje_s, :nit_empresa)");
-        $insertSQL->bindParam(':porcentaje_s', $porcentaje_s);
+        $insertSQL->bindParam(':porcentaje_s', $porcentaje_s, PDO::PARAM_INT);
         $insertSQL->bindParam(':nit_empresa', $nit_empresa_session);
         $insertSQL->execute();
         echo '<script>alert("Registro exitoso");</script>';
@@ -49,20 +49,21 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
         function validateForm() {
             const porcentaje_s = document.forms["formreg"]["porcentaje_s"].value.trim();
 
-            if (!/^\d*\.?\d+$/.test(porcentaje_s)) {
-                alert("El campo 'Porcentaje' debe contener solo números y no estar vacío.");
+            if (!/^[1-9][0-9]?$|^100$/.test(porcentaje_s)) {
+                alert("El campo 'Porcentaje' debe contener un número entre 1 y 100.");
                 return false;
             }
 
             return true;
         }
 
-        function sanitizeInput(event, type) {
+        function sanitizeInput(event) {
             const input = event.target;
             let value = input.value;
 
-            if (type === 'numeric') {
-                value = value.replace(/[^0-9.]/g, ''); // Eliminar todo lo que no sea dígito o punto decimal
+            value = value.replace(/[^0-9]/g, ''); // Eliminar todo lo que no sea dígito
+            if (parseInt(value) > 100) {
+                value = '100'; // Limitar el valor a 100
             }
 
             input.value = value;
@@ -79,7 +80,7 @@ if ((isset($_POST["MM_insert"])) && ($_POST["MM_insert"] == "formreg")) {
                 <form method="post" name="formreg" onsubmit="return validateForm()">
                     <div class="mb-3">
                         <label for="porcentaje_s" class="form-label">Porcentaje Salud:</label>
-                        <input type="text" class="form-control" name="porcentaje_s" required oninput="sanitizeInput(event, 'numeric')">
+                        <input type="text" class="form-control" name="porcentaje_s" required oninput="sanitizeInput(event)">
                     </div>
                     <input type="submit" class="btn btn-primary" name="validar" value="Registrar">
                     <input type="hidden" name="MM_insert" value="formreg" required>

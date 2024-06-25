@@ -18,12 +18,17 @@ if (!$con) {
     die("Error de conexión: " . mysqli_connect_error());
 }
 
+// Obtener nit_empresa de la sesión
+$nit_empresa = $_SESSION['nit_empresa'];
+
 // Consulta SQL para obtener los datos de la tabla solic_prestamo
 $sql = "SELECT sp.id_usuario, sp.monto_solicitado, sp.cant_cuotas, sp.valor_cuotas, sp.mes, sp.anio, e.estado, sp.id_estado, o.observacion AS observacion
         FROM solic_prestamo sp
         LEFT JOIN observaciones o ON sp.motivo_rechazo = o.id_observacion
-        JOIN estado e ON sp.id_estado = e.id_estado";
+        JOIN estado e ON sp.id_estado = e.id_estado
+        WHERE sp.nit_empresa = :nit_empresa";
 $stmt = $con->prepare($sql);
+$stmt->bindParam(':nit_empresa', $nit_empresa, PDO::PARAM_STR);
 $stmt->execute();
 
 $creditos = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -83,7 +88,7 @@ $creditos = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="9" class="text-center">No se encontraron registros</td>
+                                <td colspan="8" class="text-center">No se encontraron registros</td>
                             </tr>
                         <?php endif; ?>
                     </tbody>

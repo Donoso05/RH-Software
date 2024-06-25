@@ -7,11 +7,15 @@ if (!isset($_SESSION["id_usuario"])) {
     echo '<script>window.location.href = "../login.html";</script>';
     exit();
 }
+
 require_once("../../conexion/conexion.php");
 $db = new Database();
 $con = $db->conectar();
 
+$nit_empresa = $_SESSION['nit_empresa']; // Corrigiendo el uso de la variable de sesión
 
+// Debug: Imprimir el valor de nit_empresa
+echo '<script>console.log("NIT Empresa: ' . $nit_empresa . '");</script>';
 ?>
 
 <!DOCTYPE html>
@@ -26,7 +30,6 @@ $con = $db->conectar();
     <link rel="stylesheet" href="css/nav.css">
     <link rel="stylesheet" href="css/tram.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
 </head>
 
 <body>
@@ -55,24 +58,31 @@ $con = $db->conectar();
                             $consulta = "SELECT tram_permiso.id_permiso, usuario.id_usuario, usuario.nombre, tipo_permiso.tipo_permiso, tram_permiso.fecha_inicio, tram_permiso.fecha_fin, estado.estado, tram_permiso.id_estado, tram_permiso.descripcion, tram_permiso.incapacidad, observaciones.observacion
                                 FROM tram_permiso
                                 INNER JOIN usuario ON tram_permiso.id_usuario = usuario.id_usuario
-                                INNER JOIN observaciones ON tram_permiso.motivo_rechazo = observaciones.id_observacion
+                                LEFT JOIN observaciones ON tram_permiso.motivo_rechazo = observaciones.id_observacion
                                 INNER JOIN tipo_permiso ON tram_permiso.id_tipo_permiso = tipo_permiso.id_tipo_permiso
-                                INNER JOIN estado ON tram_permiso.id_estado = estado.id_estado";
-                            $resultado = $con->query($consulta);
+                                INNER JOIN estado ON tram_permiso.id_estado = estado.id_estado
+                                WHERE tram_permiso.nit_empresa = :nit_empresa";
+                            $stmt = $con->prepare($consulta);
+                            $stmt->bindParam(':nit_empresa', $nit_empresa, PDO::PARAM_STR);
+                            $stmt->execute();
+                            $resultado = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-                            if ($resultado->rowCount() > 0) {
-                                while ($fila = $resultado->fetch()) {
+                            // Debug: Imprimir el resultado de la consulta
+                            echo '<script>console.log(' . json_encode($resultado) . ');</script>';
+
+                            if (count($resultado) > 0) {
+                                foreach ($resultado as $fila) {
                             ?>
                                     <tr>
-                                        <td><?php echo $fila["id_usuario"]; ?></td>
-                                        <td><?php echo $fila["nombre"]; ?></td>
+                                        <td><?php echo htmlspecialchars($fila["id_usuario"]); ?></td>
+                                        <td><?php echo htmlspecialchars($fila["nombre"]); ?></td>
                                         <td><?php echo htmlspecialchars($fila["descripcion"]); ?></td>
                                         <td><a href="<?php echo htmlspecialchars($fila["incapacidad"]); ?>" target="_blank">Ver Archivo</a></td>
-                                        <td><?php echo $fila["tipo_permiso"]; ?></td>
-                                        <td><?php echo $fila["fecha_inicio"]; ?></td>
-                                        <td><?php echo $fila["fecha_fin"]; ?></td>
-                                        <td><?php echo $fila["estado"]; ?></td>
-                                        <td><?php echo $fila["observacion"]; ?></td>
+                                        <td><?php echo htmlspecialchars($fila["tipo_permiso"]); ?></td>
+                                        <td><?php echo htmlspecialchars($fila["fecha_inicio"]); ?></td>
+                                        <td><?php echo htmlspecialchars($fila["fecha_fin"]); ?></td>
+                                        <td><?php echo htmlspecialchars($fila["estado"]); ?></td>
+                                        <td><?php echo htmlspecialchars($fila["observacion"]); ?></td>
                                     </tr>
                             <?php
                                 }

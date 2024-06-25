@@ -15,6 +15,7 @@ if (isset($_POST['id_permiso']) && isset($_POST['accion'])) {
     $id_permiso = $_POST['id_permiso'];
     $accion = $_POST['accion'];
     $motivo_rechazo = isset($_POST['motivo_rechazo']) ? $_POST['motivo_rechazo'] : null;
+    $nit_empresa = $_SESSION['nit_empresa'];
 
     // Determinar el nuevo estado
     $nuevoEstado = ($accion === 'aprobar') ? 5 : 7;
@@ -112,15 +113,20 @@ if (isset($_POST['id_permiso']) && isset($_POST['accion'])) {
                         </thead>
                         <tbody>
                             <?php
-                            $consulta = "SELECT tram_permiso.id_permiso, usuario.id_usuario, usuario.nombre, tipo_permiso.tipo_permiso, tram_permiso.fecha_inicio, tram_permiso.fecha_fin, estado.estado, tram_permiso.id_estado, tram_permiso.descripcion, tram_permiso.incapacidad
+                            $nit_empresa = $_SESSION['nit_empresa'];
+                            $consulta = "SELECT tram_permiso.id_permiso, usuario.id_usuario, usuario.nombre, tipo_permiso.tipo_permiso, tram_permiso.fecha_inicio, tram_permiso.fecha_fin, estado.estado, tram_permiso.id_estado, tram_permiso.descripcion, tram_permiso.incapacidad, tram_permiso.nit_empresa
                                 FROM tram_permiso
                                 INNER JOIN usuario ON tram_permiso.id_usuario = usuario.id_usuario
                                 INNER JOIN tipo_permiso ON tram_permiso.id_tipo_permiso = tipo_permiso.id_tipo_permiso
-                                INNER JOIN estado ON tram_permiso.id_estado = estado.id_estado";
-                            $resultado = $con->query($consulta);
-
-                            if ($resultado->rowCount() > 0) {
-                                while ($fila = $resultado->fetch()) {
+                                INNER JOIN estado ON tram_permiso.id_estado = estado.id_estado
+                                WHERE tram_permiso.nit_empresa = :nit_empresa";
+                            $stmt = $con->prepare($consulta);
+                            $stmt->bindParam(':nit_empresa', $nit_empresa, PDO::PARAM_STR);
+                            $stmt->execute();
+                            $resultado = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                            
+                            if (count($resultado) > 0) {
+                                foreach ($resultado as $fila) {
                             ?>
                                     <tr>
                                         <td><?php echo $fila["id_usuario"]; ?></td>

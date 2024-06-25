@@ -50,6 +50,23 @@ if (!$user_details) {
 $id_arl = $user_details['id_arl'];
 $salario_base = $user_details['salario_base'];
 
+// Obtener el id_prestamo del mes actual y que sea diferente de 9 y 7
+$current_mes = date('F'); // Ej: June
+$current_anio = date('Y'); // Ej: 2024
+$sql_get_prestamo = "SELECT id_prestamo 
+                     FROM solic_prestamo 
+                     WHERE id_usuario = :id_usuario 
+                     AND id_estado NOT IN (9, 7) 
+                     AND mes = :mes 
+                     AND anio = :anio
+                     LIMIT 1";
+$stmt_get_prestamo = $con->prepare($sql_get_prestamo);
+$stmt_get_prestamo->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
+$stmt_get_prestamo->bindParam(':mes', $current_mes, PDO::PARAM_STR);
+$stmt_get_prestamo->bindParam(':anio', $current_anio, PDO::PARAM_STR);
+$stmt_get_prestamo->execute();
+$id_prestamo = $stmt_get_prestamo->fetchColumn();
+
 // Obtener el valor del aux_transporte
 $sql_get_aux_transporte = "SELECT valor FROM auxtransporte WHERE id_auxtransporte = 1"; // Ajusta el ID según sea necesario
 $stmt_get_aux_transporte = $con->prepare($sql_get_aux_transporte);
@@ -128,19 +145,10 @@ function esPrimerosDiasDelMes()
     return $current_day <= 5; // Considerar los primeros 5 días del mes
 }
 
-$sql = "SELECT 
-            usuario.id_usuario, 
-            usuario.nombre, 
-            tipo_cargo.cargo, 
-            tipo_cargo.salario_base, 
-            MAX(solic_prestamo.cant_cuotas) AS cant_cuotas,
-            tipo_cargo.salario_base < 2600000 AS aplica_aux_transporte,
-            tipo_cargo.salario_base * arl.porcentaje / 100 AS precio_arl,
-            salud.porcentaje_s, 
-            pension.porcentaje_p, 
-            MAX(solic_prestamo.valor_cuotas) AS valor_cuotas, 
-            MAX(solic_prestamo.monto_solicitado) AS monto_solicitado, 
-            MAX(solic_prestamo.id_estado) AS estado_prestamo,
+$sql = "SELECT usuario.id_usuario, usuario.nombre, tipo_cargo.cargo, tipo_cargo.salario_base, solic_prestamo.cant_cuotas,
+                tipo_cargo.salario_base < 2600000 AS aplica_aux_transporte,
+                tipo_cargo.salario_base * arl.porcentaje / 100 AS precio_arl,
+                salud.porcentaje_s, pension.porcentaje_p, solic_prestamo.valor_cuotas, solic_prestamo.monto_solicitado, solic_prestamo.id_estado AS estado_prestamo,
             CASE
                 WHEN tipo_cargo.salario_base < 2600000 THEN auxtransporte.valor
                 ELSE NULL
@@ -158,7 +166,7 @@ $sql = "SELECT
         INNER JOIN 
             pension ON 1 = 1 -- Asume el porcentaje de pensión es el mismo para todos
         LEFT JOIN 
-            solic_prestamo ON usuario.id_usuario = solic_prestamo.id_usuario AND solic_prestamo.id_estado NOT IN (9)
+            solic_prestamo ON solic_prestamo.id_prestamo = :id_prestamo
         LEFT JOIN 
             auxtransporte ON auxtransporte.id_auxtransporte = 1
         WHERE 
@@ -169,6 +177,7 @@ $sql = "SELECT
 
 $stmt = $con->prepare($sql);    
 $stmt->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
+$stmt->bindParam(':id_prestamo', $id_prestamo, PDO::PARAM_INT);
 $stmt->execute();
 $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -176,19 +185,18 @@ if (count($result) > 0) {
     $row = $result[0];
     $salario_diario = $row['salario_base'] / 30;
     $deduccion_salud = $row['salario_base'] * $row['porcentaje_s'] / 100;
-    $deduccion_pension = $row['salario_base'] * $row['porcentaje_p'];
+    $deduccion_pension = $row['salario_base'] * $row['porcentaje_p'] / 100;
     $valorArl = $row['precio_arl'];
     $valorCuotas = 0;
     $montoSolicitado = 0;
     $estadoPrestamo = $row['estado_prestamo'];
     $cantCuotas = $row['cant_cuotas'];
 
-    
     // Asignar valores según el estado del préstamo
     if ($estadoPrestamo == 3) { // Estado Aprobado
         $valorCuotas = "Prestamo en Espera";
         $montoSolicitado = "Prestamo en espera";
-    }elseif ($estadoPrestamo == 5) { // Estado Aprobado
+    } elseif ($estadoPrestamo == 5) { // Estado Aprobado
         $valorCuotas = "Cuota en próxima liquidación";
         $montoSolicitado = $row['monto_solicitado'];
     } elseif ($estadoPrestamo == 8) { // Estado Pagado
@@ -286,32 +294,54 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt_update_nomina->bindParam(':deduccion_pension', $deduccion_pension, PDO::PARAM_INT);
             $stmt_update_nomina->bindParam(':precio_arl', $valorArl, PDO::PARAM_INT);
             $stmt_update_nomina->bindParam(':valor_cuotas', $valorCuotas, PDO::PARAM_INT);
-            $stmt_update_nomina->bindParam(':monto_solicitado', $monto_solicitado, PDO::PARAM_INT);
+            $stmt_update_nomina->bindParam(':monto_solicitado', $montoSolicitado, PDO::PARAM_INT);
             $stmt_update_nomina->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
             $stmt_update_nomina->bindParam(':nit_empresa', $nit_empresa, PDO::PARAM_STR); // Añadir nit_empresa aquí
             $stmt_update_nomina->execute();
 
             // Actualizar el estado del préstamo a pagado si se ha liquidado
             if ($estadoPrestamo == 5) {
-                $sql_update_prestamo = "UPDATE solic_prestamo SET id_estado = 8 WHERE id_usuario = :id_usuario AND id_estado = 5";
+                $sql_update_prestamo = "UPDATE solic_prestamo SET id_estado = 8 WHERE id_prestamo = :id_prestamo";
                 $stmt_update_prestamo = $con->prepare($sql_update_prestamo);
-                $stmt_update_prestamo->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
+                $stmt_update_prestamo->bindParam(':id_prestamo', $id_prestamo, PDO::PARAM_INT);
                 $stmt_update_prestamo->execute();
             }
 
             // Restar una cuota del préstamo si el estado es pagado
-            if ($estadoPrestamo == 8 && $cantCuotas > 0) {
-                $cantCuotas -= 1;
-                if ($cantCuotas == 0) {
-                    $estadoPrestamo = 9;
-                }
-                $sql_update_prestamo_cuotas = "UPDATE solic_prestamo SET cant_cuotas = :cant_cuotas, id_estado = :estado WHERE id_usuario = :id_usuario";
-                $stmt_update_prestamo_cuotas = $con->prepare($sql_update_prestamo_cuotas);
-                $stmt_update_prestamo_cuotas->bindParam(':cant_cuotas', $cantCuotas, PDO::PARAM_INT);
-                $stmt_update_prestamo_cuotas->bindParam(':estado', $estadoPrestamo, PDO::PARAM_INT);
-                $stmt_update_prestamo_cuotas->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
-                $stmt_update_prestamo_cuotas->execute();
-            }
+if ($estadoPrestamo == 8 && $cantCuotas > 0) {
+    $cantCuotas -= 1;
+    if ($cantCuotas == 0) {
+        $estadoPrestamo = 9;
+    }
+
+    // Obtener el mes y año actuales
+    $current_mes = date('n'); // Número del mes actual (1-12)
+    $current_anio = date('Y');
+
+    // Incrementar el mes
+    $next_mes = $current_mes + 1;
+    $next_anio = $current_anio;
+
+    // Ajustar el año si el mes es mayor a 12
+    if ($next_mes > 12) {
+        $next_mes = 1;
+        $next_anio += 1;
+    }
+
+    // Convertir el número del mes al nombre del mes en inglés
+    $next_mes_name = date('F', mktime(0, 0, 0, $next_mes, 10));
+
+    $sql_update_prestamo_cuotas = "UPDATE solic_prestamo 
+                                   SET cant_cuotas = :cant_cuotas, id_estado = :estado, mes = :mes, anio = :anio 
+                                   WHERE id_prestamo = :id_prestamo";
+    $stmt_update_prestamo_cuotas = $con->prepare($sql_update_prestamo_cuotas);
+    $stmt_update_prestamo_cuotas->bindParam(':cant_cuotas', $cantCuotas, PDO::PARAM_INT);
+    $stmt_update_prestamo_cuotas->bindParam(':estado', $estadoPrestamo, PDO::PARAM_INT);
+    $stmt_update_prestamo_cuotas->bindParam(':mes', $next_mes_name, PDO::PARAM_STR);
+    $stmt_update_prestamo_cuotas->bindParam(':anio', $next_anio, PDO::PARAM_STR);
+    $stmt_update_prestamo_cuotas->bindParam(':id_prestamo', $id_prestamo, PDO::PARAM_INT);
+    $stmt_update_prestamo_cuotas->execute();
+}
 
             $show_success_message = true;
 
@@ -407,6 +437,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     </script>
 
+</head>
 </head>
 
 <body onload="document.getElementById('dias_trabajados').focus();">
