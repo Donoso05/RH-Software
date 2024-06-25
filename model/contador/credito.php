@@ -15,20 +15,23 @@ $db = new Database();
 $con = $db->conectar();
 
 if (!$con) {
-    die("Error de conexión: " . mysqli_connect_error());
+    die("Error de conexión: " . $con->errorInfo());
 }
 
+$nit_empresa = $_SESSION['nit_empresa'];
+
 // Consulta SQL para obtener los datos de la tabla solic_prestamo
-$sql = "SELECT sp.id_prestamo, sp.id_usuario, sp.monto_solicitado, sp.cant_cuotas, sp.valor_cuotas, sp.mes, sp.anio, e.estado, sp.id_estado, o.observacion AS observacion
+$sql = "SELECT sp.id_prestamo, sp.id_usuario, sp.monto_solicitado, sp.cant_cuotas, sp.valor_cuotas, sp.mes, sp.anio, e.estado, sp.id_estado, sp.nit_empresa, o.observacion AS observacion
         FROM solic_prestamo sp
         LEFT JOIN observaciones o ON sp.motivo_rechazo = o.id_observacion
-        JOIN estado e ON sp.id_estado = e.id_estado";
+        JOIN estado e ON sp.id_estado = e.id_estado
+        WHERE sp.nit_empresa = :nit_empresa";
 $stmt = $con->prepare($sql);
+$stmt->bindParam(':nit_empresa', $nit_empresa, PDO::PARAM_STR);
 $stmt->execute();
 
 $creditos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 
