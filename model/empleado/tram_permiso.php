@@ -18,8 +18,11 @@ $con = $db->conectar();
 $id_usuario = $_SESSION["id_usuario"];
 $nit_empresa = $_SESSION["nit_empresa"]; // Obtener el nit_empresa de la sesión
 
-// Consultar tipos de permiso  
-$consultaTipos = $con->prepare("SELECT id_tipo_permiso, tipo_permiso, dias FROM tipo_permiso");
+// Consultar tipos de permiso filtrados por nit_empresa
+$consultaTipos = $con->prepare("SELECT id_tipo_permiso, tipo_permiso, dias 
+                                FROM tipo_permiso 
+                                WHERE nit_empresa = :nit_empresa");
+$consultaTipos->bindParam(':nit_empresa', $nit_empresa, PDO::PARAM_STR);
 $consultaTipos->execute();
 $tipos_permiso = $consultaTipos->fetchAll(PDO::FETCH_ASSOC);
 
@@ -37,12 +40,14 @@ $permisos = $consultaPermisos->fetchAll(PDO::FETCH_ASSOC);
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trámite de Permisos</title>
     <link rel="stylesheet" href="css/permiso.css">
 </head>
+
 <body>
     <?php include("nav.php") ?>
     <div class="container">
@@ -59,6 +64,7 @@ $permisos = $consultaPermisos->fetchAll(PDO::FETCH_ASSOC);
             <div class="form-group">
                 <label for="tipo_permiso">Tipo de permiso:</label>
                 <select id="tipo_permiso" name="tipo_permiso" required>
+                    <option value="">Seleccione una opción</option>
                     <?php foreach ($tipos_permiso as $tipo): ?>
                         <option value="<?php echo $tipo['id_tipo_permiso']; ?>" data-dias="<?php echo $tipo['dias']; ?>"><?php echo $tipo['tipo_permiso']; ?></option>
                     <?php endforeach; ?>
@@ -78,7 +84,7 @@ $permisos = $consultaPermisos->fetchAll(PDO::FETCH_ASSOC);
         <h2>Permisos Solicitados</h2>
 
         <table class="table table-striped">
-            <thead class="bg-dark text-white" >
+            <thead class="bg-dark text-white">
                 <tr>
                     <th>Descripción</th>
                     <th>Archivo</th>
@@ -89,7 +95,7 @@ $permisos = $consultaPermisos->fetchAll(PDO::FETCH_ASSOC);
                 </tr>
             </thead>
             <tbody id="permisoTableBody">
-                <?php foreach ($permisos as $permiso): ?>
+                <?php foreach ($permisos as $permiso) : ?>
                     <tr>
                         <td><?php echo htmlspecialchars($permiso['descripcion']); ?></td>
                         <td><a href="<?php echo htmlspecialchars($permiso['incapacidad']); ?>" target="_blank">Ver Archivo</a></td>
@@ -103,9 +109,18 @@ $permisos = $consultaPermisos->fetchAll(PDO::FETCH_ASSOC);
         </table>
     </div>
     <script>
-        document.getElementById('fecha_inicio').addEventListener('change', calcularFechaFin);
-        document.getElementById('tipo_permiso').addEventListener('change', calcularFechaFin);
+        // Set the minimum date for the date inputs to today's date
+        function setMinDate() {
+            var today = new Date();
+            var dd = String(today.getDate()).padStart(2, '0');
+            var mm = String(today.getMonth() + 1).padStart(2, '0'); // January is 0!
+            var yyyy = today.getFullYear();
 
+            var todayDate = yyyy + '-' + mm + '-' + dd;
+            document.getElementById('fecha_inicio').setAttribute('min', todayDate);
+        }
+
+        // Calculate the end date based on the start date and the type of leave
         function calcularFechaFin() {
             var fechaInicio = document.getElementById('fecha_inicio').value;
             var tipoPermiso = document.getElementById('tipo_permiso');
@@ -121,6 +136,15 @@ $permisos = $consultaPermisos->fetchAll(PDO::FETCH_ASSOC);
             }
         }
 
+        document.getElementById('fecha_inicio').addEventListener('change', calcularFechaFin);
+        document.getElementById('tipo_permiso').addEventListener('change', calcularFechaFin);
+
+        // Set the minimum date on page load
+        window.onload = function() {
+            setMinDate();
+            calcularFechaFin();
+        };
+
         // Populate the select options with data-dias attribute for JavaScript calculation
         var tiposPermiso = <?php echo json_encode($tipos_permiso); ?>;
         var selectTipoPermiso = document.getElementById('tipo_permiso');
@@ -129,4 +153,5 @@ $permisos = $consultaPermisos->fetchAll(PDO::FETCH_ASSOC);
         }).join('');
     </script>
 </body>
+
 </html>
