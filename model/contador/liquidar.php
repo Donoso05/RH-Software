@@ -157,8 +157,8 @@ $sql = "SELECT
             salud ON 1 = 1 -- Asume el porcentaje de salud es el mismo para todos
         INNER JOIN 
             pension ON 1 = 1 -- Asume el porcentaje de pensión es el mismo para todos
-        INNER JOIN 
-            solic_prestamo ON solic_prestamo.id_estado IN (5,8,9)
+        LEFT JOIN 
+            solic_prestamo ON usuario.id_usuario = solic_prestamo.id_usuario AND solic_prestamo.id_estado NOT IN (9)
         LEFT JOIN 
             auxtransporte ON auxtransporte.id_auxtransporte = 1
         WHERE 
